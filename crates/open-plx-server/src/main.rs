@@ -32,6 +32,8 @@ async fn main() -> Result<()> {
         services::data_source::DataSourceServiceImpl::new(app_state.clone());
     let flight_service =
         services::flight::FlightServiceImpl::new(app_state.clone());
+    let widget_data_service =
+        services::widget_data::WidgetDataServiceImpl::new(app_state.clone());
 
     tracing::info!("listening on {}", bind_addr);
 
@@ -57,6 +59,11 @@ async fn main() -> Result<()> {
         .add_service(
             arrow_flight::flight_service_server::FlightServiceServer::new(
                 flight_service,
+            ),
+        )
+        .add_service(
+            open_plx_core::pb::widget_data_service_server::WidgetDataServiceServer::new(
+                widget_data_service,
             ),
         )
         .serve(bind_addr)

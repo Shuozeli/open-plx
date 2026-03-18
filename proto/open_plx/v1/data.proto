@@ -40,6 +40,43 @@ import "open_plx/v1/dashboard.proto";
 //   for all widgets in a dashboard, then calls DoGet per widget.
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// Widget Data Service
+//
+// Simplified data access for browser clients that can't speak Arrow Flight
+// directly (grpc-web limitation). The server internally resolves the data
+// source, executes the query via Flight, and returns columnar data as proto.
+//
+// For native gRPC clients (server-to-server), use Arrow Flight directly.
+// -----------------------------------------------------------------------------
+
+service WidgetDataService {
+  // Fetch data for a single widget. Returns columnar data.
+  rpc GetWidgetData(WidgetDataRequest) returns (WidgetDataResponse);
+}
+
+message WidgetDataResponse {
+  // Column-oriented data. Each column has a name, type, and values.
+  repeated DataColumn columns = 1;
+
+  // Total row count.
+  int64 total_rows = 2;
+
+  // Whether the result was truncated.
+  bool truncated = 3;
+}
+
+// A single column of data.
+message DataColumn {
+  string name = 1;
+
+  // Exactly one of these value arrays is populated, matching the column type.
+  repeated string string_values = 2;
+  repeated int64 int_values = 3;
+  repeated double double_values = 4;
+  repeated bool bool_values = 5;
+}
+
 // Encoded as the `cmd` field of a FlightDescriptor.
 message WidgetDataRequest {
   // Resource name: "dashboards/{dashboard_id}"

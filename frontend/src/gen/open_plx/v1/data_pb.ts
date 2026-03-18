@@ -2,8 +2,8 @@
 // @generated from file open_plx/v1/data.proto (package open_plx.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { ParamValue } from "./dashboard_pb";
 import { file_open_plx_v1_dashboard } from "./dashboard_pb";
 import type { Message } from "@bufbuild/protobuf";
@@ -12,7 +12,81 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file open_plx/v1/data.proto.
  */
 export const file_open_plx_v1_data: GenFile = /*@__PURE__*/
-  fileDesc("ChZvcGVuX3BseC92MS9kYXRhLnByb3RvEgtvcGVuX3BseC52MSLPAQoRV2lkZ2V0RGF0YVJlcXVlc3QSEQoJZGFzaGJvYXJkGAEgASgJEhEKCXdpZGdldF9pZBgCIAEoCRI6CgZwYXJhbXMYAyADKAsyKi5vcGVuX3BseC52MS5XaWRnZXREYXRhUmVxdWVzdC5QYXJhbXNFbnRyeRIQCghtYXhfcm93cxgEIAEoAxpGCgtQYXJhbXNFbnRyeRILCgNrZXkYASABKAkSJgoFdmFsdWUYAiABKAsyFy5vcGVuX3BseC52MS5QYXJhbVZhbHVlOgI4ASJ5ChJXaWRnZXREYXRhTWV0YWRhdGESEQoJZGFzaGJvYXJkGAEgASgJEhEKCXdpZGdldF9pZBgCIAEoCRISCgp0b3RhbF9yb3dzGAMgASgDEhEKCXRydW5jYXRlZBgEIAEoCBIWCg5kYXRhX3RpbWVzdGFtcBgFIAEoCWIGcHJvdG8z", [file_open_plx_v1_dashboard]);
+  fileDesc("ChZvcGVuX3BseC92MS9kYXRhLnByb3RvEgtvcGVuX3BseC52MSJlChJXaWRnZXREYXRhUmVzcG9uc2USKAoHY29sdW1ucxgBIAMoCzIXLm9wZW5fcGx4LnYxLkRhdGFDb2x1bW4SEgoKdG90YWxfcm93cxgCIAEoAxIRCgl0cnVuY2F0ZWQYAyABKAgicQoKRGF0YUNvbHVtbhIMCgRuYW1lGAEgASgJEhUKDXN0cmluZ192YWx1ZXMYAiADKAkSEgoKaW50X3ZhbHVlcxgDIAMoAxIVCg1kb3VibGVfdmFsdWVzGAQgAygBEhMKC2Jvb2xfdmFsdWVzGAUgAygIIs8BChFXaWRnZXREYXRhUmVxdWVzdBIRCglkYXNoYm9hcmQYASABKAkSEQoJd2lkZ2V0X2lkGAIgASgJEjoKBnBhcmFtcxgDIAMoCzIqLm9wZW5fcGx4LnYxLldpZGdldERhdGFSZXF1ZXN0LlBhcmFtc0VudHJ5EhAKCG1heF9yb3dzGAQgASgDGkYKC1BhcmFtc0VudHJ5EgsKA2tleRgBIAEoCRImCgV2YWx1ZRgCIAEoCzIXLm9wZW5fcGx4LnYxLlBhcmFtVmFsdWU6AjgBInkKEldpZGdldERhdGFNZXRhZGF0YRIRCglkYXNoYm9hcmQYASABKAkSEQoJd2lkZ2V0X2lkGAIgASgJEhIKCnRvdGFsX3Jvd3MYAyABKAMSEQoJdHJ1bmNhdGVkGAQgASgIEhYKDmRhdGFfdGltZXN0YW1wGAUgASgJMmUKEVdpZGdldERhdGFTZXJ2aWNlElAKDUdldFdpZGdldERhdGESHi5vcGVuX3BseC52MS5XaWRnZXREYXRhUmVxdWVzdBofLm9wZW5fcGx4LnYxLldpZGdldERhdGFSZXNwb25zZWIGcHJvdG8z", [file_open_plx_v1_dashboard]);
+
+/**
+ * @generated from message open_plx.v1.WidgetDataResponse
+ */
+export type WidgetDataResponse = Message<"open_plx.v1.WidgetDataResponse"> & {
+  /**
+   * Column-oriented data. Each column has a name, type, and values.
+   *
+   * @generated from field: repeated open_plx.v1.DataColumn columns = 1;
+   */
+  columns: DataColumn[];
+
+  /**
+   * Total row count.
+   *
+   * @generated from field: int64 total_rows = 2;
+   */
+  totalRows: bigint;
+
+  /**
+   * Whether the result was truncated.
+   *
+   * @generated from field: bool truncated = 3;
+   */
+  truncated: boolean;
+};
+
+/**
+ * Describes the message open_plx.v1.WidgetDataResponse.
+ * Use `create(WidgetDataResponseSchema)` to create a new message.
+ */
+export const WidgetDataResponseSchema: GenMessage<WidgetDataResponse> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_data, 0);
+
+/**
+ * A single column of data.
+ *
+ * @generated from message open_plx.v1.DataColumn
+ */
+export type DataColumn = Message<"open_plx.v1.DataColumn"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * Exactly one of these value arrays is populated, matching the column type.
+   *
+   * @generated from field: repeated string string_values = 2;
+   */
+  stringValues: string[];
+
+  /**
+   * @generated from field: repeated int64 int_values = 3;
+   */
+  intValues: bigint[];
+
+  /**
+   * @generated from field: repeated double double_values = 4;
+   */
+  doubleValues: number[];
+
+  /**
+   * @generated from field: repeated bool bool_values = 5;
+   */
+  boolValues: boolean[];
+};
+
+/**
+ * Describes the message open_plx.v1.DataColumn.
+ * Use `create(DataColumnSchema)` to create a new message.
+ */
+export const DataColumnSchema: GenMessage<DataColumn> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_data, 1);
 
 /**
  * Encoded as the `cmd` field of a FlightDescriptor.
@@ -55,7 +129,7 @@ export type WidgetDataRequest = Message<"open_plx.v1.WidgetDataRequest"> & {
  * Use `create(WidgetDataRequestSchema)` to create a new message.
  */
 export const WidgetDataRequestSchema: GenMessage<WidgetDataRequest> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_data, 0);
+  messageDesc(file_open_plx_v1_data, 2);
 
 /**
  * Metadata attached to FlightInfo for widget data responses.
@@ -100,5 +174,22 @@ export type WidgetDataMetadata = Message<"open_plx.v1.WidgetDataMetadata"> & {
  * Use `create(WidgetDataMetadataSchema)` to create a new message.
  */
 export const WidgetDataMetadataSchema: GenMessage<WidgetDataMetadata> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_data, 1);
+  messageDesc(file_open_plx_v1_data, 3);
+
+/**
+ * @generated from service open_plx.v1.WidgetDataService
+ */
+export const WidgetDataService: GenService<{
+  /**
+   * Fetch data for a single widget. Returns columnar data.
+   *
+   * @generated from rpc open_plx.v1.WidgetDataService.GetWidgetData
+   */
+  getWidgetData: {
+    methodKind: "unary";
+    input: typeof WidgetDataRequestSchema;
+    output: typeof WidgetDataResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_open_plx_v1_data, 0);
 

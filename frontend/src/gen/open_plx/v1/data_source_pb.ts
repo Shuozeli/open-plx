@@ -560,7 +560,7 @@ export const TestDataSourceResponseSchema: GenMessage<TestDataSourceResponse> = 
  *   PARAM_KIND_BOOL:        bool_value -> Boolean
  *   PARAM_KIND_DATE:        string_value (ISO 8601) -> Date32
  *   PARAM_KIND_TIMESTAMP:   string_value (ISO 8601) -> Timestamp(Microsecond)
- *   PARAM_KIND_STRING_LIST: string_list -> List<Utf8> (for IN-clause)
+ *   PARAM_KIND_STRING_LIST: string_list -> List(Utf8) (for IN-clause)
  *   PARAM_KIND_DATE_RANGE:  date_range -> two Date32 params at position and position+1
  *
  * Type mismatches are rejected with a descriptive error, not silently cast.
@@ -604,7 +604,7 @@ export enum ParamKind {
   TIMESTAMP = 6,
 
   /**
-   * Expands to Arrow List<Utf8>
+   * Expands to Arrow List(Utf8)
    *
    * @generated from enum value: PARAM_KIND_STRING_LIST = 7;
    */
