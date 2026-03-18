@@ -1,7 +1,9 @@
 import { Alert, Button, Spin, Typography } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
+import { useEffect } from "react";
 import { useDashboard } from "../hooks/useDashboard.js";
 import { DashboardGrid } from "../components/layout/DashboardGrid.js";
+import { initTestRegistry, registerDashboard, registerDashboardStatus } from "../services/testRegistry.js";
 
 interface DashboardPageProps {
   dashboardName: string;
@@ -9,6 +11,28 @@ interface DashboardPageProps {
 
 export function DashboardPage({ dashboardName }: DashboardPageProps) {
   const { dashboard, loading, error, refresh } = useDashboard(dashboardName);
+
+  // Initialize test registry on mount
+  useEffect(() => {
+    initTestRegistry();
+  }, []);
+
+  // Register dashboard state for e2e tests
+  useEffect(() => {
+    registerDashboardStatus(loading, error);
+    if (dashboard) {
+      registerDashboard({
+        name: dashboard.name,
+        title: dashboard.title,
+        widgetCount: dashboard.widgets.length,
+        grid: {
+          columns: dashboard.grid?.columns ?? 0,
+          rowHeight: dashboard.grid?.rowHeight ?? 0,
+          gap: dashboard.grid?.gap ?? 0,
+        },
+      });
+    }
+  }, [dashboard, loading, error]);
 
   if (loading) {
     return <Spin size="large" style={{ display: "block", margin: "100px auto" }} />;

@@ -1,23 +1,40 @@
 import { Card, Spin } from "antd";
+import { useEffect } from "react";
 import type { WidgetProps } from "./WidgetRegistry.js";
 import { chartProtoToG2 } from "../../services/mappers/chartMapper.js";
 import { G2Chart } from "./G2Chart.js";
+import { registerWidget } from "../../services/testRegistry.js";
+import { WidgetType } from "../../gen/open_plx/v1/dashboard_pb.js";
 
 export function LineChartWidget({ config, data, loading, error }: WidgetProps) {
+  const chartSpec = config.spec?.spec.case === "chart" ? config.spec.spec.value : null;
+  const g2Spec = chartSpec && data ? chartProtoToG2(chartSpec, data) : null;
+
+  useEffect(() => {
+    registerWidget({
+      widgetId: config.id,
+      widgetType: WidgetType[config.widgetType],
+      spec: chartSpec ? JSON.parse(JSON.stringify(chartSpec)) : {},
+      data,
+      g2Spec: g2Spec ? JSON.parse(JSON.stringify(g2Spec)) : null,
+      rendered: {
+        hasData: data !== null && data.length > 0,
+        rowCount: data?.length ?? 0,
+        chartType: g2Spec?.type ?? null,
+        encodeX: (g2Spec?.encode as Record<string, unknown>)?.x ?? null,
+        encodeY: (g2Spec?.encode as Record<string, unknown>)?.y ?? null,
+      },
+      updatedAt: Date.now(),
+    });
+  }, [config, data, chartSpec, g2Spec]);
+
   if (error) {
     return <Card title={config.title}><span>Error: {error}</span></Card>;
   }
 
-  if (loading || !data) {
+  if (loading || !data || !g2Spec) {
     return <Card title={config.title} style={{ height: "100%" }}><Spin /></Card>;
   }
-
-  const chartSpec = config.spec?.spec.case === "chart" ? config.spec.spec.value : null;
-  if (!chartSpec) {
-    return <Card title={config.title}><span>No chart spec</span></Card>;
-  }
-
-  const g2Spec = chartProtoToG2(chartSpec, data);
 
   return (
     <Card title={config.title} style={{ height: "100%" }} styles={{ body: { height: "calc(100% - 56px)", padding: 12 } }}>
