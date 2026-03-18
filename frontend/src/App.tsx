@@ -1,11 +1,26 @@
 import { ConfigProvider, Layout, Typography } from "antd";
+import { useEffect, useState } from "react";
 import { DashboardPage } from "./pages/DashboardPage.js";
 
 const { Header, Content } = Layout;
 
+function useDashboardName(): string {
+  const [name, setName] = useState(() => {
+    const hash = window.location.hash.slice(1);
+    return hash || "dashboards/demo";
+  });
+
+  useEffect(() => {
+    const handler = () => setName(window.location.hash.slice(1) || "dashboards/demo");
+    window.addEventListener("hashchange", handler);
+    return () => window.removeEventListener("hashchange", handler);
+  }, []);
+
+  return name;
+}
+
 export function App() {
-  // TODO(refactor): Add routing for dashboard list and individual dashboards.
-  const dashboardName = "dashboards/demo";
+  const dashboardName = useDashboardName();
 
   return (
     <ConfigProvider>

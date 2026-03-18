@@ -57,6 +57,12 @@ export function chartProtoToG2(
 
   // Stack mode -> transform
   const transforms = mapStackMode(proto.stackMode);
+  // Pie/donut require stackY to work with theta coordinate
+  if (proto.chartType === ChartType.PIE || proto.chartType === ChartType.DONUT) {
+    if (!transforms.some((t) => t.type === "stackY")) {
+      transforms.push({ type: "stackY" });
+    }
+  }
   if (transforms.length > 0) {
     spec.transform = transforms;
   }

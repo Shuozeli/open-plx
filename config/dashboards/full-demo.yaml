@@ -1,0 +1,123 @@
+name: dashboards/full-demo
+title: Full Widget Demo
+description: Tests all widget types and chart configurations
+
+grid:
+  columns: 24
+  row_height: 40
+  gap: 8
+
+widgets:
+  # Row 0: Three metric cards
+  - id: revenue-metric
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Revenue
+    position: { x: 0, y: 0, w: 8, h: 4 }
+    data_source:
+      data_source: dataSources/demo-static
+      params: {}
+    spec:
+      metric_card:
+        value: revenue
+        format: "currency:USD"
+
+  - id: cost-metric
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Cost
+    position: { x: 8, y: 0, w: 8, h: 4 }
+    data_source:
+      data_source: dataSources/demo-static
+      params: {}
+    spec:
+      metric_card:
+        value: cost
+        format: "compact"
+
+  - id: units-metric
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Units Sold
+    position: { x: 16, y: 0, w: 8, h: 4 }
+    data_source:
+      data_source: dataSources/demo-static
+      params: {}
+    spec:
+      metric_card:
+        value: units_sold
+        format: "number:0"
+
+  # Row 4: Line chart (full width)
+  - id: area-chart
+    widget_type: WIDGET_TYPE_LINE_CHART
+    title: Revenue Area
+    position: { x: 0, y: 4, w: 24, h: 8 }
+    data_source:
+      data_source: dataSources/demo-static
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_AREA
+        data_mapping:
+          x: quarter
+          y: revenue
+        x_axis:
+          title: Quarter
+        y_axis:
+          title: Revenue
+
+  # Row 12: Pie chart and donut chart side by side
+  - id: pie-chart
+    widget_type: WIDGET_TYPE_PIE_CHART
+    title: Revenue Distribution
+    position: { x: 0, y: 12, w: 12, h: 8 }
+    data_source:
+      data_source: dataSources/demo-static
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_PIE
+        data_mapping:
+          value: revenue
+          category: quarter
+
+  - id: donut-chart
+    widget_type: WIDGET_TYPE_PIE_CHART
+    title: Cost Distribution
+    position: { x: 12, y: 12, w: 12, h: 8 }
+    data_source:
+      data_source: dataSources/demo-static
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_DONUT
+        data_mapping:
+          value: cost
+          category: quarter
+
+  # Row 20: Text widget and horizontal bar
+  - id: summary-text
+    widget_type: WIDGET_TYPE_TEXT
+    title: Summary
+    position: { x: 0, y: 20, w: 8, h: 4 }
+    data_source:
+      data_source: dataSources/demo-static
+      params: {}
+    spec:
+      text:
+        content: "Q4 revenue exceeded target by 5%."
+        format: plain
+
+  - id: horizontal-bar
+    widget_type: WIDGET_TYPE_BAR_CHART
+    title: Horizontal Cost
+    position: { x: 8, y: 20, w: 16, h: 4 }
+    data_source:
+      data_source: dataSources/demo-static
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_HORIZONTAL_BAR
+        data_mapping:
+          x: quarter
+          y: cost
+        y_axis:
+          title: Cost
