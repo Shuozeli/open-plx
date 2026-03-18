@@ -17,13 +17,14 @@ license = "MIT"
 tokio = { version = "1", features = ["full"] }
 
 # gRPC
-tonic = "0.13"
-tonic-web = "0.13"
-prost = "0.13"
-prost-types = "0.13"
+tonic = "0.14"
+tonic-web = "0.14"
+prost = "0.14"
+prost-types = "0.14"
 
 # gRPC build
-tonic-build = "0.13"
+tonic-build = "0.14"
+tonic-prost-build = "0.14"
 
 # Serialization
 serde = { version = "1", features = ["derive"] }

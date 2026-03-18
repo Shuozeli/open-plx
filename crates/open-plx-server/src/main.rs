@@ -30,6 +30,8 @@ async fn main() -> Result<()> {
         services::dashboard::DashboardServiceImpl::new(app_state.clone());
     let data_source_service =
         services::data_source::DataSourceServiceImpl::new(app_state.clone());
+    let flight_service =
+        services::flight::FlightServiceImpl::new(app_state.clone());
 
     tracing::info!("listening on {}", bind_addr);
 
@@ -50,6 +52,11 @@ async fn main() -> Result<()> {
         .add_service(
             open_plx_core::pb::data_source_service_server::DataSourceServiceServer::new(
                 data_source_service,
+            ),
+        )
+        .add_service(
+            arrow_flight::flight_service_server::FlightServiceServer::new(
+                flight_service,
             ),
         )
         .serve(bind_addr)
