@@ -24,6 +24,7 @@ async fn main() -> Result<()> {
         .expect("bind_addr must be a valid socket address");
 
     let app_state = Arc::new(state::AppState::from_config(loader)?);
+    tracing::info!("{} permission rules loaded", app_state.permission_count());
 
     let dashboard_service =
         services::dashboard::DashboardServiceImpl::new(app_state.clone());

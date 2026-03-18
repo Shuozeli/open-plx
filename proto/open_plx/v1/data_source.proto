@@ -177,7 +177,7 @@ message QueryParam {
 //   PARAM_KIND_BOOL:        bool_value -> Boolean
 //   PARAM_KIND_DATE:        string_value (ISO 8601) -> Date32
 //   PARAM_KIND_TIMESTAMP:   string_value (ISO 8601) -> Timestamp(Microsecond)
-//   PARAM_KIND_STRING_LIST: string_list -> List<Utf8> (for IN-clause)
+//   PARAM_KIND_STRING_LIST: string_list -> List(Utf8) (for IN-clause)
 //   PARAM_KIND_DATE_RANGE:  date_range -> two Date32 params at position and position+1
 //
 // Type mismatches are rejected with a descriptive error, not silently cast.
@@ -189,7 +189,7 @@ enum ParamKind {
   PARAM_KIND_BOOL = 4;
   PARAM_KIND_DATE = 5;
   PARAM_KIND_TIMESTAMP = 6;
-  PARAM_KIND_STRING_LIST = 7;     // Expands to Arrow List<Utf8>
+  PARAM_KIND_STRING_LIST = 7;     // Expands to Arrow List(Utf8)
   PARAM_KIND_DATE_RANGE = 8;     // Expands to two Date32 params (position, position+1)
 }
 

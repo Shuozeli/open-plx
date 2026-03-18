@@ -7,7 +7,14 @@ use std::collections::HashMap;
 pub struct AppState {
     pub dashboards: HashMap<String, DashboardFile>,
     pub data_sources: HashMap<String, DataSourceFile>,
-    pub permissions: PermissionsFile,
+    permissions: PermissionsFile,
+}
+
+impl AppState {
+    /// Number of permission rules loaded (for debug logging).
+    pub fn permission_count(&self) -> usize {
+        self.permissions.permissions.len()
+    }
 }
 
 impl AppState {

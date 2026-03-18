@@ -13,14 +13,14 @@ pub struct Principal {
 /// Plugin trait for authentication. Deployments implement this to
 /// integrate with their identity provider.
 pub trait AuthProvider: Send + Sync {
-    fn authenticate(&self, request: &Request<()>) -> Result<Principal, Status>;
+    fn authenticate(&self, request: &Request<()>) -> Result<Principal, Box<Status>>;
 }
 
 /// Dev mode: accepts all requests with a hardcoded principal.
 pub struct DevAuth;
 
 impl AuthProvider for DevAuth {
-    fn authenticate(&self, _request: &Request<()>) -> Result<Principal, Status> {
+    fn authenticate(&self, _request: &Request<()>) -> Result<Principal, Box<Status>> {
         Ok(Principal {
             id: Uuid::nil(),
             email: "dev@localhost".to_string(),
