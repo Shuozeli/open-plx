@@ -15,11 +15,11 @@ export function DashboardPage({ dashboardName }: DashboardPageProps) {
   }
 
   if (error) {
-    return <Alert type="error" message="Failed to load dashboard" description={error} />;
+    return <Alert type="error" title="Failed to load dashboard" description={error} />;
   }
 
   if (!dashboard) {
-    return <Alert type="warning" message="Dashboard not found" />;
+    return <Alert type="warning" title="Dashboard not found" />;
   }
 
   return (

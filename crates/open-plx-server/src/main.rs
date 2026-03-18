@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use tonic::transport::Server;
 use tonic_web::GrpcWebLayer;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
 
@@ -41,8 +42,15 @@ async fn main() -> Result<()> {
         .register_encoded_file_descriptor_set(open_plx_core::FILE_DESCRIPTOR_SET)
         .build_v1()?;
 
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_headers(Any)
+        .allow_methods(Any)
+        .expose_headers(Any);
+
     Server::builder()
         .accept_http1(true)
+        .layer(cors)
         .layer(GrpcWebLayer::new())
         .layer(TraceLayer::new_for_grpc())
         .add_service(reflection)
