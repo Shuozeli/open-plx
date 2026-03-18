@@ -1,0 +1,19 @@
+name: dataSources/demo-static
+display_name: Demo Static Data
+description: Hardcoded data for testing
+
+config:
+  type: static
+  columns:
+    - name: quarter
+      arrow_type: utf8
+      values: ["Q1", "Q2", "Q3", "Q4"]
+    - name: revenue
+      arrow_type: float64
+      values: [1200000, 1500000, 1800000, 2100000]
+    - name: cost
+      arrow_type: float64
+      values: [800000, 900000, 1000000, 1100000]
+    - name: units_sold
+      arrow_type: int64
+      values: [12000, 15000, 18000, 21000]

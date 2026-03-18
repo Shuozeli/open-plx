@@ -1,0 +1,16 @@
+groups:
+  - name: engineering
+    description: Engineering team
+    members:
+      - dev@localhost
+
+permissions:
+  - resource: "dashboards/*"
+    principal_type: group
+    principal: engineering
+    role: viewer
+
+  - resource: "dataSources/*"
+    principal_type: group
+    principal: engineering
+    role: reader

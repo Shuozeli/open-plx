@@ -1,0 +1,8 @@
+[submodule "vendor/G2"]
+	path = vendor/G2
+	url = https://github.com/antvis/G2.git
+	branch = v5
+[submodule "vendor/S2"]
+	path = vendor/S2
+	url = https://github.com/antvis/S2.git
+	branch = next

@@ -1,0 +1,279 @@
+syntax = "proto3";
+
+package open_plx.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+// -----------------------------------------------------------------------------
+// DataSource Service
+//
+// Manages data source registrations. A data source is a named reference to
+// an external data provider that speaks Arrow Flight SQL.
+//
+// open-plx does NOT connect directly to databases. All data access goes
+// through Arrow Flight SQL, which provides:
+//   - No SQL injection surface (queries use prepared statements via Flight SQL)
+//   - No database credentials in open-plx (auth is per-Flight endpoint)
+//   - Columnar Arrow data natively (no row-to-column conversion)
+//   - Standard protocol (any Flight SQL server works)
+//
+// Data flow:
+//   Widget -> DataSourceRef -> DataSource -> Flight SQL endpoint -> Arrow RecordBatches
+//
+// Data source configs are admin-only and never exposed to the frontend.
+// -----------------------------------------------------------------------------
+
+service DataSourceService {
+  rpc ListDataSources(ListDataSourcesRequest) returns (ListDataSourcesResponse);
+  rpc GetDataSource(GetDataSourceRequest) returns (DataSource);
+  rpc CreateDataSource(CreateDataSourceRequest) returns (DataSource);
+  rpc UpdateDataSource(UpdateDataSourceRequest) returns (DataSource);
+  rpc DeleteDataSource(DeleteDataSourceRequest) returns (DeleteDataSourceResponse);
+
+  // Test a data source connection without saving it.
+  rpc TestDataSource(TestDataSourceRequest) returns (TestDataSourceResponse);
+}
+
+// -----------------------------------------------------------------------------
+// Messages
+// -----------------------------------------------------------------------------
+
+message DataSource {
+  // Resource name: "dataSources/{data_source_id}"
+  string name = 1;
+
+  // Human-readable display name.
+  string display_name = 2;
+
+  string description = 3;
+
+  // Type-specific configuration.
+  oneof config {
+    FlightSqlConfig flight_sql = 4;
+    StaticConfig static_data = 5;
+  }
+
+  // Read-only.
+  google.protobuf.Timestamp create_time = 6;
+  google.protobuf.Timestamp update_time = 7;
+}
+
+// =============================================================================
+// FlightSqlConfig
+//
+// Arrow Flight SQL is the primary (and only) data protocol. open-plx
+// connects to a Flight SQL server as a client, executes prepared
+// statements, and receives Arrow RecordBatches directly.
+//
+// The Flight SQL server owns:
+//   - Database connections and connection pooling
+//   - Query validation and authorization
+//   - SQL dialect and query optimization
+//
+// open-plx owns:
+//   - Which Flight SQL endpoint to talk to
+//   - Which prepared statement / query to execute
+//   - Parameter substitution (via Flight SQL parameter binding)
+//   - Result caching and streaming to the frontend
+//
+// Compatible servers: Dremio, Databricks, DuckDB, InfluxDB,
+// Apache Arrow Flight SQL reference implementation, or any custom
+// Flight SQL server.
+// =============================================================================
+
+message FlightSqlConfig {
+  // Flight SQL server endpoint.
+  // Example: "grpc://analytics.internal:8815"
+  // Example: "grpc+tls://flight.databricks.com:443"
+  string endpoint = 1;
+
+  // Authentication for the Flight SQL server.
+  FlightAuth auth = 2;
+
+  // The SQL query or prepared statement to execute.
+  // Parameters use $1, $2, ... (Flight SQL standard positional params).
+  // open-plx substitutes widget params into these positions.
+  //
+  // Example: "SELECT month, region, SUM(revenue) as revenue
+  //           FROM sales WHERE year = $1
+  //           GROUP BY month, region ORDER BY month"
+  string query = 3;
+
+  // Parameter declarations. Maps widget param names to positional
+  // Flight SQL parameters. This defines the order and type of params
+  // passed to the prepared statement.
+  repeated QueryParam params = 4;
+
+  // Optional: Flight SQL server headers (e.g., catalog, schema selection).
+  map<string, string> headers = 5;
+
+  // Query timeout in seconds. 0 = use server default.
+  int32 query_timeout_seconds = 6;
+}
+
+message FlightAuth {
+  oneof method {
+    // Bearer token (e.g., Databricks personal access token).
+    // Format: "secret:{name}" for secret manager lookup.
+    string bearer_token_secret = 1;
+
+    // Username/password (Flight SQL basic auth).
+    BasicAuth basic_auth = 2;
+
+    // mTLS: client certificate paths.
+    MtlsAuth mtls = 3;
+
+    // No auth (for local/dev Flight SQL servers).
+    NoAuth no_auth = 4;
+  }
+}
+
+message BasicAuth {
+  // Secret references: "secret:{name}"
+  string username_secret = 1;
+  string password_secret = 2;
+}
+
+message MtlsAuth {
+  string client_cert_path = 1;
+  string client_key_path = 2;
+  string ca_cert_path = 3;
+}
+
+message NoAuth {}
+
+// Parameter declaration for a data source query. Maps widget param names
+// to positional Flight SQL parameters with type information.
+message QueryParam {
+  // Widget param name (matches key in DataSourceRef.params).
+  string name = 1;
+
+  // Positional index in the SQL query ($1, $2, ...). 1-indexed.
+  //
+  // For DATE_RANGE params, this is the position of the START value.
+  // The END value occupies position + 1. The query must use both:
+  //   "WHERE date BETWEEN $1 AND $2"
+  //   params { name: "date_range"  position: 1  param_kind: PARAM_KIND_DATE_RANGE }
+  // This binds start -> $1, end -> $2.
+  int32 position = 2;
+
+  // Determines the Arrow type used for Flight SQL parameter binding
+  // and how ParamValue is coerced.
+  ParamKind param_kind = 3;
+
+  // Whether this param must be provided by the widget.
+  bool required = 4;
+
+  // Default value if not provided (and not required).
+  // Must match the param_kind type.
+  string default_value = 5;
+}
+
+// Coercion rules from ParamValue -> Flight SQL binding:
+//   PARAM_KIND_STRING:      string_value -> Utf8
+//   PARAM_KIND_INT:         int_value -> Int64
+//   PARAM_KIND_FLOAT:       double_value -> Float64
+//   PARAM_KIND_BOOL:        bool_value -> Boolean
+//   PARAM_KIND_DATE:        string_value (ISO 8601) -> Date32
+//   PARAM_KIND_TIMESTAMP:   string_value (ISO 8601) -> Timestamp(Microsecond)
+//   PARAM_KIND_STRING_LIST: string_list -> List<Utf8> (for IN-clause)
+//   PARAM_KIND_DATE_RANGE:  date_range -> two Date32 params at position and position+1
+//
+// Type mismatches are rejected with a descriptive error, not silently cast.
+enum ParamKind {
+  PARAM_KIND_UNSPECIFIED = 0;
+  PARAM_KIND_STRING = 1;
+  PARAM_KIND_INT = 2;
+  PARAM_KIND_FLOAT = 3;
+  PARAM_KIND_BOOL = 4;
+  PARAM_KIND_DATE = 5;
+  PARAM_KIND_TIMESTAMP = 6;
+  PARAM_KIND_STRING_LIST = 7;     // Expands to Arrow List<Utf8>
+  PARAM_KIND_DATE_RANGE = 8;     // Expands to two Date32 params (position, position+1)
+}
+
+// =============================================================================
+// StaticConfig
+//
+// Hardcoded data for testing, reference values, and dark launch validation.
+// No external connection needed.
+// =============================================================================
+
+message StaticConfig {
+  repeated StaticColumn columns = 1;
+}
+
+message StaticColumn {
+  string name = 1;
+  ArrowType arrow_type = 2;
+
+  // Values (one of these should be set, matching arrow_type).
+  repeated string string_values = 3;
+  repeated int64 int_values = 4;
+  repeated double float_values = 5;
+  repeated bool bool_values = 6;
+}
+
+// Arrow data types for static column definitions.
+enum ArrowType {
+  ARROW_TYPE_UNSPECIFIED = 0;
+  ARROW_TYPE_UTF8 = 1;
+  ARROW_TYPE_INT64 = 2;
+  ARROW_TYPE_FLOAT64 = 3;
+  ARROW_TYPE_BOOLEAN = 4;
+  ARROW_TYPE_DATE32 = 5;
+  ARROW_TYPE_TIMESTAMP_MICROS = 6;
+}
+
+// --- List ---
+
+message ListDataSourcesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListDataSourcesResponse {
+  repeated DataSource data_sources = 1;
+  string next_page_token = 2;
+  int32 total_size = 3;
+}
+
+// --- Get ---
+
+message GetDataSourceRequest {
+  string name = 1;
+}
+
+// --- Create ---
+
+message CreateDataSourceRequest {
+  DataSource data_source = 1;
+}
+
+// --- Update ---
+
+message UpdateDataSourceRequest {
+  DataSource data_source = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+// --- Delete ---
+
+message DeleteDataSourceRequest {
+  string name = 1;
+}
+
+message DeleteDataSourceResponse {}
+
+// --- Test ---
+
+message TestDataSourceRequest {
+  DataSource data_source = 1;
+}
+
+message TestDataSourceResponse {
+  bool success = 1;
+  string error_message = 2;
+  int64 row_count = 3;
+}

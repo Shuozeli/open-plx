@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package open_plx.v1;
+
+import "open_plx/v1/dashboard.proto";
+
+// -----------------------------------------------------------------------------
+// Data Service (Arrow Flight)
+//
+// Widget data is served via Arrow Flight. The frontend requests data for a
+// specific widget by providing a FlightDescriptor containing the dashboard ID,
+// widget ID, and optional parameters. The server resolves the data source,
+// checks data-level permissions, executes the query, and streams back Arrow
+// RecordBatches.
+//
+// This service extends the standard Arrow Flight protocol with open-plx
+// specific ticket/descriptor semantics. The actual Arrow Flight service
+// definition comes from the `arrow.flight.protocol` package -- this file
+// documents how open-plx uses it.
+//
+// Flight Descriptor Format:
+//   cmd = WidgetDataRequest (serialized protobuf)
+//
+// FlightInfo.schema:
+//   Arrow schema describing the columns returned by the data source.
+//
+// Ticket:
+//   Opaque token returned in FlightInfo, used to fetch the actual data
+//   stream via DoGet.
+//
+// Data Flow:
+//   1. Client calls GetFlightInfo(FlightDescriptor{ cmd: WidgetDataRequest })
+//   2. Server checks data permission for the widget's data source
+//   3. Server returns FlightInfo with schema + ticket
+//   4. Client calls DoGet(ticket)
+//   5. Server streams Arrow RecordBatches
+//
+// For batch fetching multiple widgets:
+//   Client calls ListFlights(Criteria{ dashboard_id }) to get FlightInfo
+//   for all widgets in a dashboard, then calls DoGet per widget.
+// -----------------------------------------------------------------------------
+
+// Encoded as the `cmd` field of a FlightDescriptor.
+message WidgetDataRequest {
+  // Resource name: "dashboards/{dashboard_id}"
+  string dashboard = 1;
+
+  // Widget ID within the dashboard.
+  string widget_id = 2;
+
+  // Optional parameters (overrides widget's default data_source.params).
+  // Uses the same typed ParamValue as DataSourceRef.params.
+  map<string, ParamValue> params = 3;
+
+  // Optional. Maximum number of rows to return. 0 = no limit.
+  int64 max_rows = 4;
+}
+
+// Metadata attached to FlightInfo for widget data responses.
+message WidgetDataMetadata {
+  string dashboard = 1;
+  string widget_id = 2;
+
+  // Total row count (may differ from returned rows if max_rows was set).
+  int64 total_rows = 3;
+
+  // Whether the result was truncated.
+  bool truncated = 4;
+
+  // ISO 8601 timestamp of when the data was generated/cached.
+  string data_timestamp = 5;
+}

@@ -1,0 +1,353 @@
+syntax = "proto3";
+
+package open_plx.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+import "open_plx/v1/widget_spec.proto";
+
+// -----------------------------------------------------------------------------
+// Dashboard Service
+//
+// Manages dashboard layout configurations. Layouts are the declarative
+// descriptions of what widgets appear, where they are positioned, and which
+// data sources they reference. Layout responses never contain data -- data
+// is fetched separately via the DataService (Arrow Flight).
+// -----------------------------------------------------------------------------
+
+service DashboardService {
+  // Lists dashboards visible to the caller (layout permission filtered).
+  rpc ListDashboards(ListDashboardsRequest) returns (ListDashboardsResponse);
+
+  // Gets a single dashboard layout. Returns NOT_FOUND if the caller lacks
+  // layout permission (dashboard is invisible).
+  rpc GetDashboard(GetDashboardRequest) returns (Dashboard);
+
+  // Creates a new dashboard.
+  rpc CreateDashboard(CreateDashboardRequest) returns (Dashboard);
+
+  // Updates an existing dashboard. Uses field mask for partial updates.
+  rpc UpdateDashboard(UpdateDashboardRequest) returns (Dashboard);
+
+  // Soft-deletes a dashboard.
+  rpc DeleteDashboard(DeleteDashboardRequest) returns (DeleteDashboardResponse);
+
+
+}
+
+// -----------------------------------------------------------------------------
+// Messages
+// -----------------------------------------------------------------------------
+
+message Dashboard {
+  // Resource name: "dashboards/{dashboard_id}"
+  string name = 1;
+
+  string title = 2;
+  string description = 3;
+
+  GridConfig grid = 4;
+  repeated WidgetConfig widgets = 5;
+
+  // Dashboard-level variables that widgets can reference in their
+  // data_source.params via "${variable_name}" syntax. Enables shared
+  // filters (e.g., a date range picker that affects all widgets).
+  repeated DashboardVariable variables = 9;
+
+  // Permission denied behavior for widgets whose data access is denied.
+  PermissionDeniedBehavior permission_denied_behavior = 10;
+
+  // Read-only.
+  google.protobuf.Timestamp create_time = 6;
+  google.protobuf.Timestamp update_time = 7;
+
+  // Monotonically increasing version for optimistic concurrency.
+  int64 version = 8;
+}
+
+// Grid layout configuration. Defines the coordinate system for widget
+// positioning.
+message GridConfig {
+  // Number of columns in the grid. Default: 24 (matches most grid systems).
+  int32 columns = 1;
+
+  // Height of each row unit in pixels. Default: 40.
+  int32 row_height = 2;
+
+  // Gap between widgets in pixels. Default: 8.
+  int32 gap = 3;
+}
+
+// Configuration for a single widget within a dashboard. This is the
+// declarative unit -- it says WHAT to render and WHERE, not HOW.
+message WidgetConfig {
+  // Widget ID, unique within the dashboard.
+  string id = 1;
+
+  // Widget type. Maps to a frontend renderer.
+  WidgetType widget_type = 2;
+
+  // Display title shown in the widget header.
+  string title = 3;
+
+  // Position and size within the grid.
+  GridPosition position = 4;
+
+  // Reference to the data source that feeds this widget.
+  DataSourceRef data_source = 5;
+
+  // Type-specific rendering specification. Typed proto messages for each
+  // widget type. See docs/declarative-layout.md and widget_spec.proto.
+  WidgetSpec spec = 6;
+}
+
+enum WidgetType {
+  WIDGET_TYPE_UNSPECIFIED = 0;
+  WIDGET_TYPE_LINE_CHART = 1;
+  WIDGET_TYPE_BAR_CHART = 2;
+  WIDGET_TYPE_PIE_CHART = 3;
+  WIDGET_TYPE_PIVOT_TABLE = 4;
+  WIDGET_TYPE_METRIC_CARD = 5;
+  WIDGET_TYPE_TEXT = 6;
+}
+
+// Position of a widget within the grid coordinate system.
+message GridPosition {
+  // Column start (0-indexed).
+  int32 x = 1;
+  // Row start (0-indexed).
+  int32 y = 2;
+  // Column span.
+  int32 w = 3;
+  // Row span.
+  int32 h = 4;
+}
+
+// Reference from a widget to a data source. The widget never knows how data
+// is fetched -- it only knows the source ID and parameters to pass.
+message DataSourceRef {
+  // Data source resource name: "dataSources/{data_source_id}"
+  string data_source = 1;
+
+  // Parameters passed to the data source query.
+  // Keys are param names matching FlightSqlParam.name in the data source config.
+  // Values are typed to match the expected Arrow type of the param.
+  //
+  // Values can reference dashboard variables via "${variable_name}" syntax.
+  // The backend resolves variable references before type coercion.
+  //
+  // Type coercion rules (ParamValue -> FlightSqlParam.arrow_type):
+  //   string_value  -> ARROW_TYPE_UTF8: direct passthrough
+  //   int_value     -> ARROW_TYPE_INT64: direct passthrough
+  //   double_value  -> ARROW_TYPE_FLOAT64: direct passthrough
+  //   bool_value    -> ARROW_TYPE_BOOLEAN: direct passthrough
+  //   string_value  -> ARROW_TYPE_DATE32: parse ISO 8601 date
+  //   string_value  -> ARROW_TYPE_TIMESTAMP_MICROS: parse ISO 8601 timestamp
+  //   string_list   -> generates IN-clause binding (driver-dependent)
+  //   date_range    -> expands to two positional params (start, end)
+  //
+  // Mismatched types (e.g., string_value for an INT64 param) are rejected
+  // at query time with a descriptive error, not silently cast.
+  map<string, ParamValue> params = 2;
+}
+
+// A typed parameter value. Ensures the value matches the expected Arrow
+// type of the data source param at the proto level, not as a runtime
+// string parse.
+message ParamValue {
+  oneof value {
+    string string_value = 1;
+    int64 int_value = 2;
+    double double_value = 3;
+    bool bool_value = 4;
+
+    // Variable reference: "${variable_name}"
+    // Resolved by the backend before query execution.
+    string variable_ref = 5;
+
+    // Multi-value (from MULTI_SELECT variables).
+    // Expands to an Arrow list parameter for IN-clause binding.
+    StringList string_list = 6;
+
+    // Date range (from DATE_RANGE variables).
+    // Expands to two positional params: start and end.
+    // The data source must declare two consecutive FlightSqlParam positions
+    // for a single date_range param.
+    DateRange date_range = 7;
+  }
+}
+
+message StringList {
+  repeated string values = 1;
+}
+
+message DateRange {
+  // ISO 8601 dates or timestamps.
+  string start = 1;
+  string end = 2;
+}
+
+// Dashboard-level variable. Widgets reference these in data_source.params
+// via "${variable_name}" syntax. The frontend renders Antd input controls
+// based on the variable type.
+message DashboardVariable {
+  string name = 1;                       // Variable name (e.g., "selected_region")
+  string label = 2;                      // Display label (e.g., "Region")
+
+  // Default value, typed to match the control output.
+  ParamValue default_value = 3;
+
+  // Control type determines which Antd component the frontend renders.
+  oneof control {
+    TextInputControl text_input = 4;          // Antd Input
+    NumberInputControl number_input = 5;      // Antd InputNumber
+    SelectControl select = 6;                 // Antd Select
+    MultiSelectControl multi_select = 7;      // Antd Select mode="multiple"
+    DatePickerControl date_picker = 8;        // Antd DatePicker
+    DateRangeControl date_range = 9;          // Antd DatePicker.RangePicker
+    CascaderControl cascader = 10;            // Antd Cascader
+  }
+}
+
+message TextInputControl {
+  string placeholder = 1;
+  int32 max_length = 2;                  // 0 = no limit
+}
+
+message NumberInputControl {
+  optional double min = 1;
+  optional double max = 2;
+  optional double step = 3;             // Default: 1
+  string placeholder = 4;
+}
+
+message SelectControl {
+  repeated SelectOption options = 1;
+  bool allow_clear = 2;                 // Show clear button
+  bool show_search = 3;                 // Enable search/filter
+  string placeholder = 4;
+
+  // Optional: load options from a data source query instead of static list.
+  DataSourceRef options_source = 5;
+  string value_field = 6;               // Column name for option value
+  string label_field = 7;               // Column name for option label
+}
+
+message MultiSelectControl {
+  repeated SelectOption options = 1;
+  int32 max_selections = 2;             // 0 = unlimited
+  string placeholder = 3;
+
+  // Optional: load options from a data source query.
+  DataSourceRef options_source = 4;
+  string value_field = 5;
+  string label_field = 6;
+}
+
+message DatePickerControl {
+  string min_date = 1;                   // ISO 8601 date
+  string max_date = 2;                   // ISO 8601 date
+  DateGranularity granularity = 3;       // Day, week, month, quarter, year
+}
+
+message DateRangeControl {
+  string min_date = 1;
+  string max_date = 2;
+  DateGranularity granularity = 3;
+
+  // Preset ranges (e.g., "Last 7 days", "This month").
+  repeated DateRangePreset presets = 4;
+}
+
+message CascaderControl {
+  // Cascading options (e.g., Country -> State -> City).
+  repeated CascaderOption options = 1;
+  string placeholder = 2;
+}
+
+message SelectOption {
+  string value = 1;
+  string label = 2;
+}
+
+message CascaderOption {
+  string value = 1;
+  string label = 2;
+  repeated CascaderOption children = 3;
+}
+
+message DateRangePreset {
+  string label = 1;                      // e.g., "Last 7 days"
+  string start = 2;                      // Relative: "-7d", "-1m", "-1y" or ISO date
+  string end = 3;                        // Relative: "now", "-1d" or ISO date
+}
+
+enum DateGranularity {
+  DATE_GRANULARITY_UNSPECIFIED = 0;
+  DATE_GRANULARITY_DAY = 1;
+  DATE_GRANULARITY_WEEK = 2;
+  DATE_GRANULARITY_MONTH = 3;
+  DATE_GRANULARITY_QUARTER = 4;
+  DATE_GRANULARITY_YEAR = 5;
+}
+
+// Controls what the frontend shows when a widget's data access is denied.
+enum PermissionDeniedBehavior {
+  // Show the widget shell with an "Access Denied" message.
+  // User knows the widget exists but cannot see its data.
+  PERMISSION_DENIED_BEHAVIOR_UNSPECIFIED = 0;
+
+  // Show "Access Denied" with widget title visible (default).
+  PERMISSION_DENIED_BEHAVIOR_SHOW_DENIED = 1;
+
+  // Hide the widget entirely. The user doesn't know it exists.
+  PERMISSION_DENIED_BEHAVIOR_HIDE = 2;
+}
+
+// --- List ---
+
+message ListDashboardsRequest {
+  // Maximum number of dashboards to return. Default: 50, max: 200.
+  int32 page_size = 1;
+
+  // Pagination token from a previous ListDashboards response.
+  string page_token = 2;
+}
+
+message ListDashboardsResponse {
+  repeated Dashboard dashboards = 1;
+  string next_page_token = 2;
+  int32 total_size = 3;
+}
+
+// --- Get ---
+
+message GetDashboardRequest {
+  // Resource name: "dashboards/{dashboard_id}"
+  string name = 1;
+}
+
+// --- Create ---
+
+message CreateDashboardRequest {
+  Dashboard dashboard = 1;
+}
+
+// --- Update ---
+
+message UpdateDashboardRequest {
+  Dashboard dashboard = 1;
+
+  // Fields to update. If empty, all mutable fields are updated.
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+// --- Delete ---
+
+message DeleteDashboardRequest {
+  // Resource name: "dashboards/{dashboard_id}"
+  string name = 1;
+}
+
+message DeleteDashboardResponse {}
+

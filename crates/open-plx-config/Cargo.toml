@@ -1,0 +1,18 @@
+[package]
+name = "open-plx-config"
+description = "File-based configuration loader for open-plx"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dev-dependencies]
+tempfile = "3"
+
+[dependencies]
+open-plx-core = { path = "../open-plx-core" }
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+anyhow.workspace = true

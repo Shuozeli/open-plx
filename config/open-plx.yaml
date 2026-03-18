@@ -1,0 +1,7 @@
+bind_addr: "0.0.0.0:50051"
+dashboards_dir: "config/dashboards"
+data_sources_dir: "config/data_sources"
+permissions_file: "config/permissions.yaml"
+
+auth:
+  provider: dev

@@ -1,0 +1,499 @@
+syntax = "proto3";
+
+package open_plx.v1;
+
+// -----------------------------------------------------------------------------
+// Widget Spec Definitions
+//
+// SEMANTIC dashboard spec -- NOT a G2/S2 config serialization format.
+//
+// These protos describe WHAT to visualize in domain terms (time series,
+// comparison, distribution, pivot table). The frontend's translation layer
+// converts these to the rendering library's native config (currently G2/S2).
+//
+// This decoupling means:
+//   - Upgrading G2 v5 -> v6 only changes the frontend translator, not the proto
+//   - Switching to a different chart library is a frontend-only change
+//   - Dashboard authors think in data terms, not library terms
+//
+// Design principles:
+//   - No functions/callbacks (not serializable over gRPC)
+//   - No visual styling (colors, fonts, opacity -- frontend theme owns these)
+//   - No interaction config (hover, click, brush -- frontend owns these)
+//   - No container dimensions (derived from grid position at render time)
+//   - Format strings instead of formatter functions
+//   - Semantic vocabulary: "time_series", "comparison", not "line", "interval"
+//
+// The frontend merges these specs with theme defaults and translates to G2/S2.
+// -----------------------------------------------------------------------------
+
+// Top-level spec: one of the widget type specs.
+message WidgetSpec {
+  oneof spec {
+    ChartSpec chart = 1;
+    PivotTableSpec pivot_table = 2;
+    MetricCardSpec metric_card = 3;
+    TextSpec text = 4;
+  }
+}
+
+// =============================================================================
+// CHART SPEC
+//
+// Semantic chart description. The frontend translates to G2 v5 marks.
+//
+// Translation examples:
+//   ChartType CHART_TYPE_LINE         -> G2 mark "line"
+//   ChartType CHART_TYPE_BAR          -> G2 mark "interval"
+//   ChartType CHART_TYPE_PIE          -> G2 mark "interval" + theta coordinate
+//   ChartType CHART_TYPE_SCATTER      -> G2 mark "point"
+//   ChartType CHART_TYPE_HEATMAP      -> G2 mark "cell"
+//   ChartType CHART_TYPE_AREA         -> G2 mark "area"
+//   StackMode STACK_MODE_STACKED      -> G2 transform "stackY"
+//   StackMode STACK_MODE_GROUPED      -> G2 transform "dodgeX"
+//   StackMode STACK_MODE_PERCENT      -> G2 transform "normalizeY"
+// =============================================================================
+
+message ChartSpec {
+  // What kind of chart to render.
+  ChartType chart_type = 1;
+
+  // Data mapping: which Arrow columns map to which visual roles.
+  ChartDataMapping data_mapping = 2;
+
+  // How to handle multiple series (stacked, grouped, etc.).
+  StackMode stack_mode = 3;
+
+  // Axis configuration.
+  AxisConfig x_axis = 4;
+  AxisConfig y_axis = 5;
+
+  // Coordinate system overrides (for pie/donut/radar).
+  CoordinateConfig coordinate = 6;
+
+  // Data labels.
+  repeated LabelConfig labels = 7;
+
+  // Reference lines and bands.
+  repeated Annotation annotations = 8;
+
+  // Scale overrides per channel.
+  map<string, ScaleConfig> scales = 9;
+
+  // Data transforms (sorting, sampling, binning).
+  repeated DataTransform transforms = 10;
+
+  // For composite/layered charts: multiple chart specs overlaid.
+  repeated ChartSpec layers = 11;
+
+  // Sort the data before rendering.
+  SortConfig sort = 12;
+
+  // Line interpolation shape (for LINE and AREA chart types).
+  LineShape line_shape = 13;
+}
+
+// Semantic chart types. The frontend maps these to rendering library marks.
+enum ChartType {
+  CHART_TYPE_UNSPECIFIED = 0;
+  CHART_TYPE_LINE = 1;           // Time series, trends
+  CHART_TYPE_BAR = 2;            // Comparisons (vertical bars)
+  CHART_TYPE_HORIZONTAL_BAR = 3; // Comparisons (horizontal bars)
+  CHART_TYPE_PIE = 4;            // Proportions (full circle)
+  CHART_TYPE_DONUT = 5;          // Proportions (ring)
+  CHART_TYPE_AREA = 6;           // Filled time series
+  CHART_TYPE_SCATTER = 7;        // Correlation, distribution
+  CHART_TYPE_HEATMAP = 8;        // Matrix density
+  CHART_TYPE_HISTOGRAM = 9;      // Distribution
+  CHART_TYPE_RADAR = 10;         // Multi-dimensional comparison
+}
+
+// Maps data columns to visual roles (semantic, not library-specific).
+message ChartDataMapping {
+  // Primary dimension (usually x-axis).
+  string x = 1;
+
+  // Primary measure (usually y-axis).
+  string y = 2;
+
+  // Grouping / color split dimension.
+  string group_by = 3;
+
+  // Size channel (for bubble/scatter).
+  string size = 4;
+
+  // Value channel (for pie/donut: the slice size).
+  string value = 5;
+
+  // Category channel (for pie/donut: the slice label).
+  string category = 6;
+
+  // Text content (for annotation marks).
+  string text = 7;
+}
+
+// How multiple series are stacked.
+enum StackMode {
+  STACK_MODE_UNSPECIFIED = 0;     // No stacking (default)
+  STACK_MODE_STACKED = 1;        // Values stacked on top of each other
+  STACK_MODE_GROUPED = 2;        // Side-by-side grouping
+  STACK_MODE_PERCENT = 3;        // Normalized to 100%
+}
+
+// Line interpolation shape. Used by LINE and AREA chart types.
+enum LineShape {
+  LINE_SHAPE_UNSPECIFIED = 0;     // Default: linear
+  LINE_SHAPE_LINEAR = 1;          // Straight line segments
+  LINE_SHAPE_SMOOTH = 2;          // Curved interpolation
+  LINE_SHAPE_STEP = 3;            // Step after point (vertical then horizontal)
+  LINE_SHAPE_STEP_BEFORE = 4;     // Step before point (horizontal then vertical)
+  LINE_SHAPE_STEP_MIDDLE = 5;     // Step at midpoint
+}
+
+// =============================================================================
+// AXIS CONFIG
+// =============================================================================
+
+message AxisConfig {
+  bool hidden = 1;                         // Hide this axis entirely
+
+  string title = 2;                        // Axis title text
+  AxisPosition position = 3;
+
+  // Label formatting (D3 format strings, NOT functions).
+  // Examples: ".0%" (percentage), "~s" (SI prefix), "$,.2f" (currency)
+  string label_format = 4;
+
+  int32 tick_count = 5;
+
+  // Grid lines
+  bool grid = 6;
+
+  // Scale type override for this axis.
+  ScaleType scale_type = 7;
+}
+
+enum AxisPosition {
+  AXIS_POSITION_UNSPECIFIED = 0;
+  AXIS_POSITION_TOP = 1;
+  AXIS_POSITION_BOTTOM = 2;
+  AXIS_POSITION_LEFT = 3;
+  AXIS_POSITION_RIGHT = 4;
+}
+
+// =============================================================================
+// SCALE CONFIG
+// =============================================================================
+
+message ScaleConfig {
+  ScaleType type = 1;
+
+  // Domain bounds
+  optional double domain_min = 2;
+  optional double domain_max = 3;
+
+  // For categorical scales: explicit domain ordering
+  repeated string domain_categories = 4;
+
+  // Range (for size channel)
+  optional double range_min = 5;
+  optional double range_max = 6;
+
+  bool nice = 7;                           // Round domain to nice values
+  bool zero = 8;                           // Include zero in domain
+
+  int32 tick_count = 9;
+  string tick_interval = 10;               // For time: "month", "day", "hour"
+
+  // Log/pow specific
+  double base = 11;                        // For log (default: 10)
+  double exponent = 12;                    // For pow (default: 1)
+
+  // Band/point specific
+  double padding = 13;                     // 0-1
+
+  // Color palette name: "reds", "blues", "turbo", "viridis", etc.
+  string palette = 14;
+
+  // Explicit color range: ["#ff0000", "#00ff00", "#0000ff"]
+  repeated string color_range = 15;
+}
+
+enum ScaleType {
+  SCALE_TYPE_UNSPECIFIED = 0;
+  SCALE_TYPE_LINEAR = 1;
+  SCALE_TYPE_LOG = 2;
+  SCALE_TYPE_POW = 3;
+  SCALE_TYPE_SQRT = 4;
+  SCALE_TYPE_TIME = 5;
+  SCALE_TYPE_BAND = 6;
+  SCALE_TYPE_POINT = 7;
+  SCALE_TYPE_ORDINAL = 8;
+  SCALE_TYPE_QUANTIZE = 9;
+  SCALE_TYPE_QUANTILE = 10;
+  SCALE_TYPE_THRESHOLD = 11;
+  SCALE_TYPE_SEQUENTIAL = 12;
+}
+
+// =============================================================================
+// COORDINATE CONFIG
+// =============================================================================
+
+message CoordinateConfig {
+  optional double inner_radius = 1;        // 0-1 (donut hole size)
+  optional double outer_radius = 2;        // 0-1
+  optional double start_angle = 3;         // Radians
+  optional double end_angle = 4;           // Radians
+}
+
+// =============================================================================
+// LABEL CONFIG
+// =============================================================================
+
+message LabelConfig {
+  string field = 1;                        // Column name to display
+  LabelPosition position = 2;
+  string format = 3;                       // D3 format string
+  double offset = 4;                       // Pixel offset from mark
+  bool connector = 5;                      // Draw connector line (pie/donut)
+  LabelSelector selector = 6;             // Show label for subset only
+}
+
+enum LabelPosition {
+  LABEL_POSITION_UNSPECIFIED = 0;
+  LABEL_POSITION_TOP = 1;
+  LABEL_POSITION_BOTTOM = 2;
+  LABEL_POSITION_LEFT = 3;
+  LABEL_POSITION_RIGHT = 4;
+  LABEL_POSITION_INSIDE = 5;
+  LABEL_POSITION_OUTSIDE = 6;
+}
+
+enum LabelSelector {
+  LABEL_SELECTOR_UNSPECIFIED = 0;
+  LABEL_SELECTOR_FIRST = 1;
+  LABEL_SELECTOR_LAST = 2;
+  LABEL_SELECTOR_MIN = 3;
+  LABEL_SELECTOR_MAX = 4;
+}
+
+// =============================================================================
+// ANNOTATION: reference lines and bands
+// =============================================================================
+
+message Annotation {
+  AnnotationType type = 1;
+  double value = 2;                        // Value on the axis (or start for range)
+  optional double value_end = 3;           // End value (for RANGE_X, RANGE_Y)
+  string label = 4;                        // Annotation label text
+}
+
+enum AnnotationType {
+  ANNOTATION_TYPE_UNSPECIFIED = 0;
+  ANNOTATION_TYPE_LINE_X = 1;              // Vertical reference line
+  ANNOTATION_TYPE_LINE_Y = 2;              // Horizontal reference line
+  ANNOTATION_TYPE_RANGE_X = 3;             // Vertical band
+  ANNOTATION_TYPE_RANGE_Y = 4;             // Horizontal band
+}
+
+// =============================================================================
+// DATA TRANSFORM
+// =============================================================================
+
+message DataTransform {
+  DataTransformType type = 1;
+
+  // Bin params
+  int32 bin_count = 2;
+
+  // Sample params
+  int32 sample_size = 3;
+  SampleStrategy sample_strategy = 4;
+
+  // Group aggregate: channel -> aggregation
+  // e.g., { "y": "sum" } means aggregate y-values by sum
+  map<string, string> aggregations = 5;
+
+  // Group by fields
+  repeated string group_by = 6;
+}
+
+enum DataTransformType {
+  DATA_TRANSFORM_TYPE_UNSPECIFIED = 0;
+  DATA_TRANSFORM_TYPE_BIN = 1;            // Create histogram bins
+  DATA_TRANSFORM_TYPE_SAMPLE = 2;         // Downsample large datasets
+  DATA_TRANSFORM_TYPE_GROUP = 3;          // Group and aggregate
+}
+
+enum SampleStrategy {
+  SAMPLE_STRATEGY_UNSPECIFIED = 0;
+  SAMPLE_STRATEGY_LTTB = 1;
+  SAMPLE_STRATEGY_MEDIAN = 2;
+  SAMPLE_STRATEGY_MAX = 3;
+  SAMPLE_STRATEGY_MIN = 4;
+  SAMPLE_STRATEGY_FIRST = 5;
+  SAMPLE_STRATEGY_LAST = 6;
+}
+
+// =============================================================================
+// SORT CONFIG
+// =============================================================================
+
+message SortConfig {
+  string field = 1;                        // Column to sort by
+  SortDirection direction = 2;
+  Aggregation reducer = 3;                // For grouped data: sort by aggregate
+  optional int32 limit = 4;               // Top N / Bottom N
+}
+
+enum SortDirection {
+  SORT_DIRECTION_UNSPECIFIED = 0;
+  SORT_DIRECTION_ASC = 1;
+  SORT_DIRECTION_DESC = 2;
+}
+
+enum Aggregation {
+  AGGREGATION_UNSPECIFIED = 0;
+  AGGREGATION_SUM = 1;
+  AGGREGATION_MIN = 2;
+  AGGREGATION_MAX = 3;
+  AGGREGATION_AVG = 4;
+  AGGREGATION_COUNT = 5;
+}
+
+// =============================================================================
+// PIVOT TABLE SPEC (maps to S2 DataConfig + Options)
+// =============================================================================
+
+message PivotTableSpec {
+  PivotFields fields = 1;
+  repeated FieldMeta meta = 2;
+  repeated PivotSortParam sort = 3;
+  PivotTotals totals = 4;
+  PivotHierarchyType hierarchy_type = 5;
+  PivotFrozen frozen = 6;
+  PivotPagination pagination = 7;
+  PivotSeriesNumber series_number = 8;
+}
+
+message PivotFields {
+  repeated string rows = 1;
+  repeated string columns = 2;
+  repeated string values = 3;
+  bool value_in_cols = 4;
+}
+
+message FieldMeta {
+  string field = 1;
+  string name = 2;                         // Display name / alias
+  string description = 3;                  // Tooltip description
+  string formatter = 4;                    // Format string (see below)
+}
+
+// Format strings (frontend translates to formatter functions):
+//   "currency:USD"    -> $1,234.56
+//   "currency:EUR"    -> EUR 1,234.56
+//   "percent"         -> 45.2%
+//   "percent:0"       -> 45%
+//   "number:2"        -> 1,234.56
+//   "number:0"        -> 1,235
+//   "compact"         -> 1.2K, 3.4M
+
+message PivotSortParam {
+  string sort_field_id = 1;
+  SortDirection sort_direction = 2;
+  repeated string sort_by = 3;
+  string sort_by_measure = 4;
+  map<string, string> query = 5;
+}
+
+message PivotTotals {
+  PivotTotalConfig row = 1;
+  PivotTotalConfig col = 2;
+}
+
+message PivotTotalConfig {
+  bool show_grand_totals = 1;
+  bool show_sub_totals = 2;
+  repeated string sub_totals_dimensions = 3;
+  string grand_totals_label = 4;
+  string sub_totals_label = 5;
+  bool reverse_grand_totals_layout = 6;
+  bool reverse_sub_totals_layout = 7;
+  Aggregation aggregation = 8;
+}
+
+enum PivotHierarchyType {
+  PIVOT_HIERARCHY_TYPE_UNSPECIFIED = 0;
+  PIVOT_HIERARCHY_TYPE_GRID = 1;
+  PIVOT_HIERARCHY_TYPE_TREE = 2;
+}
+
+message PivotFrozen {
+  bool row_header = 1;
+  int32 row_count = 2;
+  int32 col_count = 3;
+  int32 trailing_row_count = 4;
+  int32 trailing_col_count = 5;
+}
+
+message PivotPagination {
+  int32 page_size = 1;
+  int32 current = 2;
+}
+
+message PivotSeriesNumber {
+  bool enable = 1;
+  string text = 2;
+}
+
+// =============================================================================
+// METRIC CARD SPEC
+// =============================================================================
+
+message MetricCardSpec {
+  string value = 1;                        // Column name (first row used)
+  string format = 2;                       // Format string
+  MetricComparison comparison = 3;
+  Sparkline sparkline = 4;
+}
+
+message MetricComparison {
+  string value = 1;
+  string label = 2;
+  ComparisonDirection direction = 3;
+}
+
+enum ComparisonDirection {
+  COMPARISON_DIRECTION_UNSPECIFIED = 0;
+  COMPARISON_DIRECTION_HIGHER_IS_BETTER = 1;
+  COMPARISON_DIRECTION_LOWER_IS_BETTER = 2;
+}
+
+message Sparkline {
+  SparklineType type = 1;
+  string x = 2;
+  string y = 3;
+}
+
+enum SparklineType {
+  SPARKLINE_TYPE_UNSPECIFIED = 0;
+  SPARKLINE_TYPE_LINE = 1;
+  SPARKLINE_TYPE_AREA = 2;
+  SPARKLINE_TYPE_BAR = 3;
+}
+
+// =============================================================================
+// TEXT SPEC
+// =============================================================================
+
+message TextSpec {
+  string content = 1;
+  TextFormat format = 2;
+}
+
+enum TextFormat {
+  TEXT_FORMAT_UNSPECIFIED = 0;
+  TEXT_FORMAT_PLAIN = 1;
+  TEXT_FORMAT_MARKDOWN = 2;
+}

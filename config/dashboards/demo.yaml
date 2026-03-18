@@ -1,0 +1,57 @@
+name: dashboards/demo
+title: Demo Dashboard
+description: A test dashboard with static data
+
+grid:
+  columns: 24
+  row_height: 40
+  gap: 8
+
+widgets:
+  - id: revenue-kpi
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Total Revenue
+    position: { x: 0, y: 0, w: 8, h: 4 }
+    data_source:
+      data_source: dataSources/demo-static
+      params: {}
+    spec:
+      metric_card:
+        value: revenue
+        format: "currency:USD"
+
+  - id: revenue-trend
+    widget_type: WIDGET_TYPE_LINE_CHART
+    title: Revenue Trend
+    position: { x: 0, y: 4, w: 16, h: 8 }
+    data_source:
+      data_source: dataSources/demo-static
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_LINE
+        data_mapping:
+          x: quarter
+          y: revenue
+        x_axis:
+          title: Quarter
+        y_axis:
+          title: "Revenue ($)"
+          label_format: "$~s"
+
+  - id: cost-bar
+    widget_type: WIDGET_TYPE_BAR_CHART
+    title: Cost by Quarter
+    position: { x: 16, y: 4, w: 8, h: 8 }
+    data_source:
+      data_source: dataSources/demo-static
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_BAR
+        data_mapping:
+          x: quarter
+          y: cost
+        y_axis:
+          title: "Cost ($)"
+          label_format: "$~s"

@@ -1,0 +1,28 @@
+# Rust
+/target
+**/*.rs.bk
+Cargo.lock
+
+# Frontend
+frontend/node_modules
+frontend/dist
+frontend/.vite
+frontend/.env
+
+# Generated proto TS code is checked in (so CI doesn't need buf/protoc).
+# Regenerate with: cd proto && PATH=$PATH:../frontend/node_modules/.bin buf generate
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
