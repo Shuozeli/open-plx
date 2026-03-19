@@ -1,0 +1,13 @@
+name: dataSources/company-financials-flight
+display_name: Company Financials (Flight SQL)
+description: Quarterly financials from DuckDB via Flight SQL
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: "SELECT company, quarter, revenue, profit, eps, market_cap FROM company_financials ORDER BY company, quarter"
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

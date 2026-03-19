@@ -1,10 +1,25 @@
 groups:
+  - name: admin
+    description: Administrators (full access)
+    members:
+      - dev@localhost
+
   - name: engineering
     description: Engineering team
     members:
       - dev@localhost
 
 permissions:
+  - resource: "dashboards/*"
+    principal_type: group
+    principal: admin
+    role: admin
+
+  - resource: "dataSources/*"
+    principal_type: group
+    principal: admin
+    role: reader
+
   - resource: "dashboards/*"
     principal_type: group
     principal: engineering

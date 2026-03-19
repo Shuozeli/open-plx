@@ -1,0 +1,21 @@
+name: dataSources/hn-top-authors
+display_name: HN Top Authors
+description: Most prolific and highest-scoring authors
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT author, COUNT(*) as story_count,
+           SUM(points) as total_points,
+           AVG(points)::INT as avg_points,
+           MAX(points) as top_score
+    FROM hn_stories
+    GROUP BY author
+    ORDER BY total_points DESC
+    LIMIT 20
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

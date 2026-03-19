@@ -44,7 +44,7 @@ pub struct DashboardFile {
     pub description: String,
     pub grid: GridConfigYaml,
     #[serde(default)]
-    pub variables: Vec<serde_yaml::Value>,
+    pub variables: Vec<DashboardVariableYaml>,
     pub widgets: Vec<WidgetConfigYaml>,
     #[serde(default)]
     pub permission_denied_behavior: Option<String>,
@@ -244,6 +244,119 @@ pub struct TextSpecYaml {
     pub content: String,
     #[serde(default)]
     pub format: Option<String>,
+}
+
+// =============================================================================
+// Dashboard Variable Config (YAML)
+// =============================================================================
+
+#[derive(Debug, Deserialize)]
+pub struct DashboardVariableYaml {
+    pub name: String,
+    pub label: String,
+    #[serde(default)]
+    pub default_value: Option<ParamValueYaml>,
+    pub control: VariableControlYaml,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(tag = "type")]
+pub enum VariableControlYaml {
+    #[serde(rename = "text_input")]
+    TextInput {
+        #[serde(default)]
+        placeholder: String,
+        #[serde(default)]
+        max_length: i32,
+    },
+    #[serde(rename = "number_input")]
+    NumberInput {
+        #[serde(default)]
+        min: Option<f64>,
+        #[serde(default)]
+        max: Option<f64>,
+        #[serde(default)]
+        step: Option<f64>,
+        #[serde(default)]
+        placeholder: String,
+    },
+    #[serde(rename = "select")]
+    Select {
+        #[serde(default)]
+        options: Vec<SelectOptionYaml>,
+        #[serde(default)]
+        allow_clear: bool,
+        #[serde(default)]
+        show_search: bool,
+        #[serde(default)]
+        placeholder: String,
+    },
+    #[serde(rename = "multi_select")]
+    MultiSelect {
+        #[serde(default)]
+        options: Vec<SelectOptionYaml>,
+        #[serde(default)]
+        max_selections: i32,
+        #[serde(default)]
+        placeholder: String,
+    },
+    #[serde(rename = "date_picker")]
+    DatePicker {
+        #[serde(default)]
+        min_date: String,
+        #[serde(default)]
+        max_date: String,
+        #[serde(default)]
+        granularity: Option<String>,
+    },
+    #[serde(rename = "date_range")]
+    DateRange {
+        #[serde(default)]
+        min_date: String,
+        #[serde(default)]
+        max_date: String,
+        #[serde(default)]
+        granularity: Option<String>,
+        #[serde(default)]
+        presets: Vec<DateRangePresetYaml>,
+    },
+    #[serde(rename = "cascader")]
+    Cascader {
+        #[serde(default)]
+        options: Vec<CascaderOptionYaml>,
+        #[serde(default)]
+        placeholder: String,
+    },
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum ParamValueYaml {
+    String(String),
+    Int(i64),
+    Float(f64),
+    Bool(bool),
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SelectOptionYaml {
+    pub value: String,
+    pub label: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct DateRangePresetYaml {
+    pub label: String,
+    pub start: String,
+    pub end: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CascaderOptionYaml {
+    pub value: String,
+    pub label: String,
+    #[serde(default)]
+    pub children: Vec<CascaderOptionYaml>,
 }
 
 // =============================================================================

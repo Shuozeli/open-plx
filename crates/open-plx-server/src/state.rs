@@ -1,3 +1,4 @@
+use crate::flight_sql_client::FlightSqlPool;
 use anyhow::Result;
 use open_plx_config::{ConfigLoader, DashboardFile, DataSourceFile, PermissionsFile};
 use std::collections::HashMap;
@@ -7,14 +8,8 @@ use std::collections::HashMap;
 pub struct AppState {
     pub dashboards: HashMap<String, DashboardFile>,
     pub data_sources: HashMap<String, DataSourceFile>,
-    permissions: PermissionsFile,
-}
-
-impl AppState {
-    /// Number of permission rules loaded (for debug logging).
-    pub fn permission_count(&self) -> usize {
-        self.permissions.permissions.len()
-    }
+    pub flight_sql_pool: FlightSqlPool,
+    pub permissions: PermissionsFile,
 }
 
 impl AppState {
@@ -22,6 +17,7 @@ impl AppState {
         Ok(Self {
             dashboards: loader.dashboards,
             data_sources: loader.data_sources,
+            flight_sql_pool: FlightSqlPool::new(),
             permissions: loader.permissions,
         })
     }

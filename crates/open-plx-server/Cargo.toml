@@ -23,8 +23,14 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 anyhow.workspace = true
 tonic-reflection = "0.14"
-arrow-flight = "58.0.0"
+tonic-health = "0.14"
+arrow-flight = { version = "58.0.0", features = ["flight-sql"] }
 arrow-array = "58.0.0"
 arrow-schema = "58.0.0"
 arrow-ipc = "58.0.0"
+arrow-select = "58.0.0"
 futures = "0.3.32"
+tokio-stream = "0.1"
+serde_yaml.workspace = true
+
+[dev-dependencies]

@@ -1,0 +1,20 @@
+name: dataSources/hn-by-weekday
+display_name: HN Stories by Weekday
+description: Story distribution across days of the week
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT created_weekday as weekday, COUNT(*) as count, AVG(points)::INT as avg_points
+    FROM hn_stories
+    GROUP BY created_weekday
+    ORDER BY CASE created_weekday
+      WHEN 'Mon' THEN 1 WHEN 'Tue' THEN 2 WHEN 'Wed' THEN 3
+      WHEN 'Thu' THEN 4 WHEN 'Fri' THEN 5 WHEN 'Sat' THEN 6 WHEN 'Sun' THEN 7
+    END
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

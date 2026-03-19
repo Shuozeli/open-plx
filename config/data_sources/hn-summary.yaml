@@ -1,0 +1,19 @@
+name: dataSources/hn-summary
+display_name: HN Summary Stats
+description: Aggregate metrics for HN dashboard
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT
+      COUNT(*) as total_stories,
+      AVG(points)::INT as avg_points,
+      AVG(num_comments)::INT as avg_comments,
+      MAX(points) as max_points
+    FROM hn_stories
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

@@ -1,0 +1,19 @@
+name: dataSources/financials-summary
+display_name: Financials Summary
+description: Aggregated Q4 totals across AAPL, TSLA, AVGO, AMZN (static test data)
+
+config:
+  type: static
+  columns:
+    - name: label
+      arrow_type: utf8
+      values: ["Q4 Total"]
+    - name: total_revenue
+      arrow_type: float64
+      values: [328.9]
+    - name: avg_eps
+      arrow_type: float64
+      values: [2.61]
+    - name: total_market_cap
+      arrow_type: float64
+      values: [7170]

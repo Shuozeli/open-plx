@@ -1,4 +1,5 @@
 use crate::state::AppState;
+use open_plx_config::convert::data_source_to_proto;
 use open_plx_core::pb::{
     data_source_service_server::DataSourceService, CreateDataSourceRequest, DataSource,
     DeleteDataSourceRequest, DeleteDataSourceResponse, GetDataSourceRequest,
@@ -24,11 +25,20 @@ impl DataSourceService for DataSourceServiceImpl {
         &self,
         _request: Request<ListDataSourcesRequest>,
     ) -> Result<Response<ListDataSourcesResponse>, Status> {
-        tracing::debug!("listing {} data sources", self.state.data_sources.len());
+        let data_sources: Vec<DataSource> = self
+            .state
+            .data_sources
+            .values()
+            .map(data_source_to_proto)
+            .collect();
+        let total = data_sources.len() as i32;
+
+        tracing::debug!("listing {} data sources", total);
+
         Ok(Response::new(ListDataSourcesResponse {
-            data_sources: vec![],
+            data_sources,
             next_page_token: String::new(),
-            total_size: self.state.data_sources.len() as i32,
+            total_size: total,
         }))
     }
 
@@ -37,12 +47,12 @@ impl DataSourceService for DataSourceServiceImpl {
         request: Request<GetDataSourceRequest>,
     ) -> Result<Response<DataSource>, Status> {
         let name = &request.get_ref().name;
-        if self.state.data_sources.contains_key(name) {
-            Err(Status::unimplemented(
-                "data source found but proto conversion not yet implemented",
-            ))
-        } else {
-            Err(Status::not_found(format!("data source not found: {name}")))
+        match self.state.data_sources.get(name) {
+            Some(file) => {
+                let data_source = data_source_to_proto(file);
+                Ok(Response::new(data_source))
+            }
+            None => Err(Status::not_found(format!("data source not found: {name}"))),
         }
     }
 

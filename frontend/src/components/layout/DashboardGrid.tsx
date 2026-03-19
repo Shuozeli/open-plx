@@ -1,15 +1,19 @@
 import type { Dashboard } from "../../gen/open_plx/v1/dashboard_pb.js";
+import type { VariableValues } from "../../hooks/useVariables.js";
+import { WidgetErrorBoundary } from "./WidgetErrorBoundary.js";
 import { WidgetShell } from "./WidgetShell.js";
 
 interface DashboardGridProps {
   dashboard: Dashboard;
+  variableValues?: VariableValues;
+  revision?: number;
 }
 
 /**
  * Renders dashboard widgets in a CSS grid based on server-provided positions.
  * No drag-and-drop -- layout is declarative from config.
  */
-export function DashboardGrid({ dashboard }: DashboardGridProps) {
+export function DashboardGrid({ dashboard, variableValues, revision }: DashboardGridProps) {
   const grid = dashboard.grid;
   const columns = grid?.columns ?? 24;
   const rowHeight = grid?.rowHeight ?? 40;
@@ -34,7 +38,9 @@ export function DashboardGrid({ dashboard }: DashboardGridProps) {
               gridRow: `${(pos?.y ?? 0) + 1} / span ${pos?.h ?? 4}`,
             }}
           >
-            <WidgetShell dashboardName={dashboard.name} config={widget} />
+            <WidgetErrorBoundary title={widget.title}>
+              <WidgetShell dashboardName={dashboard.name} config={widget} variableValues={variableValues} revision={revision} />
+            </WidgetErrorBoundary>
           </div>
         );
       })}

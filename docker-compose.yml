@@ -1,0 +1,25 @@
+services:
+  # DuckDB Flight SQL server for development/testing
+  flight-sql:
+    image: voltrondata/flight-sql:latest
+    ports:
+      - "31337:31337"
+    environment:
+      TLS_ENABLED: "0"
+      FLIGHT_PASSWORD: "test123"
+      PRINT_QUERIES: "true"
+      INIT_SQL_COMMANDS_FILE: "/opt/flight_sql/seed/init.sql"
+    volumes:
+      - ./config/seed:/opt/flight_sql/seed
+
+  # open-plx server (uncomment to run from Docker image)
+  # open-plx:
+  #   build: .
+  #   ports:
+  #     - "50051:50051"
+  #   environment:
+  #     CONFIG_PATH: /app/config/open-plx.yaml
+  #     RUST_LOG: info
+  #     RUST_LOG_FORMAT: json
+  #   depends_on:
+  #     - flight-sql

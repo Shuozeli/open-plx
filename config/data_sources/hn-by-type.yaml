@@ -1,0 +1,17 @@
+name: dataSources/hn-by-type
+display_name: HN Stories by Type
+description: Story type breakdown (Link, Ask HN, Show HN, etc.)
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT story_type, COUNT(*) as count, AVG(points)::INT as avg_points
+    FROM hn_stories
+    GROUP BY story_type
+    ORDER BY count DESC
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

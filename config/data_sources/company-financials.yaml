@@ -1,0 +1,25 @@
+name: dataSources/company-financials
+display_name: Company Financials
+description: Quarterly financials for tech companies (static test data)
+
+config:
+  type: static
+  columns:
+    - name: company
+      arrow_type: utf8
+      values: ["AAPL", "AAPL", "AAPL", "AAPL", "TSLA", "TSLA", "TSLA", "TSLA", "AVGO", "AVGO", "AVGO", "AVGO", "AMZN", "AMZN", "AMZN", "AMZN"]
+    - name: quarter
+      arrow_type: utf8
+      values: ["Q1", "Q2", "Q3", "Q4", "Q1", "Q2", "Q3", "Q4", "Q1", "Q2", "Q3", "Q4", "Q1", "Q2", "Q3", "Q4"]
+    - name: revenue
+      arrow_type: float64
+      values: [94.8, 81.8, 89.5, 119.6, 21.3, 24.9, 25.2, 25.2, 8.9, 8.7, 9.3, 14.1, 143.3, 148.0, 158.9, 170.0]
+    - name: profit
+      arrow_type: float64
+      values: [25.0, 19.4, 22.9, 33.9, 2.5, 2.3, 1.9, 7.9, 3.7, 3.5, 3.8, 5.3, 10.4, 13.5, 15.3, 20.0]
+    - name: eps
+      arrow_type: float64
+      values: [1.53, 1.26, 1.46, 2.18, 0.73, 0.78, 0.58, 2.29, 2.83, 2.65, 2.93, 4.11, 0.98, 1.26, 1.43, 1.86]
+    - name: market_cap
+      arrow_type: float64
+      values: [2840, 2900, 3100, 3400, 560, 620, 680, 790, 550, 580, 640, 780, 1870, 1950, 2020, 2200]

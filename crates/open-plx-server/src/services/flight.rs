@@ -25,7 +25,7 @@ impl FlightServiceImpl {
         Self { state }
     }
 
-    fn resolve_widget_data(
+    async fn resolve_widget_data(
         &self,
         req: &WidgetDataRequest,
     ) -> Result<arrow_array::RecordBatch, Status> {
@@ -52,7 +52,7 @@ impl FlightServiceImpl {
             DataSourceConfigYaml::Static { .. } => static_config_to_record_batch(ds)
                 .map_err(|e| Status::internal(format!("failed to build static data: {e}"))),
             DataSourceConfigYaml::FlightSql { .. } => {
-                Err(Status::unimplemented("Flight SQL not yet implemented"))
+                self.state.flight_sql_pool.query(&ds.config).await
             }
         }
     }
@@ -96,7 +96,7 @@ impl FlightService for FlightServiceImpl {
             widget_req.widget_id
         );
 
-        let batch = self.resolve_widget_data(&widget_req)?;
+        let batch = self.resolve_widget_data(&widget_req).await?;
         let schema = batch.schema();
 
         let ticket = Ticket {
@@ -140,7 +140,7 @@ impl FlightService for FlightServiceImpl {
             widget_req.widget_id
         );
 
-        let batch = self.resolve_widget_data(&widget_req)?;
+        let batch = self.resolve_widget_data(&widget_req).await?;
         let schema = batch.schema();
 
         // Use FlightDataEncoderBuilder to stream schema + batches

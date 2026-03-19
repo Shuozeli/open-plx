@@ -1,0 +1,137 @@
+name: dashboards/company-financials
+title: Company Financials (Dark Launch)
+description: "Dark launch test: AAPL, TSLA, AVGO, AMZN quarterly financials"
+
+grid:
+  columns: 24
+  row_height: 40
+  gap: 8
+
+variables:
+  - name: selected_quarter
+    label: Quarter
+    default_value: "Q4"
+    control:
+      type: select
+      options:
+        - { value: "Q1", label: "Q1" }
+        - { value: "Q2", label: "Q2" }
+        - { value: "Q3", label: "Q3" }
+        - { value: "Q4", label: "Q4" }
+      placeholder: Select quarter
+
+  - name: selected_companies
+    label: Companies
+    control:
+      type: multi_select
+      options:
+        - { value: "AAPL", label: "Apple" }
+        - { value: "TSLA", label: "Tesla" }
+        - { value: "AVGO", label: "Broadcom" }
+        - { value: "AMZN", label: "Amazon" }
+      placeholder: Select companies
+
+widgets:
+  # Row 0: Three metric cards
+  - id: revenue-total
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Total Revenue (Q4)
+    position: { x: 0, y: 0, w: 8, h: 4 }
+    data_source:
+      data_source: dataSources/financials-summary
+      params: {}
+    spec:
+      metric_card:
+        value: total_revenue
+        format: "currency:USD"
+
+  - id: avg-eps
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Average EPS (Q4)
+    position: { x: 8, y: 0, w: 8, h: 4 }
+    data_source:
+      data_source: dataSources/financials-summary
+      params: {}
+    spec:
+      metric_card:
+        value: avg_eps
+        format: "number:2"
+
+  - id: market-cap-total
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Total Market Cap (Q4)
+    position: { x: 16, y: 0, w: 8, h: 4 }
+    data_source:
+      data_source: dataSources/financials-summary
+      params: {}
+    spec:
+      metric_card:
+        value: total_market_cap
+        format: "compact"
+
+  # Row 4: Line chart - revenue trend by quarter, 4 series
+  - id: revenue-trend
+    widget_type: WIDGET_TYPE_LINE_CHART
+    title: Revenue Trend by Quarter
+    position: { x: 0, y: 4, w: 24, h: 8 }
+    data_source:
+      data_source: dataSources/company-financials
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_LINE
+        data_mapping:
+          x: quarter
+          y: revenue
+          group_by: company
+        x_axis:
+          title: Quarter
+        y_axis:
+          title: "Revenue ($B)"
+
+  # Row 12: Bar chart - revenue comparison, grouped
+  - id: revenue-comparison
+    widget_type: WIDGET_TYPE_BAR_CHART
+    title: Revenue Comparison (Grouped)
+    position: { x: 0, y: 12, w: 24, h: 8 }
+    data_source:
+      data_source: dataSources/company-financials
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_BAR
+        data_mapping:
+          x: quarter
+          y: revenue
+          group_by: company
+        stack_mode: grouped
+        x_axis:
+          title: Quarter
+        y_axis:
+          title: "Revenue ($B)"
+
+  # Row 20: Pivot table - company x quarter x metrics
+  - id: financials-pivot
+    widget_type: WIDGET_TYPE_PIVOT_TABLE
+    title: Quarterly Financials
+    position: { x: 0, y: 20, w: 24, h: 10 }
+    data_source:
+      data_source: dataSources/company-financials
+      params: {}
+    spec:
+      pivot_table:
+        fields:
+          rows: ["company"]
+          columns: ["quarter"]
+          values: ["revenue", "profit", "eps"]
+          value_in_cols: true
+        meta:
+          - field: revenue
+            name: "Revenue ($B)"
+            formatter: "number:1"
+          - field: profit
+            name: "Profit ($B)"
+            formatter: "number:1"
+          - field: eps
+            name: EPS
+            formatter: "number:2"

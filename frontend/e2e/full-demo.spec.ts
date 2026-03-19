@@ -16,8 +16,8 @@ async function loadFullDemo(page: import("@playwright/test").Page) {
       const s = (window as unknown as { __OPEN_PLX__: { loading: boolean; widgets: Record<string, { rendered: { hasData: boolean } }> } }).__OPEN_PLX__;
       if (!s || s.loading) return false;
       const widgets = Object.values(s.widgets);
-      // full-demo has 8 widgets; text widget always hasData=true
-      return widgets.length >= 8 && widgets.every((w) => w.rendered.hasData === true);
+      // full-demo has 9 widgets; text widget always hasData=true
+      return widgets.length >= 9 && widgets.every((w) => w.rendered.hasData === true);
     },
     { timeout: 15_000 },
   );
@@ -38,17 +38,18 @@ test.describe("Full Demo: Dashboard", () => {
     expect(state.title).toBe("Full Widget Demo");
   });
 
-  test("has 8 widgets", async ({ page }) => {
+  test("has 9 widgets", async ({ page }) => {
     const state = await getDashboardState(page);
-    expect(state.widgetCount).toBe(8);
+    expect(state.widgetCount).toBe(9);
   });
 
-  test("all 8 widgets registered", async ({ page }) => {
+  test("all 9 widgets registered", async ({ page }) => {
     const ids = await getWidgetIds(page);
     expect(ids.sort()).toEqual([
       "area-chart",
       "cost-metric",
       "donut-chart",
+      "financials-pivot",
       "horizontal-bar",
       "pie-chart",
       "revenue-metric",
@@ -297,6 +298,82 @@ test.describe("Full Demo: Text Widget", () => {
 });
 
 // =============================================================================
+// PIVOT TABLE
+// =============================================================================
+
+test.describe("Full Demo: Pivot Table", () => {
+  test.beforeEach(async ({ page }) => {
+    await loadFullDemo(page);
+  });
+
+  test("widget type is PIVOT_TABLE", async ({ page }) => {
+    const w = await getWidgetState(page, "financials-pivot");
+    expect(w.widgetType).toBe("PIVOT_TABLE");
+  });
+
+  test("has no G2 spec (not a chart)", async ({ page }) => {
+    const w = await getWidgetState(page, "financials-pivot");
+    expect(w.g2Spec).toBeNull();
+  });
+
+  test("has 12 data rows (3 companies x 4 quarters)", async ({ page }) => {
+    const w = await getWidgetState(page, "financials-pivot");
+    expect(w.rendered.hasData).toBe(true);
+    expect(w.rendered.rowCount).toBe(12);
+  });
+
+  test("pivot fields: rows=[company], columns=[quarter], values=[revenue,profit]", async ({ page }) => {
+    const w = await getWidgetState(page, "financials-pivot");
+    expect(w.rendered.rows).toEqual(["company"]);
+    expect(w.rendered.columns).toEqual(["quarter"]);
+    expect(w.rendered.values).toEqual(["revenue", "profit"]);
+    expect(w.rendered.valueInCols).toBe(true);
+  });
+
+  test("has 2 meta entries with formatters", async ({ page }) => {
+    const w = await getWidgetState(page, "financials-pivot");
+    expect(w.rendered.metaCount).toBe(2);
+    const meta = w.rendered.metaFields as Array<{ field: string; name: string; formatter: string }>;
+    expect(meta[0]).toEqual({ field: "revenue", name: "Revenue ($B)", formatter: "number:1" });
+    expect(meta[1]).toEqual({ field: "profit", name: "Profit ($B)", formatter: "number:1" });
+  });
+
+  test("data has expected columns", async ({ page }) => {
+    const w = await getWidgetState(page, "financials-pivot");
+    expect(w.rendered.columnNames).toEqual(
+      expect.arrayContaining(["company", "quarter", "revenue", "profit"]),
+    );
+  });
+
+  test("data contains all 3 companies", async ({ page }) => {
+    const w = await getWidgetState(page, "financials-pivot");
+    const companies = [...new Set(w.data!.map((r) => r.company))];
+    expect(companies.sort()).toEqual(["AAPL", "AVGO", "TSLA"]);
+  });
+
+  test("data contains all 4 quarters", async ({ page }) => {
+    const w = await getWidgetState(page, "financials-pivot");
+    const quarters = [...new Set(w.data!.map((r) => r.quarter))];
+    expect(quarters.sort()).toEqual(["Q1", "Q2", "Q3", "Q4"]);
+  });
+
+  test("renders a canvas element (S2 uses canvas)", async ({ page }) => {
+    const card = page.locator(".ant-card").filter({ hasText: "Company Financials" });
+    await expect(card).toBeVisible();
+    const canvas = card.locator("canvas");
+    await expect(canvas).toBeVisible({ timeout: 5_000 });
+  });
+
+  test("proto spec has correct pivot fields", async ({ page }) => {
+    const w = await getWidgetState(page, "financials-pivot");
+    const fields = w.spec.fields as Record<string, unknown>;
+    expect(fields.rows).toEqual(["company"]);
+    expect(fields.columns).toEqual(["quarter"]);
+    expect(fields.values).toEqual(["revenue", "profit"]);
+  });
+});
+
+// =============================================================================
 // CHART TYPE -> G2 MAPPING MATRIX
 // =============================================================================
 
@@ -346,9 +423,9 @@ test.describe("Full Demo: Grid Positions", () => {
     await loadFullDemo(page);
   });
 
-  test("8 grid children", async ({ page }) => {
+  test("9 grid children", async ({ page }) => {
     const grid = page.locator("div[style*='display: grid']");
-    await expect(grid.locator("> div")).toHaveCount(8);
+    await expect(grid.locator("> div")).toHaveCount(9);
   });
 
   test("metric cards in row 0, each 8 cols wide", async ({ page }) => {
@@ -433,7 +510,7 @@ test.describe("Full Demo: Data Consistency", () => {
     await loadFullDemo(page);
   });
 
-  test("all widgets reference the same static data", async ({ page }) => {
+  test("demo-static widgets have 4 rows, financials has 12", async ({ page }) => {
     const ids = await getWidgetIds(page);
     const dataSets = await Promise.all(
       ids.map(async (id) => {
@@ -442,9 +519,11 @@ test.describe("Full Demo: Data Consistency", () => {
       }),
     );
 
-    // All data-backed widgets should have 4 rows
     for (const ds of dataSets) {
-      if (ds.id !== "summary-text") {
+      if (ds.id === "summary-text") continue;
+      if (ds.id === "financials-pivot") {
+        expect(ds.rowCount, `${ds.id} row count`).toBe(12);
+      } else {
         expect(ds.rowCount, `${ds.id} row count`).toBe(4);
       }
     }
@@ -459,5 +538,74 @@ test.describe("Full Demo: Data Consistency", () => {
     expect(revenue.rendered.rawValue).toBe(2100000);
     expect(cost.rendered.rawValue).toBe(1100000);
     expect(units.rendered.rawValue).toBe(21000);
+  });
+});
+
+// =============================================================================
+// DARK MODE THEME
+// =============================================================================
+
+test.describe("Full Demo: Dark Mode", () => {
+  test.beforeEach(async ({ page }) => {
+    await loadFullDemo(page);
+  });
+
+  test("starts in light mode by default", async ({ page }) => {
+    const state = await getDashboardState(page);
+    expect(state.theme).toBe("light");
+  });
+
+  test("switches to dark mode when toggle is clicked", async ({ page }) => {
+    // Click the theme toggle switch in the header
+    await page.locator(".ant-switch").click();
+
+    // Wait for the theme state to update in the test registry
+    await page.waitForFunction(
+      () => {
+        const s = (window as unknown as { __OPEN_PLX__: { theme: string } }).__OPEN_PLX__;
+        return s && s.theme === "dark";
+      },
+      { timeout: 5_000 },
+    );
+
+    const state = await getDashboardState(page);
+    expect(state.theme).toBe("dark");
+  });
+
+  test("dark mode applies dark background to content area", async ({ page }) => {
+    await page.locator(".ant-switch").click();
+
+    await page.waitForFunction(
+      () => {
+        const s = (window as unknown as { __OPEN_PLX__: { theme: string } }).__OPEN_PLX__;
+        return s && s.theme === "dark";
+      },
+      { timeout: 5_000 },
+    );
+
+    // Verify the Antd Layout Content has a dark background
+    const content = page.locator(".ant-layout-content");
+    const bg = await content.evaluate((el) => getComputedStyle(el).backgroundColor);
+    // #141414 = rgb(20, 20, 20) in dark mode
+    expect(bg).toBe("rgb(20, 20, 20)");
+  });
+
+  test("toggling back to light mode restores theme", async ({ page }) => {
+    // Toggle to dark
+    await page.locator(".ant-switch").click();
+    await page.waitForFunction(
+      () => (window as unknown as { __OPEN_PLX__: { theme: string } }).__OPEN_PLX__?.theme === "dark",
+      { timeout: 5_000 },
+    );
+
+    // Toggle back to light
+    await page.locator(".ant-switch").click();
+    await page.waitForFunction(
+      () => (window as unknown as { __OPEN_PLX__: { theme: string } }).__OPEN_PLX__?.theme === "light",
+      { timeout: 5_000 },
+    );
+
+    const state = await getDashboardState(page);
+    expect(state.theme).toBe("light");
   });
 });

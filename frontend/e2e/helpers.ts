@@ -8,6 +8,7 @@
 import type { Page } from "@playwright/test";
 
 export const BASE_URL = process.env.E2E_BASE_URL ?? "http://10.0.0.183:5199";
+export const DEMO_URL = `${BASE_URL}#dashboards/demo`;
 
 export interface WidgetTestState {
   widgetId: string;
@@ -30,8 +31,8 @@ export interface DashboardTestState {
 }
 
 /** Wait for the dashboard to fully load and all widget data to arrive. */
-export async function waitForDashboardReady(page: Page, expectedWidgets: number = 3) {
-  await page.goto(BASE_URL);
+export async function waitForDashboardReady(page: Page, expectedWidgets: number = 3, url?: string) {
+  await page.goto(url ?? DEMO_URL);
 
   // Wait until all widgets are registered AND have data loaded
   await page.waitForFunction(

@@ -1,0 +1,19 @@
+name: dataSources/hn-top-domains
+display_name: HN Top Domains
+description: Most linked domains on Hacker News
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT domain, COUNT(*) as story_count, AVG(points)::INT as avg_points
+    FROM hn_stories
+    WHERE domain != ''
+    GROUP BY domain
+    ORDER BY story_count DESC
+    LIMIT 15
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

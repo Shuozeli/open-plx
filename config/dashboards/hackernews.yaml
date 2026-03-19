@@ -1,0 +1,154 @@
+name: dashboards/hackernews
+title: Hacker News Trends
+description: "12 months of top HN stories: trends, domains, authors, and activity patterns"
+
+grid:
+  columns: 24
+  row_height: 40
+  gap: 8
+
+widgets:
+  # Row 0: Metric cards
+  - id: total-stories
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Total Stories
+    position: { x: 0, y: 0, w: 6, h: 4 }
+    data_source:
+      data_source: dataSources/hn-summary
+      params: {}
+    spec:
+      metric_card:
+        value: total_stories
+        format: "compact"
+
+  - id: avg-points
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Avg Points
+    position: { x: 6, y: 0, w: 6, h: 4 }
+    data_source:
+      data_source: dataSources/hn-summary
+      params: {}
+    spec:
+      metric_card:
+        value: avg_points
+        format: "number:0"
+
+  - id: avg-comments
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Avg Comments
+    position: { x: 12, y: 0, w: 6, h: 4 }
+    data_source:
+      data_source: dataSources/hn-summary
+      params: {}
+    spec:
+      metric_card:
+        value: avg_comments
+        format: "number:0"
+
+  - id: max-points
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Top Score
+    position: { x: 18, y: 0, w: 6, h: 4 }
+    data_source:
+      data_source: dataSources/hn-summary
+      params: {}
+    spec:
+      metric_card:
+        value: max_points
+        format: "compact"
+
+  # Row 4: Stories per month (line chart)
+  - id: stories-by-month
+    widget_type: WIDGET_TYPE_LINE_CHART
+    title: Stories Per Month
+    position: { x: 0, y: 4, w: 16, h: 8 }
+    data_source:
+      data_source: dataSources/hn-stories-by-month
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_LINE
+        data_mapping:
+          x: created_month
+          y: story_count
+        x_axis:
+          title: Month
+        y_axis:
+          title: Stories
+
+  # Row 4: Story types (pie chart)
+  - id: by-type
+    widget_type: WIDGET_TYPE_PIE_CHART
+    title: Story Types
+    position: { x: 16, y: 4, w: 8, h: 8 }
+    data_source:
+      data_source: dataSources/hn-by-type
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_DONUT
+        data_mapping:
+          value: count
+          category: story_type
+
+  # Row 12: Top domains (bar chart)
+  - id: top-domains
+    widget_type: WIDGET_TYPE_BAR_CHART
+    title: Top Domains
+    position: { x: 0, y: 12, w: 12, h: 10 }
+    data_source:
+      data_source: dataSources/hn-top-domains
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_HORIZONTAL_BAR
+        data_mapping:
+          x: domain
+          y: story_count
+        y_axis:
+          title: Stories
+
+  # Row 12: Activity by weekday (bar chart)
+  - id: by-weekday
+    widget_type: WIDGET_TYPE_BAR_CHART
+    title: Activity by Weekday
+    position: { x: 12, y: 12, w: 12, h: 10 }
+    data_source:
+      data_source: dataSources/hn-by-weekday
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_BAR
+        data_mapping:
+          x: weekday
+          y: count
+        x_axis:
+          title: Day
+        y_axis:
+          title: Stories
+
+  # Row 22: Top authors (pivot table)
+  - id: top-authors
+    widget_type: WIDGET_TYPE_PIVOT_TABLE
+    title: Top Authors
+    position: { x: 0, y: 22, w: 24, h: 10 }
+    data_source:
+      data_source: dataSources/hn-top-authors
+      params: {}
+    spec:
+      pivot_table:
+        fields:
+          rows: ["author"]
+          columns: []
+          values: ["story_count", "total_points", "avg_points", "top_score"]
+          value_in_cols: true
+        meta:
+          - field: story_count
+            name: Stories
+          - field: total_points
+            name: Total Points
+            formatter: "compact"
+          - field: avg_points
+            name: Avg Points
+          - field: top_score
+            name: Top Score

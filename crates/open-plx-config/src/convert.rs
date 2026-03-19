@@ -15,7 +15,7 @@ pub fn dashboard_to_proto(file: &DashboardFile) -> pb::Dashboard {
             gap: file.grid.gap,
         }),
         widgets: file.widgets.iter().map(widget_to_proto).collect(),
-        variables: vec![], // TODO(refactor): Convert variables from YAML
+        variables: file.variables.iter().map(variable_to_proto).collect(),
         permission_denied_behavior: match file.permission_denied_behavior.as_deref() {
             Some("hide") => pb::PermissionDeniedBehavior::Hide.into(),
             _ => pb::PermissionDeniedBehavior::ShowDenied.into(),
@@ -297,5 +297,279 @@ fn parse_label_position(s: &str) -> pb::LabelPosition {
         "inside" => pb::LabelPosition::Inside,
         "outside" => pb::LabelPosition::Outside,
         _ => pb::LabelPosition::Unspecified,
+    }
+}
+
+// =============================================================================
+// Variable conversion
+// =============================================================================
+
+fn variable_to_proto(v: &DashboardVariableYaml) -> pb::DashboardVariable {
+    pb::DashboardVariable {
+        name: v.name.clone(),
+        label: v.label.clone(),
+        default_value: v.default_value.as_ref().map(param_value_yaml_to_proto),
+        control: Some(variable_control_to_proto(&v.control)),
+    }
+}
+
+fn param_value_yaml_to_proto(pv: &ParamValueYaml) -> pb::ParamValue {
+    let value = match pv {
+        ParamValueYaml::String(s) => pb::param_value::Value::StringValue(s.clone()),
+        ParamValueYaml::Int(i) => pb::param_value::Value::IntValue(*i),
+        ParamValueYaml::Float(f) => pb::param_value::Value::DoubleValue(*f),
+        ParamValueYaml::Bool(b) => pb::param_value::Value::BoolValue(*b),
+    };
+    pb::ParamValue { value: Some(value) }
+}
+
+fn variable_control_to_proto(c: &VariableControlYaml) -> pb::dashboard_variable::Control {
+    match c {
+        VariableControlYaml::TextInput {
+            placeholder,
+            max_length,
+        } => pb::dashboard_variable::Control::TextInput(pb::TextInputControl {
+            placeholder: placeholder.clone(),
+            max_length: *max_length,
+        }),
+        VariableControlYaml::NumberInput {
+            min,
+            max,
+            step,
+            placeholder,
+        } => pb::dashboard_variable::Control::NumberInput(pb::NumberInputControl {
+            min: *min,
+            max: *max,
+            step: *step,
+            placeholder: placeholder.clone(),
+        }),
+        VariableControlYaml::Select {
+            options,
+            allow_clear,
+            show_search,
+            placeholder,
+        } => pb::dashboard_variable::Control::Select(pb::SelectControl {
+            options: options.iter().map(select_option_to_proto).collect(),
+            allow_clear: *allow_clear,
+            show_search: *show_search,
+            placeholder: placeholder.clone(),
+            options_source: None,
+            value_field: String::new(),
+            label_field: String::new(),
+        }),
+        VariableControlYaml::MultiSelect {
+            options,
+            max_selections,
+            placeholder,
+        } => pb::dashboard_variable::Control::MultiSelect(pb::MultiSelectControl {
+            options: options.iter().map(select_option_to_proto).collect(),
+            max_selections: *max_selections,
+            placeholder: placeholder.clone(),
+            options_source: None,
+            value_field: String::new(),
+            label_field: String::new(),
+        }),
+        VariableControlYaml::DatePicker {
+            min_date,
+            max_date,
+            granularity,
+        } => pb::dashboard_variable::Control::DatePicker(pb::DatePickerControl {
+            min_date: min_date.clone(),
+            max_date: max_date.clone(),
+            granularity: granularity
+                .as_deref()
+                .map(parse_date_granularity)
+                .unwrap_or(pb::DateGranularity::Unspecified)
+                .into(),
+        }),
+        VariableControlYaml::DateRange {
+            min_date,
+            max_date,
+            granularity,
+            presets,
+        } => pb::dashboard_variable::Control::DateRange(pb::DateRangeControl {
+            min_date: min_date.clone(),
+            max_date: max_date.clone(),
+            granularity: granularity
+                .as_deref()
+                .map(parse_date_granularity)
+                .unwrap_or(pb::DateGranularity::Unspecified)
+                .into(),
+            presets: presets.iter().map(date_range_preset_to_proto).collect(),
+        }),
+        VariableControlYaml::Cascader {
+            options,
+            placeholder,
+        } => pb::dashboard_variable::Control::Cascader(pb::CascaderControl {
+            options: options.iter().map(cascader_option_to_proto).collect(),
+            placeholder: placeholder.clone(),
+        }),
+    }
+}
+
+fn select_option_to_proto(o: &SelectOptionYaml) -> pb::SelectOption {
+    pb::SelectOption {
+        value: o.value.clone(),
+        label: o.label.clone(),
+    }
+}
+
+fn date_range_preset_to_proto(p: &DateRangePresetYaml) -> pb::DateRangePreset {
+    pb::DateRangePreset {
+        label: p.label.clone(),
+        start: p.start.clone(),
+        end: p.end.clone(),
+    }
+}
+
+fn cascader_option_to_proto(o: &CascaderOptionYaml) -> pb::CascaderOption {
+    pb::CascaderOption {
+        value: o.value.clone(),
+        label: o.label.clone(),
+        children: o.children.iter().map(cascader_option_to_proto).collect(),
+    }
+}
+
+fn parse_date_granularity(s: &str) -> pb::DateGranularity {
+    match s {
+        "day" => pb::DateGranularity::Day,
+        "week" => pb::DateGranularity::Week,
+        "month" => pb::DateGranularity::Month,
+        "quarter" => pb::DateGranularity::Quarter,
+        "year" => pb::DateGranularity::Year,
+        _ => pb::DateGranularity::Unspecified,
+    }
+}
+
+// =============================================================================
+// DataSource conversion
+// =============================================================================
+
+/// Convert a DataSourceFile (YAML) to a DataSource proto message.
+pub fn data_source_to_proto(file: &DataSourceFile) -> pb::DataSource {
+    pb::DataSource {
+        name: file.name.clone(),
+        display_name: file.display_name.clone(),
+        description: file.description.clone(),
+        config: Some(data_source_config_to_proto(&file.config)),
+        create_time: None,
+        update_time: None,
+    }
+}
+
+fn data_source_config_to_proto(config: &DataSourceConfigYaml) -> pb::data_source::Config {
+    match config {
+        DataSourceConfigYaml::Static { columns } => {
+            pb::data_source::Config::StaticData(pb::StaticConfig {
+                columns: columns.iter().map(static_column_to_proto).collect(),
+            })
+        }
+        DataSourceConfigYaml::FlightSql {
+            endpoint,
+            query,
+            auth: _,
+            params,
+        } => pb::data_source::Config::FlightSql(pb::FlightSqlConfig {
+            endpoint: endpoint.clone(),
+            query: query.clone(),
+            auth: None, // TODO(refactor): Convert auth from YAML
+            params: params.iter().map(query_param_to_proto).collect(),
+            headers: std::collections::HashMap::new(),
+            query_timeout_seconds: 0,
+        }),
+    }
+}
+
+fn static_column_to_proto(col: &StaticColumnYaml) -> pb::StaticColumn {
+    let arrow_type = parse_arrow_type(&col.arrow_type);
+    let mut proto_col = pb::StaticColumn {
+        name: col.name.clone(),
+        arrow_type: arrow_type.into(),
+        string_values: vec![],
+        int_values: vec![],
+        float_values: vec![],
+        bool_values: vec![],
+    };
+
+    match arrow_type {
+        pb::ArrowType::Utf8 | pb::ArrowType::Date32 | pb::ArrowType::TimestampMicros => {
+            proto_col.string_values = col
+                .values
+                .iter()
+                .map(|v| match v {
+                    serde_yaml::Value::String(s) => s.clone(),
+                    other => format!("{other:?}"),
+                })
+                .collect();
+        }
+        pb::ArrowType::Int64 => {
+            proto_col.int_values = col
+                .values
+                .iter()
+                .filter_map(|v| match v {
+                    serde_yaml::Value::Number(n) => n.as_i64(),
+                    _ => None,
+                })
+                .collect();
+        }
+        pb::ArrowType::Float64 => {
+            proto_col.float_values = col
+                .values
+                .iter()
+                .filter_map(|v| match v {
+                    serde_yaml::Value::Number(n) => n.as_f64(),
+                    _ => None,
+                })
+                .collect();
+        }
+        pb::ArrowType::Boolean => {
+            proto_col.bool_values = col
+                .values
+                .iter()
+                .filter_map(|v| match v {
+                    serde_yaml::Value::Bool(b) => Some(*b),
+                    _ => None,
+                })
+                .collect();
+        }
+        pb::ArrowType::Unspecified => {}
+    }
+
+    proto_col
+}
+
+fn query_param_to_proto(p: &QueryParamYaml) -> pb::QueryParam {
+    pb::QueryParam {
+        name: p.name.clone(),
+        position: p.position,
+        param_kind: parse_param_kind(&p.param_kind).into(),
+        required: p.required,
+        default_value: p.default_value.clone().unwrap_or_default(),
+    }
+}
+
+fn parse_arrow_type(s: &str) -> pb::ArrowType {
+    match s {
+        "utf8" => pb::ArrowType::Utf8,
+        "int64" => pb::ArrowType::Int64,
+        "float64" => pb::ArrowType::Float64,
+        "boolean" => pb::ArrowType::Boolean,
+        "date32" => pb::ArrowType::Date32,
+        "timestamp_micros" => pb::ArrowType::TimestampMicros,
+        _ => pb::ArrowType::Unspecified,
+    }
+}
+
+fn parse_param_kind(s: &str) -> pb::ParamKind {
+    match s {
+        "string" => pb::ParamKind::String,
+        "int" => pb::ParamKind::Int,
+        "float" => pb::ParamKind::Float,
+        "bool" => pb::ParamKind::Bool,
+        "date" => pb::ParamKind::Date,
+        "timestamp" => pb::ParamKind::Timestamp,
+        "string_list" => pb::ParamKind::StringList,
+        "date_range" => pb::ParamKind::DateRange,
+        _ => pb::ParamKind::Unspecified,
     }
 }

@@ -4,6 +4,7 @@
 use crate::state::AppState;
 use arrow_array::{Array, RecordBatch};
 use arrow_schema::DataType;
+use open_plx_auth::{check_permission, get_principal};
 use open_plx_config::model::DataSourceConfigYaml;
 use open_plx_config::static_data::static_config_to_record_batch;
 use open_plx_core::pb::{
@@ -22,7 +23,7 @@ impl WidgetDataServiceImpl {
         Self { state }
     }
 
-    fn resolve_record_batch(&self, req: &WidgetDataRequest) -> Result<RecordBatch, Status> {
+    async fn resolve_record_batch(&self, req: &WidgetDataRequest) -> Result<RecordBatch, Status> {
         let dashboard = self
             .state
             .dashboards
@@ -46,7 +47,7 @@ impl WidgetDataServiceImpl {
             DataSourceConfigYaml::Static { .. } => static_config_to_record_batch(ds)
                 .map_err(|e| Status::internal(format!("static data error: {e}"))),
             DataSourceConfigYaml::FlightSql { .. } => {
-                Err(Status::unimplemented("Flight SQL not yet implemented"))
+                self.state.flight_sql_pool.query(&ds.config).await
             }
         }
     }
@@ -108,15 +109,46 @@ impl WidgetDataService for WidgetDataServiceImpl {
         &self,
         request: Request<WidgetDataRequest>,
     ) -> Result<Response<WidgetDataResponse>, Status> {
+        let principal = get_principal(&request)?;
         let req = request.into_inner();
 
-        tracing::debug!(
-            "get_widget_data: dashboard={}, widget={}",
-            req.dashboard,
-            req.widget_id
-        );
+        // Check data-level permission on the widget's data source
+        let dashboard = self
+            .state
+            .dashboards
+            .get(&req.dashboard)
+            .ok_or_else(|| Status::not_found(format!("dashboard not found: {}", req.dashboard)))?;
+        let widget = dashboard
+            .widgets
+            .iter()
+            .find(|w| w.id == req.widget_id)
+            .ok_or_else(|| Status::not_found(format!("widget not found: {}", req.widget_id)))?;
+        let ds_name = &widget.data_source.data_source;
+        if !check_permission(&principal, ds_name, "reader", &self.state.permissions) {
+            tracing::info!(
+                event = "permission.denied",
+                user = %principal.email,
+                resource = %ds_name,
+                required_role = "reader",
+            );
+            return Err(Status::permission_denied(format!(
+                "data access denied for {ds_name}"
+            )));
+        }
 
-        let batch = self.resolve_record_batch(&req)?;
+        let start = std::time::Instant::now();
+        let batch = self.resolve_record_batch(&req).await?;
+        let duration_ms = start.elapsed().as_millis();
+
+        tracing::info!(
+            event = "data.fetch",
+            user = %principal.email,
+            dashboard = %req.dashboard,
+            widget = %req.widget_id,
+            data_source = %ds_name,
+            rows = batch.num_rows(),
+            duration_ms = duration_ms,
+        );
         let total_rows = batch.num_rows() as i64;
         let columns = record_batch_to_columns(&batch);
 

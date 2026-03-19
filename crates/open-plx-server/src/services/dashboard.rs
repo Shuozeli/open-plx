@@ -1,4 +1,5 @@
 use crate::state::AppState;
+use open_plx_auth::{check_permission, get_principal};
 use open_plx_config::convert::dashboard_to_proto;
 use open_plx_core::pb::{
     dashboard_service_server::DashboardService, CreateDashboardRequest, Dashboard,
@@ -22,17 +23,26 @@ impl DashboardServiceImpl {
 impl DashboardService for DashboardServiceImpl {
     async fn list_dashboards(
         &self,
-        _request: Request<ListDashboardsRequest>,
+        request: Request<ListDashboardsRequest>,
     ) -> Result<Response<ListDashboardsResponse>, Status> {
+        let principal = get_principal(&request)?;
+
         let dashboards: Vec<Dashboard> = self
             .state
             .dashboards
             .values()
+            .filter(|d| {
+                check_permission(&principal, &d.name, "viewer", &self.state.permissions)
+            })
             .map(dashboard_to_proto)
             .collect();
         let total = dashboards.len() as i32;
 
-        tracing::debug!("listing {} dashboards", total);
+        tracing::info!(
+            event = "dashboard.list",
+            user = %principal.email,
+            count = total,
+        );
 
         Ok(Response::new(ListDashboardsResponse {
             dashboards,
@@ -45,10 +55,28 @@ impl DashboardService for DashboardServiceImpl {
         &self,
         request: Request<GetDashboardRequest>,
     ) -> Result<Response<Dashboard>, Status> {
+        let principal = get_principal(&request)?;
         let name = &request.get_ref().name;
+
+        // Check viewer permission. Return NOT_FOUND (not PERMISSION_DENIED)
+        // to hide dashboard existence from unauthorized users.
+        if !check_permission(&principal, name, "viewer", &self.state.permissions) {
+            tracing::info!(
+                event = "permission.denied",
+                user = %principal.email,
+                resource = %name,
+                required_role = "viewer",
+            );
+            return Err(Status::not_found(format!("dashboard not found: {name}")));
+        }
 
         match self.state.dashboards.get(name) {
             Some(file) => {
+                tracing::info!(
+                    event = "dashboard.view",
+                    user = %principal.email,
+                    dashboard = %name,
+                );
                 let dashboard = dashboard_to_proto(file);
                 Ok(Response::new(dashboard))
             }

@@ -14,10 +14,10 @@ An open-source alternative to Google PLX. Server-driven dashboard platform where
 
 | Layer     | Technology                                              |
 |-----------|---------------------------------------------------------|
-| Backend   | Rust, tonic, tonic-web, arrow-flight, sqlx, tokio       |
+| Backend   | Rust, tonic, tonic-web, arrow-flight, serde, tokio      |
 | Frontend  | React 18+, Vite, TypeScript, grpc-web, apache-arrow     |
 | UI        | Antd (chrome), AntV G2 (charts), AntV S2 (tables)      |
-| Database  | PostgreSQL                                              |
+| Config    | YAML files on disk (no database)                        |
 | Protocol  | gRPC over HTTP/2 (tonic-web for browser), Arrow Flight  |
 | Schema    | Proto-first: types generated from proto files            |
 

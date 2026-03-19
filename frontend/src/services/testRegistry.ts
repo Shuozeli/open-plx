@@ -42,6 +42,8 @@ export interface DashboardTestState {
   loading: boolean;
   /** Error message if any. */
   error: string | null;
+  /** Current theme: "light" or "dark". */
+  theme: "light" | "dark";
 }
 
 declare global {
@@ -60,11 +62,12 @@ export function initTestRegistry() {
     widgets: {},
     loading: true,
     error: null,
+    theme: "light",
   };
 }
 
 /** Register dashboard-level state. */
-export function registerDashboard(state: Omit<DashboardTestState, "widgets" | "loading" | "error">) {
+export function registerDashboard(state: Omit<DashboardTestState, "widgets" | "loading" | "error" | "theme">) {
   if (!window.__OPEN_PLX__) initTestRegistry();
   window.__OPEN_PLX__.name = state.name;
   window.__OPEN_PLX__.title = state.title;
@@ -79,6 +82,12 @@ export function registerDashboardStatus(loading: boolean, error: string | null) 
   if (!window.__OPEN_PLX__) initTestRegistry();
   window.__OPEN_PLX__.loading = loading;
   window.__OPEN_PLX__.error = error;
+}
+
+/** Register current theme mode. */
+export function registerTheme(dark: boolean) {
+  if (!window.__OPEN_PLX__) initTestRegistry();
+  window.__OPEN_PLX__.theme = dark ? "dark" : "light";
 }
 
 /** Register a widget's test state. */

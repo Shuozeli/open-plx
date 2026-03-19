@@ -1,0 +1,20 @@
+name: dataSources/hn-stories-by-month
+display_name: HN Stories by Month
+description: Monthly story counts and average scores from Hacker News
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT created_month, COUNT(*) as story_count,
+           AVG(points)::INT as avg_points,
+           AVG(num_comments)::INT as avg_comments,
+           SUM(points) as total_points
+    FROM hn_stories
+    GROUP BY created_month
+    ORDER BY created_month
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

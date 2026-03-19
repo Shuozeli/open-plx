@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
+import { ConnectError, Code } from "@connectrpc/connect";
 import type { WidgetDataResponse } from "../gen/open_plx/v1/data_pb.js";
 import { widgetDataClient } from "../services/grpc/client.js";
+import type { VariableValues } from "./useVariables.js";
 
 interface UseWidgetDataResult {
   data: Record<string, unknown>[] | null;
   rawResponse: WidgetDataResponse | null;
   loading: boolean;
   error: string | null;
+  permissionDenied: boolean;
   refresh: () => void;
 }
 
@@ -44,36 +47,49 @@ function columnsToRows(response: WidgetDataResponse): Record<string, unknown>[] 
   return rows;
 }
 
-/** Fetch widget data via WidgetDataService gRPC. */
+/**
+ * Fetch widget data via WidgetDataService gRPC.
+ * When variableValues or revision changes, data is re-fetched.
+ */
 export function useWidgetData(
   dashboardName: string,
   widgetId: string,
+  variableValues?: VariableValues,
+  revision?: number,
 ): UseWidgetDataResult {
   const [data, setData] = useState<Record<string, unknown>[] | null>(null);
   const [rawResponse, setRawResponse] = useState<WidgetDataResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [permissionDenied, setPermissionDenied] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setPermissionDenied(false);
     try {
       const response = await widgetDataClient.getWidgetData({
         dashboard: dashboardName,
         widgetId,
+        params: variableValues ?? {},
       });
       setRawResponse(response);
       setData(columnsToRows(response));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      if (err instanceof ConnectError && err.code === Code.PermissionDenied) {
+        setPermissionDenied(true);
+        setError("Access Denied");
+      } else {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      }
     } finally {
       setLoading(false);
     }
-  }, [dashboardName, widgetId]);
+  }, [dashboardName, widgetId, revision]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  return { data, rawResponse, loading, error, refresh: load };
+  return { data, rawResponse, loading, error, permissionDenied, refresh: load };
 }

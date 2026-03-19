@@ -121,3 +121,26 @@ widgets:
           y: cost
         y_axis:
           title: Cost
+
+  # Row 24: Pivot table (full width)
+  - id: financials-pivot
+    widget_type: WIDGET_TYPE_PIVOT_TABLE
+    title: Company Financials
+    position: { x: 0, y: 24, w: 24, h: 8 }
+    data_source:
+      data_source: dataSources/company-financials
+      params: {}
+    spec:
+      pivot_table:
+        fields:
+          rows: ["company"]
+          columns: ["quarter"]
+          values: ["revenue", "profit"]
+          value_in_cols: true
+        meta:
+          - field: revenue
+            name: Revenue ($B)
+            formatter: "number:1"
+          - field: profit
+            name: Profit ($B)
+            formatter: "number:1"
