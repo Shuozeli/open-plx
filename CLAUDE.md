@@ -39,10 +39,11 @@ priority. But tech debt must be visible, not silent.
 
 ## Tech Stack
 
-- **Backend:** Rust (tonic, tonic-web, arrow-adbc-rs, serde, tokio)
-- **Frontend:** React 18+, Vite, TypeScript, Antd, AntV G2, AntV S2, apache-arrow, grpc-web
+- **Backend:** Rust (tonic, tonic-web, arrow-flight, serde, tokio)
+- **Frontend:** React 19, Vite, TypeScript, Antd, AntV G2, AntV S2, @connectrpc/connect-web
 - **Config:** YAML files on disk (dashboards, data sources, permissions). No database.
-- **Protocol:** gRPC over HTTP/2 (tonic-web for browser). Arrow Flight SQL for data.
+- **Protocol:** gRPC over HTTP/2 (tonic-web for browser). Arrow Flight SQL between backend and data sources.
+- **Data path:** Browser -> WidgetDataService (gRPC, proto columnar) -> Backend -> Flight SQL server (Arrow).
 - **Proto-first:** Proto files are the source of truth. Types are generated.
 
 ## Build & Test
@@ -57,7 +58,7 @@ cd frontend && pnpm install && pnpm dev
 pnpm test
 pnpm build
 
-# Proto generation
+# Proto generation (frontend only; backend protos auto-generate via build.rs)
 buf generate proto/
 ```
 
@@ -72,7 +73,11 @@ gh run view <run-id>
 ## Key Docs
 
 - `docs/index.md` - Full project guide for agents
-- `docs/architecture.md` - System architecture
+- `docs/architecture.md` - System architecture, crate map, rendering flow
 - `docs/design.md` - Design decisions and rationale
-- `docs/tasks.md` - Pending TODOs
+- `docs/declarative-layout.md` - Widget spec language (proto -> G2/S2 mapping)
+- `docs/data-format.md` - Arrow Flight protocol, data source configs
+- `docs/auth.md` - Authentication & authorization design
+- `docs/phases.md` - Implementation plan (phased rollout)
+- `docs/tasks.md` - Pending TODOs and deferred items
 - `docs/codelabs.md` - Walkthroughs

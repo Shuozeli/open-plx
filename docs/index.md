@@ -15,10 +15,11 @@ An open-source alternative to Google PLX. Server-driven dashboard platform where
 | Layer     | Technology                                              |
 |-----------|---------------------------------------------------------|
 | Backend   | Rust, tonic, tonic-web, arrow-flight, serde, tokio      |
-| Frontend  | React 18+, Vite, TypeScript, grpc-web, apache-arrow     |
-| UI        | Antd (chrome), AntV G2 (charts), AntV S2 (tables)      |
+| Frontend  | React 19, Vite 8, TypeScript 5.9, @connectrpc/connect-web |
+| UI        | Antd 6 (chrome), AntV G2 5 (charts), AntV S2 2.6 (tables) |
 | Config    | YAML files on disk (no database)                        |
-| Protocol  | gRPC over HTTP/2 (tonic-web for browser), Arrow Flight  |
+| Protocol  | gRPC over HTTP/2 (tonic-web for browser), Arrow Flight SQL (backend-to-data-source) |
+| Data path | Browser -> WidgetDataService (proto columnar) -> Backend -> Flight SQL (Arrow) |
 | Schema    | Proto-first: types generated from proto files            |
 
 ## Project Layout
@@ -29,29 +30,39 @@ open-plx/
     open_plx/v1/
       dashboard.proto    # DashboardService, layout types
       data_source.proto  # DataSourceService, data source configs
-      data.proto         # Arrow Flight descriptors/metadata
+      data.proto         # WidgetDataService, Arrow Flight descriptors
       widget_spec.proto  # WidgetSpec oneof (ChartSpec, PivotTableSpec, etc.)
   crates/
-    open-plx-server/     # tonic gRPC server + tonic-web + Arrow Flight
-    open-plx-core/       # Domain types (generated from protos + business logic)
-    open-plx-store/      # PostgreSQL persistence (sqlx)
-    open-plx-auth/       # Permission layer (layout + data)
+    open-plx-core/       # Generated proto types (tonic-build), gRPC reflection descriptor
+    open-plx-config/     # YAML config loader + YAML->proto converter + static data builder
+    open-plx-auth/       # Stateless auth (AuthProvider: Dev, ApiKey, OIDC stub) + permissions
+    open-plx-server/     # tonic gRPC server + tonic-web + Arrow Flight + WidgetDataService
   frontend/
     src/
+      gen/open_plx/v1/   # Generated TypeScript types (via @bufbuild/protoc-gen-es)
       components/        # UI components
-        widgets/         # Widget renderers (G2, S2, Antd)
-        layout/          # Grid layout system
-      hooks/             # React hooks
+        widgets/         # Widget renderers (G2, S2, Antd): 6 widget types
+        layout/          # CSS grid layout, WidgetShell, WidgetErrorBoundary
+        variables/       # VariableBar, VariableControl (7 control types)
+      hooks/             # useDashboard, useWidgetData, useVariables, useThemeContext
       services/
-        grpc/            # gRPC-web client (generated)
-        flight/          # Arrow Flight client
-      types/             # Generated TypeScript types
-      pages/             # Route pages
+        grpc/            # gRPC-web client via @connectrpc/connect-web
+        mappers/         # chartMapper.ts (ChartSpec->G2), pivotMapper.ts (PivotTableSpec->S2)
+      pages/             # DashboardPage, DashboardListPage
+    e2e/                 # Playwright e2e tests (3 spec files)
+  config/                # Runtime config
+    dashboards/          # Dashboard YAML configs (4 dashboards)
+    data_sources/        # Data source YAML configs (10 data sources)
+    permissions.yaml     # Groups + permissions
+    seed/                # DuckDB seed data (init.sql, hn_stories.csv)
+    open-plx.yaml        # Server config
   vendor/                # Git submodules
     G2/                  # AntV G2 (branch: v5) -- reference only
     S2/                  # AntV S2 (branch: next) -- reference only
+  tools/                 # Python utility scripts (HN data crawling)
   docs/                  # Documentation
-  deploy/                # Docker, k8s configs
+  Dockerfile             # Multi-stage build (node:22 + rust:1.85 -> debian:bookworm-slim)
+  docker-compose.yml     # DuckDB Flight SQL dev server
 ```
 
 ## Key Documents

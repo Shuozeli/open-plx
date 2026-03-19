@@ -3,6 +3,7 @@
 
 use crate::state::AppState;
 use arrow_array::{Array, RecordBatch};
+use arrow_cast::cast;
 use arrow_schema::DataType;
 use open_plx_auth::{check_permission, get_principal};
 use open_plx_config::model::DataSourceConfigYaml;
@@ -54,53 +55,108 @@ impl WidgetDataServiceImpl {
 }
 
 /// Convert an Arrow RecordBatch to proto DataColumns.
-fn record_batch_to_columns(batch: &RecordBatch) -> Vec<DataColumn> {
+///
+/// Maps Arrow types to the 4 proto wire types via `arrow_cast::cast`:
+/// - string_values: Utf8, LargeUtf8, Date32, Date64, Timestamp variants
+/// - int_values:    Int8..Int64, UInt8..UInt32
+/// - double_values: Float16, Float32, Float64, Decimal128, Decimal256
+/// - bool_values:   Boolean
+///
+/// Returns `Status::internal` for unsupported types or cast failures.
+fn record_batch_to_columns(batch: &RecordBatch) -> Result<Vec<DataColumn>, Status> {
     let schema = batch.schema();
     let mut columns = Vec::with_capacity(schema.fields().len());
 
     for (i, field) in schema.fields().iter().enumerate() {
         let array = batch.column(i);
+        let col_name = field.name();
         let mut col = DataColumn {
-            name: field.name().clone(),
+            name: col_name.clone(),
             ..Default::default()
         };
 
+        let cast_err = |target: &str, e: arrow_schema::ArrowError| {
+            Status::internal(format!(
+                "column '{}': failed to cast {:?} to {}: {}",
+                col_name,
+                field.data_type(),
+                target,
+                e
+            ))
+        };
+
+        let downcast_err = |target: &str| {
+            Status::internal(format!(
+                "column '{}': schema says {:?} but downcast to {} failed",
+                col_name,
+                field.data_type(),
+                target,
+            ))
+        };
+
         match field.data_type() {
-            DataType::Utf8 => {
-                let arr = array
+            // --- String-like types: cast to Utf8 ---
+            DataType::Utf8 | DataType::LargeUtf8 | DataType::Date32 | DataType::Date64
+            | DataType::Timestamp(_, _) => {
+                let casted = cast(array, &DataType::Utf8).map_err(|e| cast_err("Utf8", e))?;
+                let arr = casted
                     .as_any()
                     .downcast_ref::<arrow_array::StringArray>()
-                    .expect("expected StringArray");
+                    .ok_or_else(|| downcast_err("StringArray"))?;
                 col.string_values = (0..arr.len())
                     .map(|i| arr.value(i).to_string())
                     .collect();
             }
-            DataType::Int64 => {
-                let arr = array
+
+            // --- Integer types: cast to Int64 ---
+            DataType::Int8
+            | DataType::Int16
+            | DataType::Int32
+            | DataType::Int64
+            | DataType::UInt8
+            | DataType::UInt16
+            | DataType::UInt32 => {
+                let casted = cast(array, &DataType::Int64).map_err(|e| cast_err("Int64", e))?;
+                let arr = casted
                     .as_any()
                     .downcast_ref::<arrow_array::Int64Array>()
-                    .expect("expected Int64Array");
+                    .ok_or_else(|| downcast_err("Int64Array"))?;
                 col.int_values = arr.values().iter().copied().collect();
             }
-            DataType::Float64 => {
-                let arr = array
+
+            // --- Float types: cast to Float64 ---
+            DataType::Float16 | DataType::Float32 | DataType::Float64 | DataType::Decimal128(_, _)
+            | DataType::Decimal256(_, _) => {
+                let casted =
+                    cast(array, &DataType::Float64).map_err(|e| cast_err("Float64", e))?;
+                let arr = casted
                     .as_any()
                     .downcast_ref::<arrow_array::Float64Array>()
-                    .expect("expected Float64Array");
+                    .ok_or_else(|| downcast_err("Float64Array"))?;
                 col.double_values = arr.values().iter().copied().collect();
             }
+
+            // --- Boolean ---
+            DataType::Boolean => {
+                let arr = array
+                    .as_any()
+                    .downcast_ref::<arrow_array::BooleanArray>()
+                    .ok_or_else(|| downcast_err("BooleanArray"))?;
+                col.bool_values = (0..arr.len()).map(|i| arr.value(i)).collect();
+            }
+
             other => {
-                tracing::warn!("unsupported column type {:?} for column {}, converting to string", other, field.name());
-                col.string_values = (0..array.len())
-                    .map(|i| format!("{:?}", array.as_ref().is_valid(i)))
-                    .collect();
+                return Err(Status::internal(format!(
+                    "unsupported Arrow type {:?} for column '{}'",
+                    other, col_name
+                )));
             }
         }
 
         columns.push(col);
     }
 
-    columns
+    Ok(columns)
 }
 
 #[tonic::async_trait]
@@ -150,7 +206,7 @@ impl WidgetDataService for WidgetDataServiceImpl {
             duration_ms = duration_ms,
         );
         let total_rows = batch.num_rows() as i64;
-        let columns = record_batch_to_columns(&batch);
+        let columns = record_batch_to_columns(&batch)?;
 
         Ok(Response::new(WidgetDataResponse {
             columns,

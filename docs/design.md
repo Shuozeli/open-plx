@@ -38,7 +38,7 @@ open-plx aims to fill this gap.
 All communication uses **gRPC over HTTP/2**. No REST, no HTTP/1.1.
 
 - **Backend**: `tonic` with `tonic-web` layer (for browser clients)
-- **Frontend**: `grpc-web` client (generated via `protoc-gen-grpc-web`)
+- **Frontend**: `@connectrpc/connect-web` client (types via `@bufbuild/protoc-gen-es`)
 - **Data transport**: Apache Arrow Flight (gRPC-native) for widget data
 - **Layout/admin**: Custom gRPC services for dashboard and data source CRUD
 - **Future**: HTTP/3 (QUIC) when `tonic` ecosystem supports it
@@ -219,17 +219,18 @@ Dashboards support named variables that widgets reference in their
 variables {
   name: "selected_region"
   label: "Region"
-  type: VARIABLE_TYPE_SELECT
-  default_value: "ALL"
-  options { value: "ALL"  label: "All Regions" }
-  options { value: "US"   label: "United States" }
-  options { value: "EU"   label: "Europe" }
+  default_value { string_value: "ALL" }
+  select {
+    options { value: "ALL"  label: "All Regions" }
+    options { value: "US"   label: "United States" }
+    options { value: "EU"   label: "Europe" }
+  }
 }
 
 // In WidgetConfig.data_source:
 data_source {
-  data_source: "dataSources/sales-db"
-  params { key: "region"  value: "${selected_region}" }
+  data_source: "dataSources/sales-flight"
+  params { key: "region"  value { variable_ref: "${selected_region}" } }
 }
 ```
 
@@ -349,10 +350,17 @@ proxy, API key).
 
 See [auth.md](auth.md) for the full authn/authz design including:
 - Group-based permission model with role inheritance
-- `AuthInterceptor` trait for pluggable identity providers
+- `AuthProvider` trait for pluggable identity providers
 - Permission resolution algorithm
-- Database schema
-- `AuthService` gRPC API for managing groups and permissions
+- File-based permission config (YAML)
+- Future: `AuthService` gRPC API for managing groups and permissions
+
+## 9. Auth
+
+See [auth.md](auth.md) for the complete design. Current implementation
+is file-based (groups and permissions defined in YAML). The auth.md doc
+includes a future database schema design for when the project outgrows
+file-based config.
 
 ## 10. gRPC Services
 
@@ -394,15 +402,14 @@ Full proto definitions: `proto/open_plx/v1/`
 
 ```
 1. Fetch Dashboard           -- DashboardService.GetDashboard (gRPC-web)
-2. Render grid skeleton      -- Antd Layout + react-grid-layout
+2. Render grid skeleton      -- CSS grid (server-provided positions)
 3. For each widget:
    a. Resolve WidgetComponent -- lookup in WIDGET_REGISTRY by type
    b. Render shell (title, card, loading spinner)
-   c. GetFlightInfo           -- Arrow Flight (gRPC-web)
-   d. DoGet(ticket)           -- Arrow RecordBatch stream
-   e. Convert Arrow -> row data
-   f. Merge server spec + theme defaults
-   g. Render chart/table/card -- G2 / S2 / Antd
+   c. GetWidgetData            -- WidgetDataService (gRPC-web)
+   d. Convert proto DataColumns -> row objects
+   e. Merge server spec + theme defaults
+   f. Render chart/table/card -- G2 / S2 / Antd
 4. User-triggered refresh re-fetches layout + data on demand
 ```
 
@@ -423,34 +430,35 @@ animations, responsive breakpoints. The server never sends styling.
 
 ```
 crates/
-  open-plx-core/       -- Domain types (Dashboard, Widget, DataSource)
-                          Pure data, no IO, no dependencies beyond serde
-  open-plx-store/      -- PostgreSQL persistence (sqlx)
-                          All operations within transactions
-  open-plx-auth/       -- Permission checks
-                          Layout permission + data permission
-  open-plx-server/     -- tonic gRPC server + tonic-web + Arrow Flight
+  open-plx-core/       -- Generated proto types (tonic-build)
+                          Pure data, no IO, no dependencies beyond serde/prost
+  open-plx-config/     -- YAML config loader + YAML->proto converter
+                          Reads dashboards, data sources, permissions from disk
+  open-plx-auth/       -- Stateless auth (AuthProvider trait: Dev, ApiKey, OIDC stub)
+                          File-based permission checks with wildcard support
+  open-plx-server/     -- tonic gRPC server + tonic-web + Arrow Flight + WidgetDataService
+                          Flight SQL client pool for upstream data sources
 ```
 
 Dependency graph (no cycles):
 ```
-server --> auth --> core
-  |                  ^
-  +--> store --------+
+server --> auth --> config --> core
+  |                             ^
+  +-----------------------------+
 ```
 
 ### Event Log
 
-```sql
-CREATE TABLE event_log (
-    id         BIGSERIAL PRIMARY KEY,
-    timestamp  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    event_type TEXT NOT NULL,
-    principal  UUID,
-    resource   TEXT,
-    metadata   JSONB
-);
-```
+Event logging uses structured tracing (not a database table). Events are
+emitted as structured log lines with fields like `event`, `user`,
+`resource`, `rows`, `duration_ms`. When `RUST_LOG_FORMAT=json`, these
+become queryable JSON log entries.
+
+Logged events:
+- `dashboard.list` -- user listed dashboards (count)
+- `dashboard.view` -- user viewed a dashboard
+- `data.fetch` -- widget data fetched (data_source, rows, duration_ms)
+- `permission.denied` -- access denied (resource, required_role)
 
 ## 13. Library Decoupling
 

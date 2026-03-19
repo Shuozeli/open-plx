@@ -175,70 +175,40 @@ config {
 }
 ```
 
-## Frontend Arrow Consumption
+## Frontend Data Consumption
 
-The frontend uses the `apache-arrow` JavaScript library to deserialize
-Arrow IPC streams received via gRPC (through tonic-web).
+### Current: Proto DataColumns via WidgetDataService
 
-**Critical**: Do NOT convert Arrow RecordBatches to row objects. This
-defeats the purpose of Arrow by materializing O(rows * columns) JS
-objects from zero-copy typed arrays.
+The frontend receives data via `WidgetDataService.GetWidgetData`, which
+returns proto `WidgetDataResponse` containing `DataColumn[]` (each column
+has one of: string_values, int_values, double_values, bool_values).
 
-### Arrow -> G2 (Columnar)
-
-G2 v5 supports columnar data via its `data.transform` pipeline. Pass
-Arrow typed arrays directly:
+The `useWidgetData` hook converts these proto columns to row objects:
 
 ```typescript
-// Extract columnar arrays from Arrow RecordBatch for G2
-function arrowToG2Data(batch: RecordBatch): Record<string, unknown>[] {
-  // G2 v5 accepts array-of-objects, but we can construct these
-  // efficiently using Arrow's toArray() which returns typed arrays
-  // (Float64Array, Int32Array, etc.) with zero-copy when possible.
-  //
-  // For small datasets (< 10K rows): materialize row objects
-  // For large datasets: use G2's columnar data connector
-
-  // Option 1: G2 column data (preferred, zero-copy)
-  // Pass as { type: 'inline', value: data, transform: [...] }
-  // where data columns are Arrow typed arrays.
-
-  // Option 2: Efficient row materialization (fallback)
-  // Use Arrow's structural sharing -- toArray() returns views
-  // over the underlying ArrayBuffer, not copies.
-  const columns: Record<string, ArrayLike<unknown>> = {};
-  for (const field of batch.schema.fields) {
-    columns[field.name] = batch.getChild(field.name)!.toArray();
+function columnsToRows(response: WidgetDataResponse): Record<string, unknown>[] {
+  const numRows = Number(response.totalRows);
+  const rows = new Array(numRows);
+  for (let i = 0; i < numRows; i++) rows[i] = {};
+  for (const col of response.columns) {
+    const values = col.stringValues.length > 0 ? col.stringValues
+      : col.doubleValues.length > 0 ? col.doubleValues
+      : col.intValues.length > 0 ? col.intValues.map(Number)
+      : col.boolValues;
+    for (let i = 0; i < numRows; i++) rows[i][col.name] = values[i];
   }
-
-  // Build row objects from column arrays (single pass)
-  const numRows = batch.numRows;
-  const fields = batch.schema.fields;
-  const result = new Array(numRows);
-  for (let i = 0; i < numRows; i++) {
-    const row: Record<string, unknown> = {};
-    for (const field of fields) {
-      row[field.name] = columns[field.name][i];
-    }
-    result[i] = row;
-  }
-  return result;
+  return rows;
 }
 ```
 
-The key difference from the naive approach: `toArray()` returns a typed
-array view (e.g., `Float64Array`) over the Arrow buffer -- no per-element
-allocation. The row materialization loop then reads from contiguous memory
-instead of calling `get(i)` per element.
+These row objects are passed to chartMapper (G2) and pivotMapper (S2).
 
-For the v2 optimization path, the mapper should pass typed arrays directly
-to G2's data pipeline instead of materializing rows at all.
+### Future: Direct Arrow Flight from Browser
 
-### Arrow -> S2 (Columnar)
-
-S2 accepts row-oriented data (`Record<string, DataItem>[]`). Use the
-same efficient row materialization as above. S2's internal data engine
-handles indexing.
+A future optimization could use the `apache-arrow` JavaScript library
+to consume Arrow IPC streams directly from the backend's Arrow Flight
+service, avoiding the proto DataColumns intermediate format. This would
+enable zero-copy typed arrays for large datasets.
 
 ## Permission Denied Response
 

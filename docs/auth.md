@@ -1,9 +1,11 @@
 # Authentication & Authorization Design
 
-## Status: Draft
+## Status: Implemented (file-based); DB-based design is future work
 
-Separate design doc for open-plx's authn/authz system. This is a
-cross-cutting concern that affects every service, not just dashboards.
+File-based auth is implemented in `crates/open-plx-auth/` with DevAuth,
+ApiKeyAuth, and OidcAuth (stub) providers. Groups and permissions are
+defined in `config/permissions.yaml`. The database schema described below
+is a future design for when the project outgrows file-based config.
 
 ## 1. Problem
 
@@ -46,29 +48,32 @@ Browser -> IdP (OIDC) -> JWT -> gRPC metadata -> tonic interceptor -> Principal
 ### Interceptor Design
 
 A tonic interceptor extracts the principal from every gRPC request.
-The interceptor is a trait -- open-plx ships built-in implementations
-and supports custom plugins for deployment-specific auth.
+The `AuthProvider` trait is the plugin interface -- open-plx ships
+built-in implementations and supports custom plugins.
 
 ```rust
 /// Plugin trait for authentication. Deployments implement this to
 /// integrate with their identity provider.
 ///
-/// Built-in implementations: OIDC JWT, API Key, Dev Mode.
-/// Custom plugins: compile as a Rust crate, register at startup.
-trait AuthInterceptor: Send + Sync {
-    /// Extract principal from gRPC request metadata.
+/// Built-in implementations: Dev Mode, API Key, OIDC JWT (stub).
+trait AuthProvider: Send + Sync {
+    /// Extract principal from a gRPC request.
     /// Returns UNAUTHENTICATED if credentials are missing/invalid.
-    fn authenticate(&self, metadata: &MetadataMap) -> Result<Principal, Status>;
+    fn authenticate(&self, request: &Request<()>) -> Result<Principal, Status>;
 }
 ```
+
+The `AuthInterceptor` struct wraps an `Arc<dyn AuthProvider>` and
+implements `tonic::service::Interceptor`, injecting the resolved
+`Principal` into request extensions.
 
 ### Built-in Implementations
 
 | Provider | Header | Validation | Use Case |
 |----------|--------|------------|----------|
-| OIDC JWT | `authorization: Bearer <jwt>` | Verify signature, issuer, audience, expiry via JWKS | Production (Google, Okta, Auth0, Keycloak) |
-| API Key | `x-api-key: <key>` | Lookup in database | Programmatic access, CI/CD |
-| Dev Mode | (any request) | Accept all, use hardcoded principal | Local development |
+| OIDC JWT | `authorization: Bearer <jwt>` | Stub (returns unimplemented). Future: JWKS validation. | Production (Google, Okta, Auth0, Keycloak) |
+| API Key | `x-api-key: <key>` | Lookup in config file (key -> email mapping) | Programmatic access, CI/CD |
+| Dev Mode | (any request) | Accept all, hardcoded principal (dev@localhost, admin group) | Local development |
 
 ### Custom Auth Plugins
 
@@ -122,8 +127,8 @@ struct Principal {
     id: Uuid,
     /// Email (from JWT `email` claim). Used for display, not auth decisions.
     email: String,
-    /// Groups this principal belongs to (from JWT `groups` claim or DB lookup).
-    groups: Vec<Uuid>,
+    /// Group names this principal belongs to (from config or JWT `groups` claim).
+    groups: Vec<String>,
 }
 ```
 
@@ -169,7 +174,11 @@ A user's effective permission on a resource is the highest role from:
 1. Direct user-resource assignment (if any)
 2. Any group-resource assignment where the user is a member
 
-### Schema
+### Schema (Future -- not yet implemented)
+
+The current implementation uses file-based YAML (`config/permissions.yaml`)
+with `GroupDef` and `PermissionDef` structs. The SQL schema below is the
+target design for when the project migrates to database-backed permissions.
 
 ```sql
 -- Groups
