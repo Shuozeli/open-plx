@@ -6,8 +6,6 @@ use arrow_array::{Array, RecordBatch};
 use arrow_cast::cast;
 use arrow_schema::DataType;
 use open_plx_auth::{check_permission, get_principal};
-use open_plx_config::model::DataSourceConfigYaml;
-use open_plx_config::static_data::static_config_to_record_batch;
 use open_plx_core::pb::{
     widget_data_service_server::WidgetDataService, DataColumn, WidgetDataRequest,
     WidgetDataResponse,
@@ -22,35 +20,6 @@ pub struct WidgetDataServiceImpl {
 impl WidgetDataServiceImpl {
     pub fn new(state: Arc<AppState>) -> Self {
         Self { state }
-    }
-
-    async fn resolve_record_batch(&self, req: &WidgetDataRequest) -> Result<RecordBatch, Status> {
-        let dashboard = self
-            .state
-            .dashboards
-            .get(&req.dashboard)
-            .ok_or_else(|| Status::not_found(format!("dashboard not found: {}", req.dashboard)))?;
-
-        let widget = dashboard
-            .widgets
-            .iter()
-            .find(|w| w.id == req.widget_id)
-            .ok_or_else(|| Status::not_found(format!("widget not found: {}", req.widget_id)))?;
-
-        let ds_name = &widget.data_source.data_source;
-        let ds = self
-            .state
-            .data_sources
-            .get(ds_name)
-            .ok_or_else(|| Status::not_found(format!("data source not found: {ds_name}")))?;
-
-        match &ds.config {
-            DataSourceConfigYaml::Static { .. } => static_config_to_record_batch(ds)
-                .map_err(|e| Status::internal(format!("static data error: {e}"))),
-            DataSourceConfigYaml::FlightSql { .. } => {
-                self.state.flight_sql_pool.query(&ds.config).await
-            }
-        }
     }
 }
 
@@ -193,7 +162,7 @@ impl WidgetDataService for WidgetDataServiceImpl {
         }
 
         let start = std::time::Instant::now();
-        let batch = self.resolve_record_batch(&req).await?;
+        let batch = self.state.resolve_widget_data(&req).await?;
         let duration_ms = start.elapsed().as_millis();
 
         tracing::info!(

@@ -92,10 +92,6 @@ impl FlightSqlPool {
 
         let schema = schema.ok_or_else(|| Status::internal("Flight SQL returned no data"))?;
 
-        if batches.len() == 1 {
-            return Ok(batches.into_iter().next().expect("checked len == 1"));
-        }
-
         arrow_select::concat::concat_batches(&schema, &batches)
             .map_err(|e| Status::internal(format!("batch concat error: {e}")))
     }

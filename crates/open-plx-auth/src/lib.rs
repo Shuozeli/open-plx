@@ -233,7 +233,8 @@ fn role_to_level(role: &str) -> i32 {
         "viewer" => 10,
         "editor" => 50,
         "admin" => 100,
-        _ => 0,
+        // TODO(refactor): Validate roles at config load time so this is unreachable.
+        other => panic!("unknown role: '{other}' — check permissions.yaml"),
     }
 }
 

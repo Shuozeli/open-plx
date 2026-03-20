@@ -34,8 +34,8 @@ impl DashboardService for DashboardServiceImpl {
             .filter(|d| {
                 check_permission(&principal, &d.name, "viewer", &self.state.permissions)
             })
-            .map(dashboard_to_proto)
-            .collect();
+            .map(|d| dashboard_to_proto(d).map_err(|e| Status::internal(format!("config error: {e}"))))
+            .collect::<Result<Vec<_>, _>>()?;
         let total = dashboards.len() as i32;
 
         tracing::info!(
@@ -77,7 +77,8 @@ impl DashboardService for DashboardServiceImpl {
                     user = %principal.email,
                     dashboard = %name,
                 );
-                let dashboard = dashboard_to_proto(file);
+                let dashboard = dashboard_to_proto(file)
+                    .map_err(|e| Status::internal(format!("config error: {e}")))?;
                 Ok(Response::new(dashboard))
             }
             None => Err(Status::not_found(format!("dashboard not found: {name}"))),

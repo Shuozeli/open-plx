@@ -158,7 +158,7 @@ widgets:
             label: Target
 "#;
         let dashboard: crate::model::DashboardFile = serde_yaml::from_str(yaml).unwrap();
-        let proto = crate::convert::dashboard_to_proto(&dashboard);
+        let proto = crate::convert::dashboard_to_proto(&dashboard).unwrap();
 
         assert_eq!(proto.name, "dashboards/test");
         assert_eq!(proto.title, "Test Dashboard");

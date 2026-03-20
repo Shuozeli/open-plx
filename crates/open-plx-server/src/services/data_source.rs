@@ -29,8 +29,8 @@ impl DataSourceService for DataSourceServiceImpl {
             .state
             .data_sources
             .values()
-            .map(data_source_to_proto)
-            .collect();
+            .map(|d| data_source_to_proto(d).map_err(|e| Status::internal(format!("config error: {e}"))))
+            .collect::<Result<Vec<_>, _>>()?;
         let total = data_sources.len() as i32;
 
         tracing::debug!("listing {} data sources", total);
@@ -49,7 +49,8 @@ impl DataSourceService for DataSourceServiceImpl {
         let name = &request.get_ref().name;
         match self.state.data_sources.get(name) {
             Some(file) => {
-                let data_source = data_source_to_proto(file);
+                let data_source = data_source_to_proto(file)
+                    .map_err(|e| Status::internal(format!("config error: {e}")))?;
                 Ok(Response::new(data_source))
             }
             None => Err(Status::not_found(format!("data source not found: {name}"))),

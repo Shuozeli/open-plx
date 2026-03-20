@@ -9,8 +9,6 @@ use arrow_flight::{
 };
 use futures::stream::BoxStream;
 use futures::StreamExt;
-use open_plx_config::model::DataSourceConfigYaml;
-use open_plx_config::static_data::static_config_to_record_batch;
 use open_plx_core::pb::WidgetDataRequest;
 use prost::Message;
 use std::sync::Arc;
@@ -23,38 +21,6 @@ pub struct FlightServiceImpl {
 impl FlightServiceImpl {
     pub fn new(state: Arc<AppState>) -> Self {
         Self { state }
-    }
-
-    async fn resolve_widget_data(
-        &self,
-        req: &WidgetDataRequest,
-    ) -> Result<arrow_array::RecordBatch, Status> {
-        let dashboard = self
-            .state
-            .dashboards
-            .get(&req.dashboard)
-            .ok_or_else(|| Status::not_found(format!("dashboard not found: {}", req.dashboard)))?;
-
-        let widget = dashboard
-            .widgets
-            .iter()
-            .find(|w| w.id == req.widget_id)
-            .ok_or_else(|| Status::not_found(format!("widget not found: {}", req.widget_id)))?;
-
-        let ds_name = &widget.data_source.data_source;
-        let ds = self
-            .state
-            .data_sources
-            .get(ds_name)
-            .ok_or_else(|| Status::not_found(format!("data source not found: {ds_name}")))?;
-
-        match &ds.config {
-            DataSourceConfigYaml::Static { .. } => static_config_to_record_batch(ds)
-                .map_err(|e| Status::internal(format!("failed to build static data: {e}"))),
-            DataSourceConfigYaml::FlightSql { .. } => {
-                self.state.flight_sql_pool.query(&ds.config).await
-            }
-        }
     }
 }
 
@@ -96,7 +62,7 @@ impl FlightService for FlightServiceImpl {
             widget_req.widget_id
         );
 
-        let batch = self.resolve_widget_data(&widget_req).await?;
+        let batch = self.state.resolve_widget_data(&widget_req).await?;
         let schema = batch.schema();
 
         let ticket = Ticket {
@@ -140,7 +106,7 @@ impl FlightService for FlightServiceImpl {
             widget_req.widget_id
         );
 
-        let batch = self.resolve_widget_data(&widget_req).await?;
+        let batch = self.state.resolve_widget_data(&widget_req).await?;
         let schema = batch.schema();
 
         // Use FlightDataEncoderBuilder to stream schema + batches
