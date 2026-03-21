@@ -6,10 +6,7 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
-open-plx-core = { path = "../open-plx-core" }
 open-plx-config = { path = "../open-plx-config" }
 tonic.workspace = true
 uuid.workspace = true
-thiserror.workspace = true
 tracing.workspace = true
-anyhow.workspace = true

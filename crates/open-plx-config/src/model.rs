@@ -14,7 +14,6 @@ pub struct OpenPlxConfig {
     pub data_sources_dir: PathBuf,
     pub permissions_file: PathBuf,
     pub auth: AuthConfig,
-    pub log_level: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -60,9 +59,15 @@ pub struct GridConfigYaml {
     pub gap: i32,
 }
 
-fn default_24() -> i32 { 24 }
-fn default_40() -> i32 { 40 }
-fn default_8() -> i32 { 8 }
+fn default_24() -> i32 {
+    24
+}
+fn default_40() -> i32 {
+    40
+}
+fn default_8() -> i32 {
+    8
+}
 
 #[derive(Debug, Deserialize)]
 pub struct WidgetConfigYaml {
@@ -189,7 +194,9 @@ pub struct PivotFieldsYaml {
     pub value_in_cols: bool,
 }
 
-fn default_true() -> bool { true }
+fn default_true() -> bool {
+    true
+}
 
 #[derive(Debug, Deserialize)]
 pub struct FieldMetaYaml {
@@ -385,9 +392,7 @@ pub enum DataSourceConfigYaml {
         params: Vec<QueryParamYaml>,
     },
     #[serde(rename = "static")]
-    Static {
-        columns: Vec<StaticColumnYaml>,
-    },
+    Static { columns: Vec<StaticColumnYaml> },
 }
 
 #[derive(Debug, Deserialize)]

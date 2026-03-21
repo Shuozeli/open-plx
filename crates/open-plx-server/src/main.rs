@@ -33,16 +33,18 @@ async fn main() -> Result<()> {
     // Fail fast: CONFIG_PATH must be set explicitly.
     let config_path = std::env::var("CONFIG_PATH")
         .map(PathBuf::from)
-        .expect("CONFIG_PATH environment variable is required");
+        .map_err(|_| anyhow::anyhow!("CONFIG_PATH environment variable is required"))?;
 
     let loader = open_plx_config::ConfigLoader::load(&config_path)?;
-    let bind_addr = loader.config.bind_addr.parse()
-        .expect("bind_addr must be a valid socket address");
+    let bind_addr: std::net::SocketAddr = loader.config.bind_addr.parse().map_err(|e| {
+        anyhow::anyhow!(
+            "bind_addr '{}' is not a valid socket address: {e}",
+            loader.config.bind_addr
+        )
+    })?;
 
-    let auth_interceptor = open_plx_auth::AuthInterceptor::from_config(
-        &loader.config.auth,
-        &loader.permissions,
-    );
+    let auth_interceptor =
+        open_plx_auth::AuthInterceptor::from_config(&loader.config.auth, &loader.permissions);
 
     tracing::info!(
         dashboards = loader.dashboards.len(),
@@ -53,19 +55,15 @@ async fn main() -> Result<()> {
 
     let app_state = Arc::new(state::AppState::from_config(loader)?);
 
-    let dashboard_service =
-        services::dashboard::DashboardServiceImpl::new(app_state.clone());
-    let data_source_service =
-        services::data_source::DataSourceServiceImpl::new(app_state.clone());
-    let flight_service =
-        services::flight::FlightServiceImpl::new(app_state.clone());
-    let widget_data_service =
-        services::widget_data::WidgetDataServiceImpl::new(app_state.clone());
+    let dashboard_service = services::dashboard::DashboardServiceImpl::new(app_state.clone());
+    let data_source_service = services::data_source::DataSourceServiceImpl::new(app_state.clone());
+    let flight_service = services::flight::FlightServiceImpl::new(app_state.clone());
+    let widget_data_service = services::widget_data::WidgetDataServiceImpl::new(app_state.clone());
     let (health_reporter, health_service) = tonic_health::server::health_reporter();
     tokio::spawn(async move {
-        #[allow(unused_mut)]
-        let mut reporter = health_reporter;
-        reporter.set_service_status("", tonic_health::ServingStatus::Serving).await;
+        health_reporter
+            .set_service_status("", tonic_health::ServingStatus::Serving)
+            .await;
         // Keep reporter alive until server shuts down
         std::future::pending::<()>().await;
     });

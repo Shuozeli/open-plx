@@ -7,8 +7,8 @@ use arrow_cast::cast;
 use arrow_schema::DataType;
 use open_plx_auth::{check_permission, get_principal};
 use open_plx_core::pb::{
-    widget_data_service_server::WidgetDataService, DataColumn, WidgetDataRequest,
-    WidgetDataResponse,
+    DataColumn, WidgetDataRequest, WidgetDataResponse,
+    widget_data_service_server::WidgetDataService,
 };
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
@@ -65,16 +65,17 @@ fn record_batch_to_columns(batch: &RecordBatch) -> Result<Vec<DataColumn>, Statu
 
         match field.data_type() {
             // --- String-like types: cast to Utf8 ---
-            DataType::Utf8 | DataType::LargeUtf8 | DataType::Date32 | DataType::Date64
+            DataType::Utf8
+            | DataType::LargeUtf8
+            | DataType::Date32
+            | DataType::Date64
             | DataType::Timestamp(_, _) => {
                 let casted = cast(array, &DataType::Utf8).map_err(|e| cast_err("Utf8", e))?;
                 let arr = casted
                     .as_any()
                     .downcast_ref::<arrow_array::StringArray>()
                     .ok_or_else(|| downcast_err("StringArray"))?;
-                col.string_values = (0..arr.len())
-                    .map(|i| arr.value(i).to_string())
-                    .collect();
+                col.string_values = (0..arr.len()).map(|i| arr.value(i).to_string()).collect();
             }
 
             // --- Integer types: cast to Int64 ---
@@ -94,10 +95,12 @@ fn record_batch_to_columns(batch: &RecordBatch) -> Result<Vec<DataColumn>, Statu
             }
 
             // --- Float types: cast to Float64 ---
-            DataType::Float16 | DataType::Float32 | DataType::Float64 | DataType::Decimal128(_, _)
+            DataType::Float16
+            | DataType::Float32
+            | DataType::Float64
+            | DataType::Decimal128(_, _)
             | DataType::Decimal256(_, _) => {
-                let casted =
-                    cast(array, &DataType::Float64).map_err(|e| cast_err("Float64", e))?;
+                let casted = cast(array, &DataType::Float64).map_err(|e| cast_err("Float64", e))?;
                 let arr = casted
                     .as_any()
                     .downcast_ref::<arrow_array::Float64Array>()
@@ -137,19 +140,9 @@ impl WidgetDataService for WidgetDataServiceImpl {
         let principal = get_principal(&request)?;
         let req = request.into_inner();
 
-        // Check data-level permission on the widget's data source
-        let dashboard = self
-            .state
-            .dashboards
-            .get(&req.dashboard)
-            .ok_or_else(|| Status::not_found(format!("dashboard not found: {}", req.dashboard)))?;
-        let widget = dashboard
-            .widgets
-            .iter()
-            .find(|w| w.id == req.widget_id)
-            .ok_or_else(|| Status::not_found(format!("widget not found: {}", req.widget_id)))?;
-        let ds_name = &widget.data_source.data_source;
-        if !check_permission(&principal, ds_name, "reader", &self.state.permissions) {
+        // Resolve data source name, then check permission before fetching data
+        let ds_name = self.state.resolve_data_source_name(&req)?;
+        if !check_permission(&principal, &ds_name, "reader", &self.state.permissions)? {
             tracing::info!(
                 event = "permission.denied",
                 user = %principal.email,
@@ -162,7 +155,7 @@ impl WidgetDataService for WidgetDataServiceImpl {
         }
 
         let start = std::time::Instant::now();
-        let batch = self.state.resolve_widget_data(&req).await?;
+        let batch = self.state.execute_data_source(&ds_name).await?;
         let duration_ms = start.elapsed().as_millis();
 
         tracing::info!(

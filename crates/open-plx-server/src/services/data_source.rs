@@ -1,10 +1,9 @@
 use crate::state::AppState;
 use open_plx_config::convert::data_source_to_proto;
 use open_plx_core::pb::{
-    data_source_service_server::DataSourceService, CreateDataSourceRequest, DataSource,
-    DeleteDataSourceRequest, DeleteDataSourceResponse, GetDataSourceRequest,
-    ListDataSourcesRequest, ListDataSourcesResponse, TestDataSourceRequest,
-    TestDataSourceResponse, UpdateDataSourceRequest,
+    CreateDataSourceRequest, DataSource, DeleteDataSourceRequest, DeleteDataSourceResponse,
+    GetDataSourceRequest, ListDataSourcesRequest, ListDataSourcesResponse, TestDataSourceRequest,
+    TestDataSourceResponse, UpdateDataSourceRequest, data_source_service_server::DataSourceService,
 };
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
@@ -29,7 +28,9 @@ impl DataSourceService for DataSourceServiceImpl {
             .state
             .data_sources
             .values()
-            .map(|d| data_source_to_proto(d).map_err(|e| Status::internal(format!("config error: {e}"))))
+            .map(|d| {
+                data_source_to_proto(d).map_err(|e| Status::internal(format!("config error: {e}")))
+            })
             .collect::<Result<Vec<_>, _>>()?;
         let total = data_sources.len() as i32;
 

@@ -50,7 +50,10 @@ impl ConfigLoader {
         {
             let entry = entry?;
             let path = entry.path();
-            if path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
+            if path
+                .extension()
+                .is_some_and(|ext| ext == "yaml" || ext == "yml")
+            {
                 let content = std::fs::read_to_string(&path)
                     .with_context(|| format!("failed to read: {}", path.display()))?;
                 let dashboard: DashboardFile = serde_yaml::from_str(&content)
@@ -76,7 +79,10 @@ impl ConfigLoader {
         {
             let entry = entry?;
             let path = entry.path();
-            if path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
+            if path
+                .extension()
+                .is_some_and(|ext| ext == "yaml" || ext == "yml")
+            {
                 let content = std::fs::read_to_string(&path)
                     .with_context(|| format!("failed to read: {}", path.display()))?;
                 let data_source: DataSourceFile = serde_yaml::from_str(&content)
@@ -91,7 +97,10 @@ impl ConfigLoader {
 
     fn load_permissions(path: &Path) -> Result<PermissionsFile> {
         if !path.exists() {
-            tracing::warn!("permissions file does not exist: {}, using empty permissions", path.display());
+            tracing::warn!(
+                "permissions file does not exist: {}, using empty permissions",
+                path.display()
+            );
             return Ok(PermissionsFile {
                 groups: vec![],
                 permissions: vec![],
@@ -167,7 +176,10 @@ widgets:
         // Check metric card
         let w0 = &proto.widgets[0];
         assert_eq!(w0.id, "kpi-1");
-        assert_eq!(w0.widget_type, open_plx_core::pb::WidgetType::MetricCard as i32);
+        assert_eq!(
+            w0.widget_type,
+            open_plx_core::pb::WidgetType::MetricCard as i32
+        );
         let spec0 = w0.spec.as_ref().unwrap().spec.as_ref().unwrap();
         match spec0 {
             open_plx_core::pb::widget_spec::Spec::MetricCard(m) => {

@@ -10,8 +10,8 @@ use open_plx_config::model::DataSourceConfigYaml;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use tonic::transport::Channel;
 use tonic::Status;
+use tonic::transport::Channel;
 
 type PooledClient = Arc<Mutex<FlightSqlServiceClient<Channel>>>;
 
@@ -61,9 +61,7 @@ impl FlightSqlPool {
         )
         .await
         .map_err(|_| {
-            Status::deadline_exceeded(format!(
-                "Flight SQL query timed out after {timeout_secs}s"
-            ))
+            Status::deadline_exceeded(format!("Flight SQL query timed out after {timeout_secs}s"))
         })?
         .map_err(|e| Status::internal(format!("Flight SQL execute failed: {e}")))?;
 
@@ -123,23 +121,16 @@ impl FlightSqlPool {
             .connect()
             .await
             .map_err(|e| {
-                Status::unavailable(format!(
-                    "Flight SQL connection failed to {endpoint}: {e}"
-                ))
+                Status::unavailable(format!("Flight SQL connection failed to {endpoint}: {e}"))
             })?;
 
         let mut client = FlightSqlServiceClient::new(channel);
 
         // Perform handshake if credentials are provided
         if let Some((username, password)) = credentials {
-            client
-                .handshake(username, password)
-                .await
-                .map_err(|e| {
-                    Status::unauthenticated(format!(
-                        "Flight SQL handshake failed for {endpoint}: {e}"
-                    ))
-                })?;
+            client.handshake(username, password).await.map_err(|e| {
+                Status::unauthenticated(format!("Flight SQL handshake failed for {endpoint}: {e}"))
+            })?;
             tracing::info!("Flight SQL handshake successful for {endpoint}");
         }
 

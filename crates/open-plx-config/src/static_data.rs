@@ -1,7 +1,7 @@
 //! Converts StaticConfig YAML data to Arrow RecordBatches.
 
 use crate::model::{DataSourceConfigYaml, DataSourceFile, StaticColumnYaml};
-use anyhow::{bail, Result};
+use anyhow::{Context, Result, bail};
 use arrow_array::{ArrayRef, Float64Array, Int64Array, RecordBatch, StringArray};
 use arrow_schema::{DataType, Field, Schema};
 use std::sync::Arc;
@@ -27,17 +27,77 @@ pub fn static_config_to_record_batch(ds: &DataSourceFile) -> Result<RecordBatch>
     Ok(batch)
 }
 
+/// Parse a YAML value as a string, failing on non-string types.
+pub fn yaml_value_to_string(v: &serde_yaml::Value, col_name: &str, idx: usize) -> Result<String> {
+    match v {
+        serde_yaml::Value::String(s) => Ok(s.clone()),
+        other => bail!(
+            "column '{}' row {}: expected string, got {:?}",
+            col_name,
+            idx,
+            other
+        ),
+    }
+}
+
+/// Parse a YAML value as i64, failing on non-numeric types.
+pub fn yaml_value_to_i64(v: &serde_yaml::Value, col_name: &str, idx: usize) -> Result<i64> {
+    match v {
+        serde_yaml::Value::Number(n) => n.as_i64().with_context(|| {
+            format!(
+                "column '{}' row {}: number {:?} is not a valid i64",
+                col_name, idx, n
+            )
+        }),
+        other => bail!(
+            "column '{}' row {}: expected number, got {:?}",
+            col_name,
+            idx,
+            other
+        ),
+    }
+}
+
+/// Parse a YAML value as f64, failing on non-numeric types.
+pub fn yaml_value_to_f64(v: &serde_yaml::Value, col_name: &str, idx: usize) -> Result<f64> {
+    match v {
+        serde_yaml::Value::Number(n) => n.as_f64().with_context(|| {
+            format!(
+                "column '{}' row {}: number {:?} is not a valid f64",
+                col_name, idx, n
+            )
+        }),
+        other => bail!(
+            "column '{}' row {}: expected number, got {:?}",
+            col_name,
+            idx,
+            other
+        ),
+    }
+}
+
+/// Parse a YAML value as bool, failing on non-boolean types.
+pub fn yaml_value_to_bool(v: &serde_yaml::Value, col_name: &str, idx: usize) -> Result<bool> {
+    match v {
+        serde_yaml::Value::Bool(b) => Ok(*b),
+        other => bail!(
+            "column '{}' row {}: expected boolean, got {:?}",
+            col_name,
+            idx,
+            other
+        ),
+    }
+}
+
 fn static_column_to_arrow(col: &StaticColumnYaml) -> Result<(Field, ArrayRef)> {
     match col.arrow_type.as_str() {
         "utf8" => {
             let values: Vec<String> = col
                 .values
                 .iter()
-                .map(|v| match v {
-                    serde_yaml::Value::String(s) => s.clone(),
-                    other => format!("{other:?}"),
-                })
-                .collect();
+                .enumerate()
+                .map(|(i, v)| yaml_value_to_string(v, &col.name, i))
+                .collect::<Result<Vec<_>>>()?;
             let array = Arc::new(StringArray::from(values)) as ArrayRef;
             let field = Field::new(&col.name, DataType::Utf8, false);
             Ok((field, array))
@@ -46,11 +106,9 @@ fn static_column_to_arrow(col: &StaticColumnYaml) -> Result<(Field, ArrayRef)> {
             let values: Vec<i64> = col
                 .values
                 .iter()
-                .map(|v| match v {
-                    serde_yaml::Value::Number(n) => n.as_i64().unwrap_or(0),
-                    _ => 0,
-                })
-                .collect();
+                .enumerate()
+                .map(|(i, v)| yaml_value_to_i64(v, &col.name, i))
+                .collect::<Result<Vec<_>>>()?;
             let array = Arc::new(Int64Array::from(values)) as ArrayRef;
             let field = Field::new(&col.name, DataType::Int64, false);
             Ok((field, array))
@@ -59,11 +117,9 @@ fn static_column_to_arrow(col: &StaticColumnYaml) -> Result<(Field, ArrayRef)> {
             let values: Vec<f64> = col
                 .values
                 .iter()
-                .map(|v| match v {
-                    serde_yaml::Value::Number(n) => n.as_f64().unwrap_or(0.0),
-                    _ => 0.0,
-                })
-                .collect();
+                .enumerate()
+                .map(|(i, v)| yaml_value_to_f64(v, &col.name, i))
+                .collect::<Result<Vec<_>>>()?;
             let array = Arc::new(Float64Array::from(values)) as ArrayRef;
             let field = Field::new(&col.name, DataType::Float64, false);
             Ok((field, array))
@@ -109,5 +165,28 @@ mod tests {
         assert_eq!(batch.num_columns(), 2);
         assert_eq!(batch.schema().field(0).name(), "label");
         assert_eq!(batch.schema().field(1).name(), "value");
+    }
+
+    #[test]
+    fn test_type_mismatch_fails() {
+        let ds = DataSourceFile {
+            name: "bad".to_string(),
+            display_name: "Bad".to_string(),
+            description: String::new(),
+            config: DataSourceConfigYaml::Static {
+                columns: vec![StaticColumnYaml {
+                    name: "count".to_string(),
+                    arrow_type: "int64".to_string(),
+                    values: vec![serde_yaml::Value::String("not_a_number".to_string())],
+                }],
+            },
+        };
+
+        let result = static_config_to_record_batch(&ds);
+        assert!(result.is_err());
+        assert!(
+            result.unwrap_err().to_string().contains("expected number"),
+            "error should mention type mismatch"
+        );
     }
 }

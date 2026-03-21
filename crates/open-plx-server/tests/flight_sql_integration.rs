@@ -36,10 +36,7 @@ async fn test_flight_sql_simple_query() {
 
     assert!(!flight_info.endpoint.is_empty(), "no endpoints returned");
 
-    let ticket = flight_info.endpoint[0]
-        .ticket
-        .clone()
-        .expect("no ticket");
+    let ticket = flight_info.endpoint[0].ticket.clone().expect("no ticket");
     let mut stream = client.do_get(ticket).await.expect("do_get failed");
 
     let mut total_rows = 0;
@@ -64,10 +61,7 @@ async fn test_flight_sql_company_financials() {
         .await
         .expect("execute failed");
 
-    let ticket = flight_info.endpoint[0]
-        .ticket
-        .clone()
-        .expect("no ticket");
+    let ticket = flight_info.endpoint[0].ticket.clone().expect("no ticket");
     let mut stream = client.do_get(ticket).await.expect("do_get failed");
 
     let mut total_rows = 0;
@@ -87,7 +81,14 @@ async fn test_flight_sql_company_financials() {
     let field_names: Vec<&str> = schema.fields().iter().map(|f| f.name().as_str()).collect();
     assert_eq!(
         field_names,
-        vec!["company", "quarter", "revenue", "profit", "eps", "market_cap"]
+        vec![
+            "company",
+            "quarter",
+            "revenue",
+            "profit",
+            "eps",
+            "market_cap"
+        ]
     );
 }
 
@@ -102,7 +103,8 @@ async fn test_flight_sql_pool_integration() {
         .expect("parse auth yaml");
     let config = DataSourceConfigYaml::FlightSql {
         endpoint: "grpc://localhost:31337".to_string(),
-        query: "SELECT company, quarter, revenue FROM company_financials ORDER BY company, quarter".to_string(),
+        query: "SELECT company, quarter, revenue FROM company_financials ORDER BY company, quarter"
+            .to_string(),
         auth: Some(auth),
         params: vec![],
     };

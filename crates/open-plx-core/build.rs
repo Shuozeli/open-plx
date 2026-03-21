@@ -8,8 +8,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &format!("{proto_root}/open_plx/v1/data.proto"),
     ];
 
-    let descriptor_path = std::path::PathBuf::from(std::env::var("OUT_DIR")?)
-        .join("open_plx_descriptor.bin");
+    let descriptor_path =
+        std::path::PathBuf::from(std::env::var("OUT_DIR")?).join("open_plx_descriptor.bin");
 
     tonic_prost_build::configure()
         .file_descriptor_set_path(&descriptor_path)

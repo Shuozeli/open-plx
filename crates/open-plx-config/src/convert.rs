@@ -4,7 +4,7 @@
 //! so that YAML config errors are caught at load time, not silently ignored.
 
 use crate::model::*;
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use open_plx_core::pb;
 
 /// Convert a DashboardFile (YAML) to a Dashboard proto message.
@@ -545,6 +545,10 @@ fn data_source_config_to_proto(config: &DataSourceConfigYaml) -> Result<pb::data
 }
 
 fn static_column_to_proto(col: &StaticColumnYaml) -> Result<pb::StaticColumn> {
+    use crate::static_data::{
+        yaml_value_to_bool, yaml_value_to_f64, yaml_value_to_i64, yaml_value_to_string,
+    };
+
     let arrow_type = parse_arrow_type(&col.arrow_type)?;
     let mut proto_col = pb::StaticColumn {
         name: col.name.clone(),
@@ -560,44 +564,39 @@ fn static_column_to_proto(col: &StaticColumnYaml) -> Result<pb::StaticColumn> {
             proto_col.string_values = col
                 .values
                 .iter()
-                .map(|v| match v {
-                    serde_yaml::Value::String(s) => s.clone(),
-                    other => format!("{other:?}"),
-                })
-                .collect();
+                .enumerate()
+                .map(|(i, v)| yaml_value_to_string(v, &col.name, i))
+                .collect::<Result<Vec<_>>>()?;
         }
         pb::ArrowType::Int64 => {
             proto_col.int_values = col
                 .values
                 .iter()
-                .filter_map(|v| match v {
-                    serde_yaml::Value::Number(n) => n.as_i64(),
-                    _ => None,
-                })
-                .collect();
+                .enumerate()
+                .map(|(i, v)| yaml_value_to_i64(v, &col.name, i))
+                .collect::<Result<Vec<_>>>()?;
         }
         pb::ArrowType::Float64 => {
             proto_col.float_values = col
                 .values
                 .iter()
-                .filter_map(|v| match v {
-                    serde_yaml::Value::Number(n) => n.as_f64(),
-                    _ => None,
-                })
-                .collect();
+                .enumerate()
+                .map(|(i, v)| yaml_value_to_f64(v, &col.name, i))
+                .collect::<Result<Vec<_>>>()?;
         }
         pb::ArrowType::Boolean => {
             proto_col.bool_values = col
                 .values
                 .iter()
-                .filter_map(|v| match v {
-                    serde_yaml::Value::Bool(b) => Some(*b),
-                    _ => None,
-                })
-                .collect();
+                .enumerate()
+                .map(|(i, v)| yaml_value_to_bool(v, &col.name, i))
+                .collect::<Result<Vec<_>>>()?;
         }
         pb::ArrowType::Unspecified => {
-            bail!("arrow_type resolved to Unspecified for column '{}'", col.name);
+            bail!(
+                "arrow_type resolved to Unspecified for column '{}'",
+                col.name
+            );
         }
     }
 

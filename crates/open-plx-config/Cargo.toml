@@ -11,9 +11,7 @@ tempfile = "3"
 [dependencies]
 open-plx-core = { path = "../open-plx-core" }
 serde.workspace = true
-serde_json.workspace = true
 serde_yaml.workspace = true
-thiserror.workspace = true
 tracing.workspace = true
 anyhow.workspace = true
 arrow-schema = "58.0.0"

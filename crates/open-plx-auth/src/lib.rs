@@ -50,7 +50,10 @@ pub struct ApiKeyAuth {
 impl ApiKeyAuth {
     pub fn new(keys: HashMap<String, String>, permissions: &PermissionsFile) -> Self {
         let member_groups = build_member_groups(permissions);
-        Self { keys, member_groups }
+        Self {
+            keys,
+            member_groups,
+        }
     }
 }
 
@@ -68,11 +71,7 @@ impl AuthProvider for ApiKeyAuth {
             .get(key)
             .ok_or_else(|| Status::unauthenticated("invalid API key"))?;
 
-        let groups = self
-            .member_groups
-            .get(email)
-            .cloned()
-            .unwrap_or_default();
+        let groups = self.member_groups.get(email).cloned().unwrap_or_default();
 
         Ok(Principal {
             id: Uuid::new_v4(),
@@ -133,10 +132,7 @@ impl AuthInterceptor {
     }
 
     /// Create an interceptor from the server config.
-    pub fn from_config(
-        auth_config: &AuthConfig,
-        permissions: &PermissionsFile,
-    ) -> Self {
+    pub fn from_config(auth_config: &AuthConfig, permissions: &PermissionsFile) -> Self {
         let provider: Arc<dyn AuthProvider> = match auth_config {
             AuthConfig::Dev => {
                 tracing::warn!("using dev mode auth -- all requests accepted");
@@ -177,20 +173,21 @@ impl Interceptor for AuthInterceptor {
 // =============================================================================
 
 /// Check if a principal has a specific role level on a resource.
+/// Returns an error if the role string is unknown.
 pub fn check_permission(
     principal: &Principal,
     resource: &str,
     required_role: &str,
     permissions: &PermissionsFile,
-) -> bool {
-    let required_level = role_to_level(required_role);
+) -> Result<bool, Status> {
+    let required_level = role_to_level(required_role)?;
 
     for perm in &permissions.permissions {
         if !resource_matches(&perm.resource, resource) {
             continue;
         }
 
-        let perm_level = role_to_level(&perm.role);
+        let perm_level = role_to_level(&perm.role)?;
         if perm_level < required_level {
             continue;
         }
@@ -198,19 +195,19 @@ pub fn check_permission(
         match perm.principal_type.as_str() {
             "user" => {
                 if perm.principal == principal.email {
-                    return true;
+                    return Ok(true);
                 }
             }
             "group" => {
                 if principal.groups.contains(&perm.principal) {
-                    return true;
+                    return Ok(true);
                 }
             }
             _ => {}
         }
     }
 
-    false
+    Ok(false)
 }
 
 /// Extract Principal from a tonic request's extensions.
@@ -227,14 +224,15 @@ pub fn get_principal<T>(request: &Request<T>) -> Result<Principal, Status> {
 // Helpers
 // =============================================================================
 
-fn role_to_level(role: &str) -> i32 {
+fn role_to_level(role: &str) -> Result<i32, Status> {
     match role {
-        "reader" => 1,
-        "viewer" => 10,
-        "editor" => 50,
-        "admin" => 100,
-        // TODO(refactor): Validate roles at config load time so this is unreachable.
-        other => panic!("unknown role: '{other}' — check permissions.yaml"),
+        "reader" => Ok(1),
+        "viewer" => Ok(10),
+        "editor" => Ok(50),
+        "admin" => Ok(100),
+        other => Err(Status::internal(format!(
+            "unknown role: '{other}' -- check permissions.yaml"
+        ))),
     }
 }
 
@@ -307,9 +305,9 @@ mod tests {
             groups: vec!["engineering".to_string()],
         };
 
-        assert!(check_permission(&alice, "dashboards/demo", "viewer", &perms));
-        assert!(check_permission(&alice, "dataSources/demo", "reader", &perms));
-        assert!(!check_permission(&alice, "dashboards/demo", "editor", &perms));
+        assert!(check_permission(&alice, "dashboards/demo", "viewer", &perms).unwrap());
+        assert!(check_permission(&alice, "dataSources/demo", "reader", &perms).unwrap());
+        assert!(!check_permission(&alice, "dashboards/demo", "editor", &perms).unwrap());
     }
 
     #[test]
@@ -321,8 +319,8 @@ mod tests {
             groups: vec![],
         };
 
-        assert!(check_permission(&bob, "dashboards/secret", "admin", &perms));
-        assert!(!check_permission(&bob, "dashboards/other", "viewer", &perms));
+        assert!(check_permission(&bob, "dashboards/secret", "admin", &perms).unwrap());
+        assert!(!check_permission(&bob, "dashboards/other", "viewer", &perms).unwrap());
     }
 
     #[test]
@@ -334,7 +332,19 @@ mod tests {
             groups: vec![],
         };
 
-        assert!(!check_permission(&charlie, "dashboards/demo", "viewer", &perms));
+        assert!(!check_permission(&charlie, "dashboards/demo", "viewer", &perms).unwrap());
+    }
+
+    #[test]
+    fn test_unknown_role_returns_error() {
+        let perms = test_permissions();
+        let alice = Principal {
+            id: Uuid::nil(),
+            email: "alice@example.com".to_string(),
+            groups: vec!["engineering".to_string()],
+        };
+
+        assert!(check_permission(&alice, "dashboards/demo", "superadmin", &perms).is_err());
     }
 
     #[test]

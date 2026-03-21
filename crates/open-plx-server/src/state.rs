@@ -27,11 +27,9 @@ impl AppState {
         })
     }
 
-    /// Resolve a widget data request to an Arrow RecordBatch.
-    ///
-    /// Looks up the dashboard, finds the widget, resolves the data source,
-    /// and executes the query (static or Flight SQL).
-    pub async fn resolve_widget_data(&self, req: &WidgetDataRequest) -> Result<RecordBatch, Status> {
+    /// Resolve the data source name for a widget data request.
+    /// Returns the data source name string for permission checking.
+    pub fn resolve_data_source_name(&self, req: &WidgetDataRequest) -> Result<String, Status> {
         let dashboard = self
             .dashboards
             .get(&req.dashboard)
@@ -43,7 +41,13 @@ impl AppState {
             .find(|w| w.id == req.widget_id)
             .ok_or_else(|| Status::not_found(format!("widget not found: {}", req.widget_id)))?;
 
-        let ds_name = &widget.data_source.data_source;
+        Ok(widget.data_source.data_source.clone())
+    }
+
+    /// Execute a data source query and return an Arrow RecordBatch.
+    /// The caller should resolve the data source name via `resolve_data_source_name`
+    /// and check permissions before calling this.
+    pub async fn execute_data_source(&self, ds_name: &str) -> Result<RecordBatch, Status> {
         let ds = self
             .data_sources
             .get(ds_name)
@@ -52,9 +56,7 @@ impl AppState {
         match &ds.config {
             DataSourceConfigYaml::Static { .. } => static_config_to_record_batch(ds)
                 .map_err(|e| Status::internal(format!("static data error: {e}"))),
-            DataSourceConfigYaml::FlightSql { .. } => {
-                self.flight_sql_pool.query(&ds.config).await
-            }
+            DataSourceConfigYaml::FlightSql { .. } => self.flight_sql_pool.query(&ds.config).await,
         }
     }
 }

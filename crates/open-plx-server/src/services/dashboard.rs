@@ -2,9 +2,9 @@ use crate::state::AppState;
 use open_plx_auth::{check_permission, get_principal};
 use open_plx_config::convert::dashboard_to_proto;
 use open_plx_core::pb::{
-    dashboard_service_server::DashboardService, CreateDashboardRequest, Dashboard,
-    DeleteDashboardRequest, DeleteDashboardResponse, GetDashboardRequest,
-    ListDashboardsRequest, ListDashboardsResponse, UpdateDashboardRequest,
+    CreateDashboardRequest, Dashboard, DeleteDashboardRequest, DeleteDashboardResponse,
+    GetDashboardRequest, ListDashboardsRequest, ListDashboardsResponse, UpdateDashboardRequest,
+    dashboard_service_server::DashboardService,
 };
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
@@ -31,10 +31,16 @@ impl DashboardService for DashboardServiceImpl {
             .state
             .dashboards
             .values()
-            .filter(|d| {
-                check_permission(&principal, &d.name, "viewer", &self.state.permissions)
+            .filter_map(|d| {
+                match check_permission(&principal, &d.name, "viewer", &self.state.permissions) {
+                    Ok(true) => Some(
+                        dashboard_to_proto(d)
+                            .map_err(|e| Status::internal(format!("config error: {e}"))),
+                    ),
+                    Ok(false) => None,
+                    Err(e) => Some(Err(e)),
+                }
             })
-            .map(|d| dashboard_to_proto(d).map_err(|e| Status::internal(format!("config error: {e}"))))
             .collect::<Result<Vec<_>, _>>()?;
         let total = dashboards.len() as i32;
 
@@ -60,7 +66,7 @@ impl DashboardService for DashboardServiceImpl {
 
         // Check viewer permission. Return NOT_FOUND (not PERMISSION_DENIED)
         // to hide dashboard existence from unauthorized users.
-        if !check_permission(&principal, name, "viewer", &self.state.permissions) {
+        if !check_permission(&principal, name, "viewer", &self.state.permissions)? {
             tracing::info!(
                 event = "permission.denied",
                 user = %principal.email,

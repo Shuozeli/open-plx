@@ -2,13 +2,12 @@
 
 use crate::state::AppState;
 use arrow_flight::{
-    encode::FlightDataEncoderBuilder,
-    flight_service_server::FlightService, Action, ActionType, Criteria, Empty,
-    FlightData, FlightDescriptor, FlightEndpoint, FlightInfo, HandshakeRequest,
-    HandshakeResponse, PollInfo, PutResult, SchemaResult, Ticket,
+    Action, ActionType, Criteria, Empty, FlightData, FlightDescriptor, FlightEndpoint, FlightInfo,
+    HandshakeRequest, HandshakeResponse, PollInfo, PutResult, SchemaResult, Ticket,
+    encode::FlightDataEncoderBuilder, flight_service_server::FlightService,
 };
-use futures::stream::BoxStream;
 use futures::StreamExt;
+use futures::stream::BoxStream;
 use open_plx_core::pb::WidgetDataRequest;
 use prost::Message;
 use std::sync::Arc;
@@ -62,7 +61,10 @@ impl FlightService for FlightServiceImpl {
             widget_req.widget_id
         );
 
-        let batch = self.state.resolve_widget_data(&widget_req).await?;
+        let batch = {
+            let ds_name = self.state.resolve_data_source_name(&widget_req)?;
+            self.state.execute_data_source(&ds_name).await?
+        };
         let schema = batch.schema();
 
         let ticket = Ticket {
@@ -106,7 +108,10 @@ impl FlightService for FlightServiceImpl {
             widget_req.widget_id
         );
 
-        let batch = self.state.resolve_widget_data(&widget_req).await?;
+        let batch = {
+            let ds_name = self.state.resolve_data_source_name(&widget_req)?;
+            self.state.execute_data_source(&ds_name).await?
+        };
         let schema = batch.schema();
 
         // Use FlightDataEncoderBuilder to stream schema + batches
