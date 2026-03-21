@@ -1,0 +1,22 @@
+name: dataSources/hn-by-hour
+display_name: HN Stories by Weekday x Hour
+description: Story distribution as a weekday/hour heatmap
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT created_weekday as weekday,
+           LPAD(CAST(created_hour AS VARCHAR), 2, '0') || ':00' as hour,
+           COUNT(*) as count
+    FROM hn_stories
+    GROUP BY created_weekday, created_hour
+    ORDER BY CASE created_weekday
+      WHEN 'Mon' THEN 1 WHEN 'Tue' THEN 2 WHEN 'Wed' THEN 3
+      WHEN 'Thu' THEN 4 WHEN 'Fri' THEN 5 WHEN 'Sat' THEN 6 WHEN 'Sun' THEN 7
+    END, created_hour
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

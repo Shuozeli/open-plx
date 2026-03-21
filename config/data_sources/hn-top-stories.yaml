@@ -1,0 +1,17 @@
+name: dataSources/hn-top-stories
+display_name: HN Top Stories
+description: Top 50 stories by points (flat table)
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT title, author, domain, points, num_comments, created_date
+    FROM hn_stories
+    ORDER BY points DESC
+    LIMIT 50
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

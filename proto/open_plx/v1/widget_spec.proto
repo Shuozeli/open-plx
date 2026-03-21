@@ -34,6 +34,12 @@ message WidgetSpec {
     PivotTableSpec pivot_table = 2;
     MetricCardSpec metric_card = 3;
     TextSpec text = 4;
+    TableSpec table = 5;
+    GaugeSpec gauge = 6;
+    FunnelSpec funnel = 7;
+    TreemapSpec treemap = 8;
+    SankeySpec sankey = 9;
+    WordCloudSpec word_cloud = 10;
   }
 }
 
@@ -106,6 +112,7 @@ enum ChartType {
   CHART_TYPE_HEATMAP = 8;        // Matrix density
   CHART_TYPE_HISTOGRAM = 9;      // Distribution
   CHART_TYPE_RADAR = 10;         // Multi-dimensional comparison
+  CHART_TYPE_BOX_PLOT = 11;      // Statistical distribution (box + whiskers)
 }
 
 // Maps data columns to visual roles (semantic, not library-specific).
@@ -374,6 +381,8 @@ message PivotTableSpec {
   PivotFrozen frozen = 6;
   PivotPagination pagination = 7;
   PivotSeriesNumber series_number = 8;
+  repeated ConditionalFormat conditions = 9;
+  TableInteraction interaction = 10;
 }
 
 message PivotFields {
@@ -496,4 +505,178 @@ enum TextFormat {
   TEXT_FORMAT_UNSPECIFIED = 0;
   TEXT_FORMAT_PLAIN = 1;
   TEXT_FORMAT_MARKDOWN = 2;
+}
+
+// =============================================================================
+// TABLE SPEC
+//
+// Flat table (no pivot dimensions). Uses S2 TableSheet.
+// =============================================================================
+
+message TableSpec {
+  // Columns to display. If empty, all data columns are shown.
+  repeated TableColumn columns = 1;
+
+  // Field display names and formatters (same as PivotTableSpec.meta).
+  repeated FieldMeta meta = 2;
+
+  // Pagination config. If absent, no pagination.
+  TablePagination pagination = 3;
+
+  // Show auto-incrementing row number column.
+  bool show_row_numbers = 4;
+
+  repeated ConditionalFormat conditions = 5;
+  TableInteraction interaction = 6;
+}
+
+message TableColumn {
+  // Data field name.
+  string field = 1;
+
+  // Column width in pixels. 0 = auto.
+  int32 width = 2;
+
+  // Alignment override.
+  TableColumnAlign align = 3;
+}
+
+enum TableColumnAlign {
+  TABLE_COLUMN_ALIGN_UNSPECIFIED = 0;
+  TABLE_COLUMN_ALIGN_LEFT = 1;
+  TABLE_COLUMN_ALIGN_CENTER = 2;
+  TABLE_COLUMN_ALIGN_RIGHT = 3;
+}
+
+message TablePagination {
+  int32 page_size = 1;
+}
+
+// =============================================================================
+// GAUGE SPEC
+//
+// Radial gauge / speedometer. Value mapped to an arc with color ranges.
+// =============================================================================
+
+message GaugeSpec {
+  string value_field = 1;         // Column containing the gauge value
+  double min = 2;                 // Minimum value (default 0)
+  double max = 3;                 // Maximum value (default 100)
+  string format = 4;              // Display format for the center label
+  repeated GaugeRange ranges = 5; // Color bands
+}
+
+message GaugeRange {
+  double from = 1;
+  double to = 2;
+  string color = 3;               // Hex color
+}
+
+// =============================================================================
+// FUNNEL SPEC
+//
+// Conversion funnel. Stages rendered as narrowing bars.
+// =============================================================================
+
+message FunnelSpec {
+  string category_field = 1;      // Stage name field (ordered)
+  string value_field = 2;         // Numeric value per stage
+  bool show_conversion_rate = 3;  // Show % between stages
+  FunnelShape shape = 4;
+}
+
+enum FunnelShape {
+  FUNNEL_SHAPE_UNSPECIFIED = 0;
+  FUNNEL_SHAPE_FUNNEL = 1;
+  FUNNEL_SHAPE_PYRAMID = 2;
+}
+
+// =============================================================================
+// TREEMAP SPEC
+//
+// Hierarchical treemap. Flat data is grouped by hierarchy_fields into a tree.
+// =============================================================================
+
+message TreemapSpec {
+  string value_field = 1;              // Numeric field for rectangle area
+  repeated string hierarchy_fields = 2; // Grouping fields, e.g. ["region", "country"]
+  string color_field = 3;              // Optional field for color encoding
+  bool show_labels = 4;
+}
+
+// =============================================================================
+// SANKEY SPEC
+//
+// Flow/Sankey diagram. Data has source, target, value columns.
+// =============================================================================
+
+message SankeySpec {
+  string source_field = 1;
+  string target_field = 2;
+  string value_field = 3;
+}
+
+// =============================================================================
+// WORD CLOUD SPEC
+// =============================================================================
+
+message WordCloudSpec {
+  string text_field = 1;           // Word/text field
+  string weight_field = 2;         // Numeric weight/frequency field
+  int32 max_words = 3;            // Max words to display (0 = unlimited)
+  repeated int32 font_size_range = 4; // [min, max] font size, e.g. [12, 60]
+}
+
+// =============================================================================
+// CONDITIONAL FORMATTING
+//
+// Declarative conditions for S2 cell styling. The frontend mapper translates
+// threshold rules into S2 condition mapping functions at runtime.
+// =============================================================================
+
+enum ConditionalFormatType {
+  CONDITIONAL_FORMAT_TYPE_UNSPECIFIED = 0;
+  CONDITIONAL_FORMAT_TYPE_TEXT = 1;        // Font color/size
+  CONDITIONAL_FORMAT_TYPE_BACKGROUND = 2;  // Cell background color
+  CONDITIONAL_FORMAT_TYPE_ICON = 3;        // Status icon in cell
+  CONDITIONAL_FORMAT_TYPE_INTERVAL = 4;    // Data bar (mini bar chart)
+}
+
+enum ComparisonOp {
+  COMPARISON_OP_UNSPECIFIED = 0;
+  COMPARISON_OP_GT = 1;
+  COMPARISON_OP_GTE = 2;
+  COMPARISON_OP_LT = 3;
+  COMPARISON_OP_LTE = 4;
+  COMPARISON_OP_EQ = 5;
+  COMPARISON_OP_NEQ = 6;
+  COMPARISON_OP_BETWEEN = 7;
+}
+
+message ConditionalThreshold {
+  ComparisonOp op = 1;
+  double value = 2;
+  optional double value_end = 3;  // For BETWEEN
+  string color = 4;               // Hex color for text/background/interval
+  string icon = 5;                // Icon name for ICON type
+}
+
+message ConditionalFormat {
+  string field = 1;
+  ConditionalFormatType type = 2;
+  repeated ConditionalThreshold thresholds = 3;
+  optional double interval_min = 4;  // For INTERVAL type: min value
+  optional double interval_max = 5;  // For INTERVAL type: max value
+}
+
+// =============================================================================
+// TABLE INTERACTION CONFIG
+// =============================================================================
+
+message TableInteraction {
+  bool enable_copy = 1;
+  bool enable_hover_highlight = 2;
+  bool enable_resize = 3;
+  bool enable_multi_selection = 4;
+  bool enable_range_selection = 5;
 }

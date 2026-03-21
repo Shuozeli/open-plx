@@ -108,6 +108,49 @@ export function chartProtoToG2(
     });
   }
 
+  // --- Chart-type-specific enhancements ---
+
+  // Scatter: add size scale range for bubble charts
+  if (proto.chartType === ChartType.SCATTER && dm?.size) {
+    if (!spec.scale) spec.scale = {};
+    (spec.scale as Record<string, unknown>).size = { range: [4, 20] };
+  }
+
+  // Heatmap: map value field to color encoding with sequential palette
+  if (proto.chartType === ChartType.HEATMAP) {
+    if (!spec.scale) spec.scale = {};
+    // Use groupBy as the color (value) encoding for heatmaps
+    if (dm?.groupBy && spec.encode) {
+      (spec.encode as Record<string, unknown>).color = dm.groupBy;
+    }
+    (spec.scale as Record<string, unknown>).color = { palette: "ylGnBu" };
+    spec.style = { inset: 1 };
+  }
+
+  // Histogram: add binX transform, remove y encoding (auto-counted)
+  if (proto.chartType === ChartType.HISTOGRAM) {
+    if (!spec.transform) spec.transform = [];
+    spec.transform.push({ type: "binX", y: "count" });
+    if (spec.encode) {
+      delete (spec.encode as Record<string, unknown>).y;
+    }
+  }
+
+  // Radar: add axis grid config for proper radar rendering
+  if (proto.chartType === ChartType.RADAR) {
+    if (!spec.axis) spec.axis = {};
+    const axisObj = spec.axis as Record<string, unknown>;
+    axisObj.x = {
+      ...(axisObj.x as Record<string, unknown> | undefined),
+      grid: true,
+    };
+    axisObj.y = {
+      ...(axisObj.y as Record<string, unknown> | undefined),
+      zIndex: 1,
+      title: false,
+    };
+  }
+
   return spec;
 }
 
@@ -123,6 +166,7 @@ function mapChartType(ct: ChartType): string {
     case ChartType.HEATMAP: return "cell";
     case ChartType.HISTOGRAM: return "rect";
     case ChartType.RADAR: return "line";
+    case ChartType.BOX_PLOT: return "boxplot";
     default: return "interval";
   }
 }

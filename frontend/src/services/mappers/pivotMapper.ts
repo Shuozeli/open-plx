@@ -6,6 +6,7 @@
  */
 
 import type { PivotTableSpec, FieldMeta } from "../../gen/open_plx/v1/widget_spec_pb.js";
+import { conditionsProtoToS2 } from "./conditionMapper.js";
 
 export interface S2DataConfig {
   data: Record<string, unknown>[];
@@ -43,10 +44,10 @@ export interface S2Options {
     enable: boolean;
     text?: string;
   };
-  interaction?: {
-    hoverHighlight?: boolean;
-    enableCopy?: boolean;
-  };
+  interaction?: Record<string, unknown>;
+  totals?: Record<string, unknown>;
+  conditions?: unknown;
+  [key: string]: unknown;
 }
 
 /** Build a formatter function from a format string. */
@@ -94,6 +95,41 @@ function buildFormatter(formatStr: string): ((value: unknown) => string) | undef
   return undefined;
 }
 
+/** Map proto PivotTotalConfig to S2 Total config. */
+function mapTotalConfig(cfg: {
+  showGrandTotals?: boolean;
+  showSubTotals?: boolean;
+  subTotalsDimensions?: string[];
+  grandTotalsLabel?: string;
+  subTotalsLabel?: string;
+  reverseGrandTotalsLayout?: boolean;
+  reverseSubTotalsLayout?: boolean;
+  aggregation?: number;
+}): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  if (cfg.showGrandTotals) result.showGrandTotals = true;
+  if (cfg.showSubTotals) result.showSubTotals = true;
+  if (cfg.subTotalsDimensions && cfg.subTotalsDimensions.length > 0) {
+    result.subTotalsDimensions = cfg.subTotalsDimensions;
+  }
+  if (cfg.grandTotalsLabel) result.grandTotalsLabel = cfg.grandTotalsLabel;
+  if (cfg.subTotalsLabel) result.subTotalsLabel = cfg.subTotalsLabel;
+  if (cfg.reverseGrandTotalsLayout) result.reverseGrandTotalsLayout = true;
+  if (cfg.reverseSubTotalsLayout) result.reverseSubTotalsLayout = true;
+
+  // Map aggregation enum to S2 calcTotals
+  const aggMap: Record<number, string> = {
+    1: "SUM", 2: "MIN", 3: "MAX", 4: "AVG", 5: "COUNT",
+  };
+  const agg = cfg.aggregation ? aggMap[cfg.aggregation] : undefined;
+  if (agg) {
+    result.calcGrandTotals = { aggregation: agg };
+    result.calcSubTotals = { aggregation: agg };
+  }
+
+  return result;
+}
+
 /** Convert a PivotTableSpec proto to S2 dataCfg + options. */
 export function pivotProtoToS2(
   proto: PivotTableSpec,
@@ -136,7 +172,7 @@ export function pivotProtoToS2(
     height: containerHeight,
     interaction: {
       hoverHighlight: true,
-      enableCopy: true,
+      copy: { enable: true },
     },
   };
 
@@ -158,6 +194,34 @@ export function pivotProtoToS2(
     options.seriesNumber = {
       enable: proto.seriesNumber.enable,
       text: proto.seriesNumber.text || "#",
+    };
+  }
+
+  // Totals
+  if (proto.totals) {
+    const totals: Record<string, unknown> = {};
+    if (proto.totals.row) {
+      totals.row = mapTotalConfig(proto.totals.row);
+    }
+    if (proto.totals.col) {
+      totals.col = mapTotalConfig(proto.totals.col);
+    }
+    options.totals = totals;
+  }
+
+  // Conditional formatting
+  if (proto.conditions.length > 0) {
+    options.conditions = conditionsProtoToS2(proto.conditions);
+  }
+
+  // Interaction config
+  if (proto.interaction) {
+    options.interaction = {
+      hoverHighlight: proto.interaction.enableHoverHighlight,
+      copy: { enable: proto.interaction.enableCopy },
+      resize: proto.interaction.enableResize,
+      multiSelection: proto.interaction.enableMultiSelection,
+      rangeSelection: proto.interaction.enableRangeSelection,
     };
   }
 

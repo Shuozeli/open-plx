@@ -1,0 +1,13 @@
+name: dataSources/funnel-demo
+display_name: Funnel Demo
+description: Conversion funnel for funnel chart demo
+
+config:
+  type: static
+  columns:
+    - name: stage
+      arrow_type: utf8
+      values: ["Visits", "Sign-ups", "Trial", "Paid", "Retained"]
+    - name: count
+      arrow_type: float64
+      values: [10000, 4500, 2000, 800, 500]

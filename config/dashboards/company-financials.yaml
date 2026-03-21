@@ -135,3 +135,8 @@ widgets:
           - field: eps
             name: EPS
             formatter: "number:2"
+        totals:
+          row:
+            show_grand_totals: true
+            grand_totals_label: "Total"
+            aggregation: "SUM"

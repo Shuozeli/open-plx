@@ -1,0 +1,30 @@
+name: dataSources/hn-type-radar
+display_name: HN Story Type Metrics
+description: Multi-dimensional comparison of story types (radar chart)
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    WITH metrics AS (
+      SELECT story_type,
+             COUNT(*) as stories,
+             AVG(points)::INT as avg_points,
+             AVG(num_comments)::INT as avg_comments,
+             MAX(points) as max_score
+      FROM hn_stories
+      GROUP BY story_type
+    )
+    SELECT 'Stories' as metric, story_type, stories * 1.0 / (SELECT MAX(stories) FROM metrics) * 100 as value FROM metrics
+    UNION ALL
+    SELECT 'Avg Points', story_type, avg_points * 1.0 / (SELECT MAX(avg_points) FROM metrics) * 100 FROM metrics
+    UNION ALL
+    SELECT 'Avg Comments', story_type, avg_comments * 1.0 / (SELECT MAX(avg_comments) FROM metrics) * 100 FROM metrics
+    UNION ALL
+    SELECT 'Max Score', story_type, max_score * 1.0 / (SELECT MAX(max_score) FROM metrics) * 100 FROM metrics
+    ORDER BY story_type, metric
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

@@ -1,0 +1,22 @@
+name: dataSources/table-demo
+display_name: Table Demo
+description: Sample employee data for flat table demo
+
+config:
+  type: static
+  columns:
+    - name: name
+      arrow_type: utf8
+      values: ["Alice Chen", "Bob Smith", "Carol Wu", "Dan Lee", "Eve Park", "Frank Kim", "Grace Li", "Hank Liu"]
+    - name: department
+      arrow_type: utf8
+      values: ["Engineering", "Marketing", "Engineering", "Sales", "Engineering", "Marketing", "Sales", "Engineering"]
+    - name: title
+      arrow_type: utf8
+      values: ["Senior SWE", "Marketing Lead", "Staff SWE", "Account Exec", "SWE", "Content Writer", "Sales Manager", "SWE"]
+    - name: salary
+      arrow_type: float64
+      values: [185000, 120000, 210000, 95000, 145000, 85000, 130000, 155000]
+    - name: tenure_years
+      arrow_type: float64
+      values: [5.2, 3.1, 8.4, 1.5, 2.8, 4.0, 6.2, 3.5]

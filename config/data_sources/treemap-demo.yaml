@@ -1,0 +1,16 @@
+name: dataSources/treemap-demo
+display_name: Treemap Demo
+description: Budget allocation by department and team
+
+config:
+  type: static
+  columns:
+    - name: department
+      arrow_type: utf8
+      values: ["Engineering","Engineering","Engineering","Marketing","Marketing","Sales","Sales","Sales"]
+    - name: team
+      arrow_type: utf8
+      values: ["Frontend","Backend","Infra","Content","Ads","Enterprise","SMB","Partners"]
+    - name: budget
+      arrow_type: float64
+      values: [800, 1200, 600, 400, 350, 500, 300, 200]

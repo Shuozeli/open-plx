@@ -144,3 +144,183 @@ widgets:
           - field: profit
             name: Profit ($B)
             formatter: "number:1"
+
+  # Row 32: Scatter and Radar side by side
+  - id: scatter-chart
+    widget_type: WIDGET_TYPE_SCATTER_CHART
+    title: Height vs Weight
+    position: { x: 0, y: 32, w: 12, h: 8 }
+    data_source:
+      data_source: dataSources/scatter-demo
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_SCATTER
+        data_mapping:
+          x: height
+          y: weight
+          size: bmi
+          group_by: gender
+        x_axis:
+          title: Height (cm)
+        y_axis:
+          title: Weight (kg)
+
+  - id: radar-chart
+    widget_type: WIDGET_TYPE_RADAR_CHART
+    title: Player Stats
+    position: { x: 12, y: 32, w: 12, h: 8 }
+    data_source:
+      data_source: dataSources/radar-demo
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_RADAR
+        data_mapping:
+          x: dimension
+          y: value
+          group_by: player
+
+  # Row 40: Heatmap and Histogram side by side
+  - id: heatmap-chart
+    widget_type: WIDGET_TYPE_HEATMAP
+    title: Activity Heatmap
+    position: { x: 0, y: 40, w: 12, h: 8 }
+    data_source:
+      data_source: dataSources/heatmap-demo
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_HEATMAP
+        data_mapping:
+          x: day
+          y: hour
+          group_by: activity
+
+  - id: histogram-chart
+    widget_type: WIDGET_TYPE_HISTOGRAM
+    title: Response Time Distribution
+    position: { x: 12, y: 40, w: 12, h: 8 }
+    data_source:
+      data_source: dataSources/histogram-demo
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_HISTOGRAM
+        data_mapping:
+          x: response_time_ms
+          y: ""
+
+  # Row 48: Flat table (full width)
+  - id: employee-table
+    widget_type: WIDGET_TYPE_TABLE
+    title: Employee Directory
+    position: { x: 0, y: 48, w: 24, h: 8 }
+    data_source:
+      data_source: dataSources/table-demo
+      params: {}
+    spec:
+      table:
+        columns:
+          - { field: name }
+          - { field: department }
+          - { field: title }
+          - { field: salary }
+          - { field: tenure_years }
+        meta:
+          - field: salary
+            name: Salary
+            formatter: "currency:USD"
+          - field: tenure_years
+            name: Tenure (yrs)
+            formatter: "number:1"
+        show_row_numbers: true
+
+  # Row 56: Gauge, Funnel, Box Plot
+  - id: sla-gauge
+    widget_type: WIDGET_TYPE_GAUGE
+    title: SLA Compliance
+    position: { x: 0, y: 56, w: 8, h: 6 }
+    data_source:
+      data_source: dataSources/gauge-demo
+      params: {}
+    spec:
+      gauge:
+        value_field: sla_pct
+        min: 0
+        max: 100
+        format: "number:1"
+        ranges:
+          - { from: 0, to: 60, color: "#F4664A" }
+          - { from: 60, to: 85, color: "#FAAD14" }
+          - { from: 85, to: 100, color: "#30BF78" }
+
+  - id: conversion-funnel
+    widget_type: WIDGET_TYPE_FUNNEL
+    title: Conversion Funnel
+    position: { x: 8, y: 56, w: 8, h: 6 }
+    data_source:
+      data_source: dataSources/funnel-demo
+      params: {}
+    spec:
+      funnel:
+        category_field: stage
+        value_field: count
+        shape: funnel
+
+  - id: latency-boxplot
+    widget_type: WIDGET_TYPE_BOX_PLOT
+    title: Latency by Service
+    position: { x: 16, y: 56, w: 8, h: 6 }
+    data_source:
+      data_source: dataSources/boxplot-demo
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_BOX_PLOT
+        data_mapping:
+          x: service
+          y: latency_ms
+        y_axis:
+          title: Latency (ms)
+
+  # Row 62: Treemap and Sankey side by side
+  - id: budget-treemap
+    widget_type: WIDGET_TYPE_TREEMAP
+    title: Budget by Department
+    position: { x: 0, y: 62, w: 12, h: 8 }
+    data_source:
+      data_source: dataSources/treemap-demo
+      params: {}
+    spec:
+      treemap:
+        value_field: budget
+        hierarchy_fields: ["department", "team"]
+        show_labels: true
+
+  - id: traffic-sankey
+    widget_type: WIDGET_TYPE_SANKEY
+    title: Traffic Flow
+    position: { x: 12, y: 62, w: 12, h: 8 }
+    data_source:
+      data_source: dataSources/sankey-demo
+      params: {}
+    spec:
+      sankey:
+        source_field: source
+        target_field: target
+        value_field: flow
+
+  # Row 70: Word cloud (full width)
+  - id: lang-wordcloud
+    widget_type: WIDGET_TYPE_WORD_CLOUD
+    title: Programming Languages
+    position: { x: 0, y: 70, w: 24, h: 8 }
+    data_source:
+      data_source: dataSources/wordcloud-demo
+      params: {}
+    spec:
+      word_cloud:
+        text_field: language
+        weight_field: popularity
+        font_size_range: [14, 64]

@@ -7,6 +7,17 @@ import { PieChartWidget } from "./PieChartWidget.js";
 import { PivotTableWidget } from "./PivotTableWidget.js";
 import { MetricCardWidget } from "./MetricCardWidget.js";
 import { TextWidget } from "./TextWidget.js";
+import { ScatterChartWidget } from "./ScatterChartWidget.js";
+import { HeatmapWidget } from "./HeatmapWidget.js";
+import { HistogramWidget } from "./HistogramWidget.js";
+import { RadarChartWidget } from "./RadarChartWidget.js";
+import { TableWidget } from "./TableWidget.js";
+import { GaugeWidget } from "./GaugeWidget.js";
+import { FunnelWidget } from "./FunnelWidget.js";
+import { BoxPlotWidget } from "./BoxPlotWidget.js";
+import { TreemapWidget } from "./TreemapWidget.js";
+import { SankeyWidget } from "./SankeyWidget.js";
+import { WordCloudWidget } from "./WordCloudWidget.js";
 
 /** Props passed to every widget renderer. */
 export interface WidgetProps {
@@ -24,6 +35,17 @@ const WIDGET_REGISTRY: Partial<Record<WidgetType, ComponentType<WidgetProps>>> =
   [WidgetType.PIVOT_TABLE]: PivotTableWidget,
   [WidgetType.METRIC_CARD]: MetricCardWidget,
   [WidgetType.TEXT]: TextWidget,
+  [WidgetType.SCATTER_CHART]: ScatterChartWidget,
+  [WidgetType.HEATMAP]: HeatmapWidget,
+  [WidgetType.HISTOGRAM]: HistogramWidget,
+  [WidgetType.RADAR_CHART]: RadarChartWidget,
+  [WidgetType.TABLE]: TableWidget,
+  [WidgetType.GAUGE]: GaugeWidget,
+  [WidgetType.FUNNEL]: FunnelWidget,
+  [WidgetType.BOX_PLOT]: BoxPlotWidget,
+  [WidgetType.TREEMAP]: TreemapWidget,
+  [WidgetType.SANKEY]: SankeyWidget,
+  [WidgetType.WORD_CLOUD]: WordCloudWidget,
 };
 
 export function getWidgetComponent(

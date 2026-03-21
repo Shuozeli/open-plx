@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file open_plx/v1/widget_spec.proto.
  */
 export const file_open_plx_v1_widget_spec: GenFile = /*@__PURE__*/
-  fileDesc("Ch1vcGVuX3BseC92MS93aWRnZXRfc3BlYy5wcm90bxILb3Blbl9wbHgudjEizAEKCldpZGdldFNwZWMSJwoFY2hhcnQYASABKAsyFi5vcGVuX3BseC52MS5DaGFydFNwZWNIABIyCgtwaXZvdF90YWJsZRgCIAEoCzIbLm9wZW5fcGx4LnYxLlBpdm90VGFibGVTcGVjSAASMgoLbWV0cmljX2NhcmQYAyABKAsyGy5vcGVuX3BseC52MS5NZXRyaWNDYXJkU3BlY0gAEiUKBHRleHQYBCABKAsyFS5vcGVuX3BseC52MS5UZXh0U3BlY0gAQgYKBHNwZWMinQUKCUNoYXJ0U3BlYxIqCgpjaGFydF90eXBlGAEgASgOMhYub3Blbl9wbHgudjEuQ2hhcnRUeXBlEjMKDGRhdGFfbWFwcGluZxgCIAEoCzIdLm9wZW5fcGx4LnYxLkNoYXJ0RGF0YU1hcHBpbmcSKgoKc3RhY2tfbW9kZRgDIAEoDjIWLm9wZW5fcGx4LnYxLlN0YWNrTW9kZRInCgZ4X2F4aXMYBCABKAsyFy5vcGVuX3BseC52MS5BeGlzQ29uZmlnEicKBnlfYXhpcxgFIAEoCzIXLm9wZW5fcGx4LnYxLkF4aXNDb25maWcSMQoKY29vcmRpbmF0ZRgGIAEoCzIdLm9wZW5fcGx4LnYxLkNvb3JkaW5hdGVDb25maWcSKAoGbGFiZWxzGAcgAygLMhgub3Blbl9wbHgudjEuTGFiZWxDb25maWcSLAoLYW5ub3RhdGlvbnMYCCADKAsyFy5vcGVuX3BseC52MS5Bbm5vdGF0aW9uEjIKBnNjYWxlcxgJIAMoCzIiLm9wZW5fcGx4LnYxLkNoYXJ0U3BlYy5TY2FsZXNFbnRyeRIuCgp0cmFuc2Zvcm1zGAogAygLMhoub3Blbl9wbHgudjEuRGF0YVRyYW5zZm9ybRImCgZsYXllcnMYCyADKAsyFi5vcGVuX3BseC52MS5DaGFydFNwZWMSJQoEc29ydBgMIAEoCzIXLm9wZW5fcGx4LnYxLlNvcnRDb25maWcSKgoKbGluZV9zaGFwZRgNIAEoDjIWLm9wZW5fcGx4LnYxLkxpbmVTaGFwZRpHCgtTY2FsZXNFbnRyeRILCgNrZXkYASABKAkSJwoFdmFsdWUYAiABKAsyGC5vcGVuX3BseC52MS5TY2FsZUNvbmZpZzoCOAEidwoQQ2hhcnREYXRhTWFwcGluZxIJCgF4GAEgASgJEgkKAXkYAiABKAkSEAoIZ3JvdXBfYnkYAyABKAkSDAoEc2l6ZRgEIAEoCRINCgV2YWx1ZRgFIAEoCRIQCghjYXRlZ29yeRgGIAEoCRIMCgR0ZXh0GAcgASgJIrwBCgpBeGlzQ29uZmlnEg4KBmhpZGRlbhgBIAEoCBINCgV0aXRsZRgCIAEoCRIrCghwb3NpdGlvbhgDIAEoDjIZLm9wZW5fcGx4LnYxLkF4aXNQb3NpdGlvbhIUCgxsYWJlbF9mb3JtYXQYBCABKAkSEgoKdGlja19jb3VudBgFIAEoBRIMCgRncmlkGAYgASgIEioKCnNjYWxlX3R5cGUYByABKA4yFi5vcGVuX3BseC52MS5TY2FsZVR5cGUiiAMKC1NjYWxlQ29uZmlnEiQKBHR5cGUYASABKA4yFi5vcGVuX3BseC52MS5TY2FsZVR5cGUSFwoKZG9tYWluX21pbhgCIAEoAUgAiAEBEhcKCmRvbWFpbl9tYXgYAyABKAFIAYgBARIZChFkb21haW5fY2F0ZWdvcmllcxgEIAMoCRIWCglyYW5nZV9taW4YBSABKAFIAogBARIWCglyYW5nZV9tYXgYBiABKAFIA4gBARIMCgRuaWNlGAcgASgIEgwKBHplcm8YCCABKAgSEgoKdGlja19jb3VudBgJIAEoBRIVCg10aWNrX2ludGVydmFsGAogASgJEgwKBGJhc2UYCyABKAESEAoIZXhwb25lbnQYDCABKAESDwoHcGFkZGluZxgNIAEoARIPCgdwYWxldHRlGA4gASgJEhMKC2NvbG9yX3JhbmdlGA8gAygJQg0KC19kb21haW5fbWluQg0KC19kb21haW5fbWF4QgwKCl9yYW5nZV9taW5CDAoKX3JhbmdlX21heCK6AQoQQ29vcmRpbmF0ZUNvbmZpZxIZCgxpbm5lcl9yYWRpdXMYASABKAFIAIgBARIZCgxvdXRlcl9yYWRpdXMYAiABKAFIAYgBARIYCgtzdGFydF9hbmdsZRgDIAEoAUgCiAEBEhYKCWVuZF9hbmdsZRgEIAEoAUgDiAEBQg8KDV9pbm5lcl9yYWRpdXNCDwoNX291dGVyX3JhZGl1c0IOCgxfc3RhcnRfYW5nbGVCDAoKX2VuZF9hbmdsZSKrAQoLTGFiZWxDb25maWcSDQoFZmllbGQYASABKAkSLAoIcG9zaXRpb24YAiABKA4yGi5vcGVuX3BseC52MS5MYWJlbFBvc2l0aW9uEg4KBmZvcm1hdBgDIAEoCRIOCgZvZmZzZXQYBCABKAESEQoJY29ubmVjdG9yGAUgASgIEiwKCHNlbGVjdG9yGAYgASgOMhoub3Blbl9wbHgudjEuTGFiZWxTZWxlY3RvciJ7CgpBbm5vdGF0aW9uEikKBHR5cGUYASABKA4yGy5vcGVuX3BseC52MS5Bbm5vdGF0aW9uVHlwZRINCgV2YWx1ZRgCIAEoARIWCgl2YWx1ZV9lbmQYAyABKAFIAIgBARINCgVsYWJlbBgEIAEoCUIMCgpfdmFsdWVfZW5kIqYCCg1EYXRhVHJhbnNmb3JtEiwKBHR5cGUYASABKA4yHi5vcGVuX3BseC52MS5EYXRhVHJhbnNmb3JtVHlwZRIRCgliaW5fY291bnQYAiABKAUSEwoLc2FtcGxlX3NpemUYAyABKAUSNAoPc2FtcGxlX3N0cmF0ZWd5GAQgASgOMhsub3Blbl9wbHgudjEuU2FtcGxlU3RyYXRlZ3kSQgoMYWdncmVnYXRpb25zGAUgAygLMiwub3Blbl9wbHgudjEuRGF0YVRyYW5zZm9ybS5BZ2dyZWdhdGlvbnNFbnRyeRIQCghncm91cF9ieRgGIAMoCRozChFBZ2dyZWdhdGlvbnNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIpMBCgpTb3J0Q29uZmlnEg0KBWZpZWxkGAEgASgJEi0KCWRpcmVjdGlvbhgCIAEoDjIaLm9wZW5fcGx4LnYxLlNvcnREaXJlY3Rpb24SKQoHcmVkdWNlchgDIAEoDjIYLm9wZW5fcGx4LnYxLkFnZ3JlZ2F0aW9uEhIKBWxpbWl0GAQgASgFSACIAQFCCAoGX2xpbWl0IoEDCg5QaXZvdFRhYmxlU3BlYxIoCgZmaWVsZHMYASABKAsyGC5vcGVuX3BseC52MS5QaXZvdEZpZWxkcxIkCgRtZXRhGAIgAygLMhYub3Blbl9wbHgudjEuRmllbGRNZXRhEikKBHNvcnQYAyADKAsyGy5vcGVuX3BseC52MS5QaXZvdFNvcnRQYXJhbRIoCgZ0b3RhbHMYBCABKAsyGC5vcGVuX3BseC52MS5QaXZvdFRvdGFscxI3Cg5oaWVyYXJjaHlfdHlwZRgFIAEoDjIfLm9wZW5fcGx4LnYxLlBpdm90SGllcmFyY2h5VHlwZRIoCgZmcm96ZW4YBiABKAsyGC5vcGVuX3BseC52MS5QaXZvdEZyb3plbhIwCgpwYWdpbmF0aW9uGAcgASgLMhwub3Blbl9wbHgudjEuUGl2b3RQYWdpbmF0aW9uEjUKDXNlcmllc19udW1iZXIYCCABKAsyHi5vcGVuX3BseC52MS5QaXZvdFNlcmllc051bWJlciJTCgtQaXZvdEZpZWxkcxIMCgRyb3dzGAEgAygJEg8KB2NvbHVtbnMYAiADKAkSDgoGdmFsdWVzGAMgAygJEhUKDXZhbHVlX2luX2NvbHMYBCABKAgiUAoJRmllbGRNZXRhEg0KBWZpZWxkGAEgASgJEgwKBG5hbWUYAiABKAkSEwoLZGVzY3JpcHRpb24YAyABKAkSEQoJZm9ybWF0dGVyGAQgASgJIuoBCg5QaXZvdFNvcnRQYXJhbRIVCg1zb3J0X2ZpZWxkX2lkGAEgASgJEjIKDnNvcnRfZGlyZWN0aW9uGAIgASgOMhoub3Blbl9wbHgudjEuU29ydERpcmVjdGlvbhIPCgdzb3J0X2J5GAMgAygJEhcKD3NvcnRfYnlfbWVhc3VyZRgEIAEoCRI1CgVxdWVyeRgFIAMoCzImLm9wZW5fcGx4LnYxLlBpdm90U29ydFBhcmFtLlF1ZXJ5RW50cnkaLAoKUXVlcnlFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBImUKC1Bpdm90VG90YWxzEioKA3JvdxgBIAEoCzIdLm9wZW5fcGx4LnYxLlBpdm90VG90YWxDb25maWcSKgoDY29sGAIgASgLMh0ub3Blbl9wbHgudjEuUGl2b3RUb3RhbENvbmZpZyKSAgoQUGl2b3RUb3RhbENvbmZpZxIZChFzaG93X2dyYW5kX3RvdGFscxgBIAEoCBIXCg9zaG93X3N1Yl90b3RhbHMYAiABKAgSHQoVc3ViX3RvdGFsc19kaW1lbnNpb25zGAMgAygJEhoKEmdyYW5kX3RvdGFsc19sYWJlbBgEIAEoCRIYChBzdWJfdG90YWxzX2xhYmVsGAUgASgJEiMKG3JldmVyc2VfZ3JhbmRfdG90YWxzX2xheW91dBgGIAEoCBIhChlyZXZlcnNlX3N1Yl90b3RhbHNfbGF5b3V0GAcgASgIEi0KC2FnZ3JlZ2F0aW9uGAggASgOMhgub3Blbl9wbHgudjEuQWdncmVnYXRpb24ifwoLUGl2b3RGcm96ZW4SEgoKcm93X2hlYWRlchgBIAEoCBIRCglyb3dfY291bnQYAiABKAUSEQoJY29sX2NvdW50GAMgASgFEhoKEnRyYWlsaW5nX3Jvd19jb3VudBgEIAEoBRIaChJ0cmFpbGluZ19jb2xfY291bnQYBSABKAUiNQoPUGl2b3RQYWdpbmF0aW9uEhEKCXBhZ2Vfc2l6ZRgBIAEoBRIPCgdjdXJyZW50GAIgASgFIjEKEVBpdm90U2VyaWVzTnVtYmVyEg4KBmVuYWJsZRgBIAEoCBIMCgR0ZXh0GAIgASgJIo0BCg5NZXRyaWNDYXJkU3BlYxINCgV2YWx1ZRgBIAEoCRIOCgZmb3JtYXQYAiABKAkSMQoKY29tcGFyaXNvbhgDIAEoCzIdLm9wZW5fcGx4LnYxLk1ldHJpY0NvbXBhcmlzb24SKQoJc3BhcmtsaW5lGAQgASgLMhYub3Blbl9wbHgudjEuU3BhcmtsaW5lImUKEE1ldHJpY0NvbXBhcmlzb24SDQoFdmFsdWUYASABKAkSDQoFbGFiZWwYAiABKAkSMwoJZGlyZWN0aW9uGAMgASgOMiAub3Blbl9wbHgudjEuQ29tcGFyaXNvbkRpcmVjdGlvbiJLCglTcGFya2xpbmUSKAoEdHlwZRgBIAEoDjIaLm9wZW5fcGx4LnYxLlNwYXJrbGluZVR5cGUSCQoBeBgCIAEoCRIJCgF5GAMgASgJIkQKCFRleHRTcGVjEg8KB2NvbnRlbnQYASABKAkSJwoGZm9ybWF0GAIgASgOMhcub3Blbl9wbHgudjEuVGV4dEZvcm1hdCqOAgoJQ2hhcnRUeXBlEhoKFkNIQVJUX1RZUEVfVU5TUEVDSUZJRUQQABITCg9DSEFSVF9UWVBFX0xJTkUQARISCg5DSEFSVF9UWVBFX0JBUhACEh0KGUNIQVJUX1RZUEVfSE9SSVpPTlRBTF9CQVIQAxISCg5DSEFSVF9UWVBFX1BJRRAEEhQKEENIQVJUX1RZUEVfRE9OVVQQBRITCg9DSEFSVF9UWVBFX0FSRUEQBhIWChJDSEFSVF9UWVBFX1NDQVRURVIQBxIWChJDSEFSVF9UWVBFX0hFQVRNQVAQCBIYChRDSEFSVF9UWVBFX0hJU1RPR1JBTRAJEhQKEENIQVJUX1RZUEVfUkFEQVIQCipvCglTdGFja01vZGUSGgoWU1RBQ0tfTU9ERV9VTlNQRUNJRklFRBAAEhYKElNUQUNLX01PREVfU1RBQ0tFRBABEhYKElNUQUNLX01PREVfR1JPVVBFRBACEhYKElNUQUNLX01PREVfUEVSQ0VOVBADKqIBCglMaW5lU2hhcGUSGgoWTElORV9TSEFQRV9VTlNQRUNJRklFRBAAEhUKEUxJTkVfU0hBUEVfTElORUFSEAESFQoRTElORV9TSEFQRV9TTU9PVEgQAhITCg9MSU5FX1NIQVBFX1NURVAQAxIaChZMSU5FX1NIQVBFX1NURVBfQkVGT1JFEAQSGgoWTElORV9TSEFQRV9TVEVQX01JRERMRRAFKo8BCgxBeGlzUG9zaXRpb24SHQoZQVhJU19QT1NJVElPTl9VTlNQRUNJRklFRBAAEhUKEUFYSVNfUE9TSVRJT05fVE9QEAESGAoUQVhJU19QT1NJVElPTl9CT1RUT00QAhIWChJBWElTX1BPU0lUSU9OX0xFRlQQAxIXChNBWElTX1BPU0lUSU9OX1JJR0hUEAQqugIKCVNjYWxlVHlwZRIaChZTQ0FMRV9UWVBFX1VOU1BFQ0lGSUVEEAASFQoRU0NBTEVfVFlQRV9MSU5FQVIQARISCg5TQ0FMRV9UWVBFX0xPRxACEhIKDlNDQUxFX1RZUEVfUE9XEAMSEwoPU0NBTEVfVFlQRV9TUVJUEAQSEwoPU0NBTEVfVFlQRV9USU1FEAUSEwoPU0NBTEVfVFlQRV9CQU5EEAYSFAoQU0NBTEVfVFlQRV9QT0lOVBAHEhYKElNDQUxFX1RZUEVfT1JESU5BTBAIEhcKE1NDQUxFX1RZUEVfUVVBTlRJWkUQCRIXChNTQ0FMRV9UWVBFX1FVQU5USUxFEAoSGAoUU0NBTEVfVFlQRV9USFJFU0hPTEQQCxIZChVTQ0FMRV9UWVBFX1NFUVVFTlRJQUwQDCrMAQoNTGFiZWxQb3NpdGlvbhIeChpMQUJFTF9QT1NJVElPTl9VTlNQRUNJRklFRBAAEhYKEkxBQkVMX1BPU0lUSU9OX1RPUBABEhkKFUxBQkVMX1BPU0lUSU9OX0JPVFRPTRACEhcKE0xBQkVMX1BPU0lUSU9OX0xFRlQQAxIYChRMQUJFTF9QT1NJVElPTl9SSUdIVBAEEhkKFUxBQkVMX1BPU0lUSU9OX0lOU0lERRAFEhoKFkxBQkVMX1BPU0lUSU9OX09VVFNJREUQBiqSAQoNTGFiZWxTZWxlY3RvchIeChpMQUJFTF9TRUxFQ1RPUl9VTlNQRUNJRklFRBAAEhgKFExBQkVMX1NFTEVDVE9SX0ZJUlNUEAESFwoTTEFCRUxfU0VMRUNUT1JfTEFTVBACEhYKEkxBQkVMX1NFTEVDVE9SX01JThADEhYKEkxBQkVMX1NFTEVDVE9SX01BWBAEKqMBCg5Bbm5vdGF0aW9uVHlwZRIfChtBTk5PVEFUSU9OX1RZUEVfVU5TUEVDSUZJRUQQABIaChZBTk5PVEFUSU9OX1RZUEVfTElORV9YEAESGgoWQU5OT1RBVElPTl9UWVBFX0xJTkVfWRACEhsKF0FOTk9UQVRJT05fVFlQRV9SQU5HRV9YEAMSGwoXQU5OT1RBVElPTl9UWVBFX1JBTkdFX1kQBCqUAQoRRGF0YVRyYW5zZm9ybVR5cGUSIwofREFUQV9UUkFOU0ZPUk1fVFlQRV9VTlNQRUNJRklFRBAAEhsKF0RBVEFfVFJBTlNGT1JNX1RZUEVfQklOEAESHgoaREFUQV9UUkFOU0ZPUk1fVFlQRV9TQU1QTEUQAhIdChlEQVRBX1RSQU5TRk9STV9UWVBFX0dST1VQEAMqzgEKDlNhbXBsZVN0cmF0ZWd5Eh8KG1NBTVBMRV9TVFJBVEVHWV9VTlNQRUNJRklFRBAAEhgKFFNBTVBMRV9TVFJBVEVHWV9MVFRCEAESGgoWU0FNUExFX1NUUkFURUdZX01FRElBThACEhcKE1NBTVBMRV9TVFJBVEVHWV9NQVgQAxIXChNTQU1QTEVfU1RSQVRFR1lfTUlOEAQSGQoVU0FNUExFX1NUUkFURUdZX0ZJUlNUEAUSGAoUU0FNUExFX1NUUkFURUdZX0xBU1QQBipgCg1Tb3J0RGlyZWN0aW9uEh4KGlNPUlRfRElSRUNUSU9OX1VOU1BFQ0lGSUVEEAASFgoSU09SVF9ESVJFQ1RJT05fQVNDEAESFwoTU09SVF9ESVJFQ1RJT05fREVTQxACKpUBCgtBZ2dyZWdhdGlvbhIbChdBR0dSRUdBVElPTl9VTlNQRUNJRklFRBAAEhMKD0FHR1JFR0FUSU9OX1NVTRABEhMKD0FHR1JFR0FUSU9OX01JThACEhMKD0FHR1JFR0FUSU9OX01BWBADEhMKD0FHR1JFR0FUSU9OX0FWRxAEEhUKEUFHR1JFR0FUSU9OX0NPVU5UEAUqeAoSUGl2b3RIaWVyYXJjaHlUeXBlEiQKIFBJVk9UX0hJRVJBUkNIWV9UWVBFX1VOU1BFQ0lGSUVEEAASHQoZUElWT1RfSElFUkFSQ0hZX1RZUEVfR1JJRBABEh0KGVBJVk9UX0hJRVJBUkNIWV9UWVBFX1RSRUUQAiqQAQoTQ29tcGFyaXNvbkRpcmVjdGlvbhIkCiBDT01QQVJJU09OX0RJUkVDVElPTl9VTlNQRUNJRklFRBAAEikKJUNPTVBBUklTT05fRElSRUNUSU9OX0hJR0hFUl9JU19CRVRURVIQARIoCiRDT01QQVJJU09OX0RJUkVDVElPTl9MT1dFUl9JU19CRVRURVIQAip5Cg1TcGFya2xpbmVUeXBlEh4KGlNQQVJLTElORV9UWVBFX1VOU1BFQ0lGSUVEEAASFwoTU1BBUktMSU5FX1RZUEVfTElORRABEhcKE1NQQVJLTElORV9UWVBFX0FSRUEQAhIWChJTUEFSS0xJTkVfVFlQRV9CQVIQAypaCgpUZXh0Rm9ybWF0EhsKF1RFWFRfRk9STUFUX1VOU1BFQ0lGSUVEEAASFQoRVEVYVF9GT1JNQVRfUExBSU4QARIYChRURVhUX0ZPUk1BVF9NQVJLRE9XThACYgZwcm90bzM");
+  fileDesc("Ch1vcGVuX3BseC92MS93aWRnZXRfc3BlYy5wcm90bxILb3Blbl9wbHgudjEi0wMKCldpZGdldFNwZWMSJwoFY2hhcnQYASABKAsyFi5vcGVuX3BseC52MS5DaGFydFNwZWNIABIyCgtwaXZvdF90YWJsZRgCIAEoCzIbLm9wZW5fcGx4LnYxLlBpdm90VGFibGVTcGVjSAASMgoLbWV0cmljX2NhcmQYAyABKAsyGy5vcGVuX3BseC52MS5NZXRyaWNDYXJkU3BlY0gAEiUKBHRleHQYBCABKAsyFS5vcGVuX3BseC52MS5UZXh0U3BlY0gAEicKBXRhYmxlGAUgASgLMhYub3Blbl9wbHgudjEuVGFibGVTcGVjSAASJwoFZ2F1Z2UYBiABKAsyFi5vcGVuX3BseC52MS5HYXVnZVNwZWNIABIpCgZmdW5uZWwYByABKAsyFy5vcGVuX3BseC52MS5GdW5uZWxTcGVjSAASKwoHdHJlZW1hcBgIIAEoCzIYLm9wZW5fcGx4LnYxLlRyZWVtYXBTcGVjSAASKQoGc2Fua2V5GAkgASgLMhcub3Blbl9wbHgudjEuU2Fua2V5U3BlY0gAEjAKCndvcmRfY2xvdWQYCiABKAsyGi5vcGVuX3BseC52MS5Xb3JkQ2xvdWRTcGVjSABCBgoEc3BlYyKdBQoJQ2hhcnRTcGVjEioKCmNoYXJ0X3R5cGUYASABKA4yFi5vcGVuX3BseC52MS5DaGFydFR5cGUSMwoMZGF0YV9tYXBwaW5nGAIgASgLMh0ub3Blbl9wbHgudjEuQ2hhcnREYXRhTWFwcGluZxIqCgpzdGFja19tb2RlGAMgASgOMhYub3Blbl9wbHgudjEuU3RhY2tNb2RlEicKBnhfYXhpcxgEIAEoCzIXLm9wZW5fcGx4LnYxLkF4aXNDb25maWcSJwoGeV9heGlzGAUgASgLMhcub3Blbl9wbHgudjEuQXhpc0NvbmZpZxIxCgpjb29yZGluYXRlGAYgASgLMh0ub3Blbl9wbHgudjEuQ29vcmRpbmF0ZUNvbmZpZxIoCgZsYWJlbHMYByADKAsyGC5vcGVuX3BseC52MS5MYWJlbENvbmZpZxIsCgthbm5vdGF0aW9ucxgIIAMoCzIXLm9wZW5fcGx4LnYxLkFubm90YXRpb24SMgoGc2NhbGVzGAkgAygLMiIub3Blbl9wbHgudjEuQ2hhcnRTcGVjLlNjYWxlc0VudHJ5Ei4KCnRyYW5zZm9ybXMYCiADKAsyGi5vcGVuX3BseC52MS5EYXRhVHJhbnNmb3JtEiYKBmxheWVycxgLIAMoCzIWLm9wZW5fcGx4LnYxLkNoYXJ0U3BlYxIlCgRzb3J0GAwgASgLMhcub3Blbl9wbHgudjEuU29ydENvbmZpZxIqCgpsaW5lX3NoYXBlGA0gASgOMhYub3Blbl9wbHgudjEuTGluZVNoYXBlGkcKC1NjYWxlc0VudHJ5EgsKA2tleRgBIAEoCRInCgV2YWx1ZRgCIAEoCzIYLm9wZW5fcGx4LnYxLlNjYWxlQ29uZmlnOgI4ASJ3ChBDaGFydERhdGFNYXBwaW5nEgkKAXgYASABKAkSCQoBeRgCIAEoCRIQCghncm91cF9ieRgDIAEoCRIMCgRzaXplGAQgASgJEg0KBXZhbHVlGAUgASgJEhAKCGNhdGVnb3J5GAYgASgJEgwKBHRleHQYByABKAkivAEKCkF4aXNDb25maWcSDgoGaGlkZGVuGAEgASgIEg0KBXRpdGxlGAIgASgJEisKCHBvc2l0aW9uGAMgASgOMhkub3Blbl9wbHgudjEuQXhpc1Bvc2l0aW9uEhQKDGxhYmVsX2Zvcm1hdBgEIAEoCRISCgp0aWNrX2NvdW50GAUgASgFEgwKBGdyaWQYBiABKAgSKgoKc2NhbGVfdHlwZRgHIAEoDjIWLm9wZW5fcGx4LnYxLlNjYWxlVHlwZSKIAwoLU2NhbGVDb25maWcSJAoEdHlwZRgBIAEoDjIWLm9wZW5fcGx4LnYxLlNjYWxlVHlwZRIXCgpkb21haW5fbWluGAIgASgBSACIAQESFwoKZG9tYWluX21heBgDIAEoAUgBiAEBEhkKEWRvbWFpbl9jYXRlZ29yaWVzGAQgAygJEhYKCXJhbmdlX21pbhgFIAEoAUgCiAEBEhYKCXJhbmdlX21heBgGIAEoAUgDiAEBEgwKBG5pY2UYByABKAgSDAoEemVybxgIIAEoCBISCgp0aWNrX2NvdW50GAkgASgFEhUKDXRpY2tfaW50ZXJ2YWwYCiABKAkSDAoEYmFzZRgLIAEoARIQCghleHBvbmVudBgMIAEoARIPCgdwYWRkaW5nGA0gASgBEg8KB3BhbGV0dGUYDiABKAkSEwoLY29sb3JfcmFuZ2UYDyADKAlCDQoLX2RvbWFpbl9taW5CDQoLX2RvbWFpbl9tYXhCDAoKX3JhbmdlX21pbkIMCgpfcmFuZ2VfbWF4IroBChBDb29yZGluYXRlQ29uZmlnEhkKDGlubmVyX3JhZGl1cxgBIAEoAUgAiAEBEhkKDG91dGVyX3JhZGl1cxgCIAEoAUgBiAEBEhgKC3N0YXJ0X2FuZ2xlGAMgASgBSAKIAQESFgoJZW5kX2FuZ2xlGAQgASgBSAOIAQFCDwoNX2lubmVyX3JhZGl1c0IPCg1fb3V0ZXJfcmFkaXVzQg4KDF9zdGFydF9hbmdsZUIMCgpfZW5kX2FuZ2xlIqsBCgtMYWJlbENvbmZpZxINCgVmaWVsZBgBIAEoCRIsCghwb3NpdGlvbhgCIAEoDjIaLm9wZW5fcGx4LnYxLkxhYmVsUG9zaXRpb24SDgoGZm9ybWF0GAMgASgJEg4KBm9mZnNldBgEIAEoARIRCgljb25uZWN0b3IYBSABKAgSLAoIc2VsZWN0b3IYBiABKA4yGi5vcGVuX3BseC52MS5MYWJlbFNlbGVjdG9yInsKCkFubm90YXRpb24SKQoEdHlwZRgBIAEoDjIbLm9wZW5fcGx4LnYxLkFubm90YXRpb25UeXBlEg0KBXZhbHVlGAIgASgBEhYKCXZhbHVlX2VuZBgDIAEoAUgAiAEBEg0KBWxhYmVsGAQgASgJQgwKCl92YWx1ZV9lbmQipgIKDURhdGFUcmFuc2Zvcm0SLAoEdHlwZRgBIAEoDjIeLm9wZW5fcGx4LnYxLkRhdGFUcmFuc2Zvcm1UeXBlEhEKCWJpbl9jb3VudBgCIAEoBRITCgtzYW1wbGVfc2l6ZRgDIAEoBRI0Cg9zYW1wbGVfc3RyYXRlZ3kYBCABKA4yGy5vcGVuX3BseC52MS5TYW1wbGVTdHJhdGVneRJCCgxhZ2dyZWdhdGlvbnMYBSADKAsyLC5vcGVuX3BseC52MS5EYXRhVHJhbnNmb3JtLkFnZ3JlZ2F0aW9uc0VudHJ5EhAKCGdyb3VwX2J5GAYgAygJGjMKEUFnZ3JlZ2F0aW9uc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEikwEKClNvcnRDb25maWcSDQoFZmllbGQYASABKAkSLQoJZGlyZWN0aW9uGAIgASgOMhoub3Blbl9wbHgudjEuU29ydERpcmVjdGlvbhIpCgdyZWR1Y2VyGAMgASgOMhgub3Blbl9wbHgudjEuQWdncmVnYXRpb24SEgoFbGltaXQYBCABKAVIAIgBAUIICgZfbGltaXQi6QMKDlBpdm90VGFibGVTcGVjEigKBmZpZWxkcxgBIAEoCzIYLm9wZW5fcGx4LnYxLlBpdm90RmllbGRzEiQKBG1ldGEYAiADKAsyFi5vcGVuX3BseC52MS5GaWVsZE1ldGESKQoEc29ydBgDIAMoCzIbLm9wZW5fcGx4LnYxLlBpdm90U29ydFBhcmFtEigKBnRvdGFscxgEIAEoCzIYLm9wZW5fcGx4LnYxLlBpdm90VG90YWxzEjcKDmhpZXJhcmNoeV90eXBlGAUgASgOMh8ub3Blbl9wbHgudjEuUGl2b3RIaWVyYXJjaHlUeXBlEigKBmZyb3plbhgGIAEoCzIYLm9wZW5fcGx4LnYxLlBpdm90RnJvemVuEjAKCnBhZ2luYXRpb24YByABKAsyHC5vcGVuX3BseC52MS5QaXZvdFBhZ2luYXRpb24SNQoNc2VyaWVzX251bWJlchgIIAEoCzIeLm9wZW5fcGx4LnYxLlBpdm90U2VyaWVzTnVtYmVyEjIKCmNvbmRpdGlvbnMYCSADKAsyHi5vcGVuX3BseC52MS5Db25kaXRpb25hbEZvcm1hdBIyCgtpbnRlcmFjdGlvbhgKIAEoCzIdLm9wZW5fcGx4LnYxLlRhYmxlSW50ZXJhY3Rpb24iUwoLUGl2b3RGaWVsZHMSDAoEcm93cxgBIAMoCRIPCgdjb2x1bW5zGAIgAygJEg4KBnZhbHVlcxgDIAMoCRIVCg12YWx1ZV9pbl9jb2xzGAQgASgIIlAKCUZpZWxkTWV0YRINCgVmaWVsZBgBIAEoCRIMCgRuYW1lGAIgASgJEhMKC2Rlc2NyaXB0aW9uGAMgASgJEhEKCWZvcm1hdHRlchgEIAEoCSLqAQoOUGl2b3RTb3J0UGFyYW0SFQoNc29ydF9maWVsZF9pZBgBIAEoCRIyCg5zb3J0X2RpcmVjdGlvbhgCIAEoDjIaLm9wZW5fcGx4LnYxLlNvcnREaXJlY3Rpb24SDwoHc29ydF9ieRgDIAMoCRIXCg9zb3J0X2J5X21lYXN1cmUYBCABKAkSNQoFcXVlcnkYBSADKAsyJi5vcGVuX3BseC52MS5QaXZvdFNvcnRQYXJhbS5RdWVyeUVudHJ5GiwKClF1ZXJ5RW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASJlCgtQaXZvdFRvdGFscxIqCgNyb3cYASABKAsyHS5vcGVuX3BseC52MS5QaXZvdFRvdGFsQ29uZmlnEioKA2NvbBgCIAEoCzIdLm9wZW5fcGx4LnYxLlBpdm90VG90YWxDb25maWcikgIKEFBpdm90VG90YWxDb25maWcSGQoRc2hvd19ncmFuZF90b3RhbHMYASABKAgSFwoPc2hvd19zdWJfdG90YWxzGAIgASgIEh0KFXN1Yl90b3RhbHNfZGltZW5zaW9ucxgDIAMoCRIaChJncmFuZF90b3RhbHNfbGFiZWwYBCABKAkSGAoQc3ViX3RvdGFsc19sYWJlbBgFIAEoCRIjChtyZXZlcnNlX2dyYW5kX3RvdGFsc19sYXlvdXQYBiABKAgSIQoZcmV2ZXJzZV9zdWJfdG90YWxzX2xheW91dBgHIAEoCBItCgthZ2dyZWdhdGlvbhgIIAEoDjIYLm9wZW5fcGx4LnYxLkFnZ3JlZ2F0aW9uIn8KC1Bpdm90RnJvemVuEhIKCnJvd19oZWFkZXIYASABKAgSEQoJcm93X2NvdW50GAIgASgFEhEKCWNvbF9jb3VudBgDIAEoBRIaChJ0cmFpbGluZ19yb3dfY291bnQYBCABKAUSGgoSdHJhaWxpbmdfY29sX2NvdW50GAUgASgFIjUKD1Bpdm90UGFnaW5hdGlvbhIRCglwYWdlX3NpemUYASABKAUSDwoHY3VycmVudBgCIAEoBSIxChFQaXZvdFNlcmllc051bWJlchIOCgZlbmFibGUYASABKAgSDAoEdGV4dBgCIAEoCSKNAQoOTWV0cmljQ2FyZFNwZWMSDQoFdmFsdWUYASABKAkSDgoGZm9ybWF0GAIgASgJEjEKCmNvbXBhcmlzb24YAyABKAsyHS5vcGVuX3BseC52MS5NZXRyaWNDb21wYXJpc29uEikKCXNwYXJrbGluZRgEIAEoCzIWLm9wZW5fcGx4LnYxLlNwYXJrbGluZSJlChBNZXRyaWNDb21wYXJpc29uEg0KBXZhbHVlGAEgASgJEg0KBWxhYmVsGAIgASgJEjMKCWRpcmVjdGlvbhgDIAEoDjIgLm9wZW5fcGx4LnYxLkNvbXBhcmlzb25EaXJlY3Rpb24iSwoJU3BhcmtsaW5lEigKBHR5cGUYASABKA4yGi5vcGVuX3BseC52MS5TcGFya2xpbmVUeXBlEgkKAXgYAiABKAkSCQoBeRgDIAEoCSJECghUZXh0U3BlYxIPCgdjb250ZW50GAEgASgJEicKBmZvcm1hdBgCIAEoDjIXLm9wZW5fcGx4LnYxLlRleHRGb3JtYXQikAIKCVRhYmxlU3BlYxIpCgdjb2x1bW5zGAEgAygLMhgub3Blbl9wbHgudjEuVGFibGVDb2x1bW4SJAoEbWV0YRgCIAMoCzIWLm9wZW5fcGx4LnYxLkZpZWxkTWV0YRIwCgpwYWdpbmF0aW9uGAMgASgLMhwub3Blbl9wbHgudjEuVGFibGVQYWdpbmF0aW9uEhgKEHNob3dfcm93X251bWJlcnMYBCABKAgSMgoKY29uZGl0aW9ucxgFIAMoCzIeLm9wZW5fcGx4LnYxLkNvbmRpdGlvbmFsRm9ybWF0EjIKC2ludGVyYWN0aW9uGAYgASgLMh0ub3Blbl9wbHgudjEuVGFibGVJbnRlcmFjdGlvbiJZCgtUYWJsZUNvbHVtbhINCgVmaWVsZBgBIAEoCRINCgV3aWR0aBgCIAEoBRIsCgVhbGlnbhgDIAEoDjIdLm9wZW5fcGx4LnYxLlRhYmxlQ29sdW1uQWxpZ24iJAoPVGFibGVQYWdpbmF0aW9uEhEKCXBhZ2Vfc2l6ZRgBIAEoBSJzCglHYXVnZVNwZWMSEwoLdmFsdWVfZmllbGQYASABKAkSCwoDbWluGAIgASgBEgsKA21heBgDIAEoARIOCgZmb3JtYXQYBCABKAkSJwoGcmFuZ2VzGAUgAygLMhcub3Blbl9wbHgudjEuR2F1Z2VSYW5nZSI1CgpHYXVnZVJhbmdlEgwKBGZyb20YASABKAESCgoCdG8YAiABKAESDQoFY29sb3IYAyABKAkigAEKCkZ1bm5lbFNwZWMSFgoOY2F0ZWdvcnlfZmllbGQYASABKAkSEwoLdmFsdWVfZmllbGQYAiABKAkSHAoUc2hvd19jb252ZXJzaW9uX3JhdGUYAyABKAgSJwoFc2hhcGUYBCABKA4yGC5vcGVuX3BseC52MS5GdW5uZWxTaGFwZSJmCgtUcmVlbWFwU3BlYxITCgt2YWx1ZV9maWVsZBgBIAEoCRIYChBoaWVyYXJjaHlfZmllbGRzGAIgAygJEhMKC2NvbG9yX2ZpZWxkGAMgASgJEhMKC3Nob3dfbGFiZWxzGAQgASgIIk0KClNhbmtleVNwZWMSFAoMc291cmNlX2ZpZWxkGAEgASgJEhQKDHRhcmdldF9maWVsZBgCIAEoCRITCgt2YWx1ZV9maWVsZBgDIAEoCSJlCg1Xb3JkQ2xvdWRTcGVjEhIKCnRleHRfZmllbGQYASABKAkSFAoMd2VpZ2h0X2ZpZWxkGAIgASgJEhEKCW1heF93b3JkcxgDIAEoBRIXCg9mb250X3NpemVfcmFuZ2UYBCADKAUijwEKFENvbmRpdGlvbmFsVGhyZXNob2xkEiUKAm9wGAEgASgOMhkub3Blbl9wbHgudjEuQ29tcGFyaXNvbk9wEg0KBXZhbHVlGAIgASgBEhYKCXZhbHVlX2VuZBgDIAEoAUgAiAEBEg0KBWNvbG9yGAQgASgJEgwKBGljb24YBSABKAlCDAoKX3ZhbHVlX2VuZCLjAQoRQ29uZGl0aW9uYWxGb3JtYXQSDQoFZmllbGQYASABKAkSMAoEdHlwZRgCIAEoDjIiLm9wZW5fcGx4LnYxLkNvbmRpdGlvbmFsRm9ybWF0VHlwZRI1Cgp0aHJlc2hvbGRzGAMgAygLMiEub3Blbl9wbHgudjEuQ29uZGl0aW9uYWxUaHJlc2hvbGQSGQoMaW50ZXJ2YWxfbWluGAQgASgBSACIAQESGQoMaW50ZXJ2YWxfbWF4GAUgASgBSAGIAQFCDwoNX2ludGVydmFsX21pbkIPCg1faW50ZXJ2YWxfbWF4Ip4BChBUYWJsZUludGVyYWN0aW9uEhMKC2VuYWJsZV9jb3B5GAEgASgIEh4KFmVuYWJsZV9ob3Zlcl9oaWdobGlnaHQYAiABKAgSFQoNZW5hYmxlX3Jlc2l6ZRgDIAEoCBIeChZlbmFibGVfbXVsdGlfc2VsZWN0aW9uGAQgASgIEh4KFmVuYWJsZV9yYW5nZV9zZWxlY3Rpb24YBSABKAgqpwIKCUNoYXJ0VHlwZRIaChZDSEFSVF9UWVBFX1VOU1BFQ0lGSUVEEAASEwoPQ0hBUlRfVFlQRV9MSU5FEAESEgoOQ0hBUlRfVFlQRV9CQVIQAhIdChlDSEFSVF9UWVBFX0hPUklaT05UQUxfQkFSEAMSEgoOQ0hBUlRfVFlQRV9QSUUQBBIUChBDSEFSVF9UWVBFX0RPTlVUEAUSEwoPQ0hBUlRfVFlQRV9BUkVBEAYSFgoSQ0hBUlRfVFlQRV9TQ0FUVEVSEAcSFgoSQ0hBUlRfVFlQRV9IRUFUTUFQEAgSGAoUQ0hBUlRfVFlQRV9ISVNUT0dSQU0QCRIUChBDSEFSVF9UWVBFX1JBREFSEAoSFwoTQ0hBUlRfVFlQRV9CT1hfUExPVBALKm8KCVN0YWNrTW9kZRIaChZTVEFDS19NT0RFX1VOU1BFQ0lGSUVEEAASFgoSU1RBQ0tfTU9ERV9TVEFDS0VEEAESFgoSU1RBQ0tfTU9ERV9HUk9VUEVEEAISFgoSU1RBQ0tfTU9ERV9QRVJDRU5UEAMqogEKCUxpbmVTaGFwZRIaChZMSU5FX1NIQVBFX1VOU1BFQ0lGSUVEEAASFQoRTElORV9TSEFQRV9MSU5FQVIQARIVChFMSU5FX1NIQVBFX1NNT09USBACEhMKD0xJTkVfU0hBUEVfU1RFUBADEhoKFkxJTkVfU0hBUEVfU1RFUF9CRUZPUkUQBBIaChZMSU5FX1NIQVBFX1NURVBfTUlERExFEAUqjwEKDEF4aXNQb3NpdGlvbhIdChlBWElTX1BPU0lUSU9OX1VOU1BFQ0lGSUVEEAASFQoRQVhJU19QT1NJVElPTl9UT1AQARIYChRBWElTX1BPU0lUSU9OX0JPVFRPTRACEhYKEkFYSVNfUE9TSVRJT05fTEVGVBADEhcKE0FYSVNfUE9TSVRJT05fUklHSFQQBCq6AgoJU2NhbGVUeXBlEhoKFlNDQUxFX1RZUEVfVU5TUEVDSUZJRUQQABIVChFTQ0FMRV9UWVBFX0xJTkVBUhABEhIKDlNDQUxFX1RZUEVfTE9HEAISEgoOU0NBTEVfVFlQRV9QT1cQAxITCg9TQ0FMRV9UWVBFX1NRUlQQBBITCg9TQ0FMRV9UWVBFX1RJTUUQBRITCg9TQ0FMRV9UWVBFX0JBTkQQBhIUChBTQ0FMRV9UWVBFX1BPSU5UEAcSFgoSU0NBTEVfVFlQRV9PUkRJTkFMEAgSFwoTU0NBTEVfVFlQRV9RVUFOVElaRRAJEhcKE1NDQUxFX1RZUEVfUVVBTlRJTEUQChIYChRTQ0FMRV9UWVBFX1RIUkVTSE9MRBALEhkKFVNDQUxFX1RZUEVfU0VRVUVOVElBTBAMKswBCg1MYWJlbFBvc2l0aW9uEh4KGkxBQkVMX1BPU0lUSU9OX1VOU1BFQ0lGSUVEEAASFgoSTEFCRUxfUE9TSVRJT05fVE9QEAESGQoVTEFCRUxfUE9TSVRJT05fQk9UVE9NEAISFwoTTEFCRUxfUE9TSVRJT05fTEVGVBADEhgKFExBQkVMX1BPU0lUSU9OX1JJR0hUEAQSGQoVTEFCRUxfUE9TSVRJT05fSU5TSURFEAUSGgoWTEFCRUxfUE9TSVRJT05fT1VUU0lERRAGKpIBCg1MYWJlbFNlbGVjdG9yEh4KGkxBQkVMX1NFTEVDVE9SX1VOU1BFQ0lGSUVEEAASGAoUTEFCRUxfU0VMRUNUT1JfRklSU1QQARIXChNMQUJFTF9TRUxFQ1RPUl9MQVNUEAISFgoSTEFCRUxfU0VMRUNUT1JfTUlOEAMSFgoSTEFCRUxfU0VMRUNUT1JfTUFYEAQqowEKDkFubm90YXRpb25UeXBlEh8KG0FOTk9UQVRJT05fVFlQRV9VTlNQRUNJRklFRBAAEhoKFkFOTk9UQVRJT05fVFlQRV9MSU5FX1gQARIaChZBTk5PVEFUSU9OX1RZUEVfTElORV9ZEAISGwoXQU5OT1RBVElPTl9UWVBFX1JBTkdFX1gQAxIbChdBTk5PVEFUSU9OX1RZUEVfUkFOR0VfWRAEKpQBChFEYXRhVHJhbnNmb3JtVHlwZRIjCh9EQVRBX1RSQU5TRk9STV9UWVBFX1VOU1BFQ0lGSUVEEAASGwoXREFUQV9UUkFOU0ZPUk1fVFlQRV9CSU4QARIeChpEQVRBX1RSQU5TRk9STV9UWVBFX1NBTVBMRRACEh0KGURBVEFfVFJBTlNGT1JNX1RZUEVfR1JPVVAQAyrOAQoOU2FtcGxlU3RyYXRlZ3kSHwobU0FNUExFX1NUUkFURUdZX1VOU1BFQ0lGSUVEEAASGAoUU0FNUExFX1NUUkFURUdZX0xUVEIQARIaChZTQU1QTEVfU1RSQVRFR1lfTUVESUFOEAISFwoTU0FNUExFX1NUUkFURUdZX01BWBADEhcKE1NBTVBMRV9TVFJBVEVHWV9NSU4QBBIZChVTQU1QTEVfU1RSQVRFR1lfRklSU1QQBRIYChRTQU1QTEVfU1RSQVRFR1lfTEFTVBAGKmAKDVNvcnREaXJlY3Rpb24SHgoaU09SVF9ESVJFQ1RJT05fVU5TUEVDSUZJRUQQABIWChJTT1JUX0RJUkVDVElPTl9BU0MQARIXChNTT1JUX0RJUkVDVElPTl9ERVNDEAIqlQEKC0FnZ3JlZ2F0aW9uEhsKF0FHR1JFR0FUSU9OX1VOU1BFQ0lGSUVEEAASEwoPQUdHUkVHQVRJT05fU1VNEAESEwoPQUdHUkVHQVRJT05fTUlOEAISEwoPQUdHUkVHQVRJT05fTUFYEAMSEwoPQUdHUkVHQVRJT05fQVZHEAQSFQoRQUdHUkVHQVRJT05fQ09VTlQQBSp4ChJQaXZvdEhpZXJhcmNoeVR5cGUSJAogUElWT1RfSElFUkFSQ0hZX1RZUEVfVU5TUEVDSUZJRUQQABIdChlQSVZPVF9ISUVSQVJDSFlfVFlQRV9HUklEEAESHQoZUElWT1RfSElFUkFSQ0hZX1RZUEVfVFJFRRACKpABChNDb21wYXJpc29uRGlyZWN0aW9uEiQKIENPTVBBUklTT05fRElSRUNUSU9OX1VOU1BFQ0lGSUVEEAASKQolQ09NUEFSSVNPTl9ESVJFQ1RJT05fSElHSEVSX0lTX0JFVFRFUhABEigKJENPTVBBUklTT05fRElSRUNUSU9OX0xPV0VSX0lTX0JFVFRFUhACKnkKDVNwYXJrbGluZVR5cGUSHgoaU1BBUktMSU5FX1RZUEVfVU5TUEVDSUZJRUQQABIXChNTUEFSS0xJTkVfVFlQRV9MSU5FEAESFwoTU1BBUktMSU5FX1RZUEVfQVJFQRACEhYKElNQQVJLTElORV9UWVBFX0JBUhADKloKClRleHRGb3JtYXQSGwoXVEVYVF9GT1JNQVRfVU5TUEVDSUZJRUQQABIVChFURVhUX0ZPUk1BVF9QTEFJThABEhgKFFRFWFRfRk9STUFUX01BUktET1dOEAIqkAEKEFRhYmxlQ29sdW1uQWxpZ24SIgoeVEFCTEVfQ09MVU1OX0FMSUdOX1VOU1BFQ0lGSUVEEAASGwoXVEFCTEVfQ09MVU1OX0FMSUdOX0xFRlQQARIdChlUQUJMRV9DT0xVTU5fQUxJR05fQ0VOVEVSEAISHAoYVEFCTEVfQ09MVU1OX0FMSUdOX1JJR0hUEAMqXgoLRnVubmVsU2hhcGUSHAoYRlVOTkVMX1NIQVBFX1VOU1BFQ0lGSUVEEAASFwoTRlVOTkVMX1NIQVBFX0ZVTk5FTBABEhgKFEZVTk5FTF9TSEFQRV9QWVJBTUlEEAIq0gEKFUNvbmRpdGlvbmFsRm9ybWF0VHlwZRInCiNDT05ESVRJT05BTF9GT1JNQVRfVFlQRV9VTlNQRUNJRklFRBAAEiAKHENPTkRJVElPTkFMX0ZPUk1BVF9UWVBFX1RFWFQQARImCiJDT05ESVRJT05BTF9GT1JNQVRfVFlQRV9CQUNLR1JPVU5EEAISIAocQ09ORElUSU9OQUxfRk9STUFUX1RZUEVfSUNPThADEiQKIENPTkRJVElPTkFMX0ZPUk1BVF9UWVBFX0lOVEVSVkFMEAQqzwEKDENvbXBhcmlzb25PcBIdChlDT01QQVJJU09OX09QX1VOU1BFQ0lGSUVEEAASFAoQQ09NUEFSSVNPTl9PUF9HVBABEhUKEUNPTVBBUklTT05fT1BfR1RFEAISFAoQQ09NUEFSSVNPTl9PUF9MVBADEhUKEUNPTVBBUklTT05fT1BfTFRFEAQSFAoQQ09NUEFSSVNPTl9PUF9FURAFEhUKEUNPTVBBUklTT05fT1BfTkVREAYSGQoVQ09NUEFSSVNPTl9PUF9CRVRXRUVOEAdiBnByb3RvMw");
 
 /**
  * Top-level spec: one of the widget type specs.
@@ -45,6 +45,42 @@ export type WidgetSpec = Message<"open_plx.v1.WidgetSpec"> & {
      */
     value: TextSpec;
     case: "text";
+  } | {
+    /**
+     * @generated from field: open_plx.v1.TableSpec table = 5;
+     */
+    value: TableSpec;
+    case: "table";
+  } | {
+    /**
+     * @generated from field: open_plx.v1.GaugeSpec gauge = 6;
+     */
+    value: GaugeSpec;
+    case: "gauge";
+  } | {
+    /**
+     * @generated from field: open_plx.v1.FunnelSpec funnel = 7;
+     */
+    value: FunnelSpec;
+    case: "funnel";
+  } | {
+    /**
+     * @generated from field: open_plx.v1.TreemapSpec treemap = 8;
+     */
+    value: TreemapSpec;
+    case: "treemap";
+  } | {
+    /**
+     * @generated from field: open_plx.v1.SankeySpec sankey = 9;
+     */
+    value: SankeySpec;
+    case: "sankey";
+  } | {
+    /**
+     * @generated from field: open_plx.v1.WordCloudSpec word_cloud = 10;
+     */
+    value: WordCloudSpec;
+    case: "wordCloud";
   } | { case: undefined; value?: undefined };
 };
 
@@ -652,6 +688,16 @@ export type PivotTableSpec = Message<"open_plx.v1.PivotTableSpec"> & {
    * @generated from field: open_plx.v1.PivotSeriesNumber series_number = 8;
    */
   seriesNumber?: PivotSeriesNumber;
+
+  /**
+   * @generated from field: repeated open_plx.v1.ConditionalFormat conditions = 9;
+   */
+  conditions: ConditionalFormat[];
+
+  /**
+   * @generated from field: open_plx.v1.TableInteraction interaction = 10;
+   */
+  interaction?: TableInteraction;
 };
 
 /**
@@ -1036,6 +1082,446 @@ export const TextSpecSchema: GenMessage<TextSpec> = /*@__PURE__*/
   messageDesc(file_open_plx_v1_widget_spec, 22);
 
 /**
+ * @generated from message open_plx.v1.TableSpec
+ */
+export type TableSpec = Message<"open_plx.v1.TableSpec"> & {
+  /**
+   * Columns to display. If empty, all data columns are shown.
+   *
+   * @generated from field: repeated open_plx.v1.TableColumn columns = 1;
+   */
+  columns: TableColumn[];
+
+  /**
+   * Field display names and formatters (same as PivotTableSpec.meta).
+   *
+   * @generated from field: repeated open_plx.v1.FieldMeta meta = 2;
+   */
+  meta: FieldMeta[];
+
+  /**
+   * Pagination config. If absent, no pagination.
+   *
+   * @generated from field: open_plx.v1.TablePagination pagination = 3;
+   */
+  pagination?: TablePagination;
+
+  /**
+   * Show auto-incrementing row number column.
+   *
+   * @generated from field: bool show_row_numbers = 4;
+   */
+  showRowNumbers: boolean;
+
+  /**
+   * @generated from field: repeated open_plx.v1.ConditionalFormat conditions = 5;
+   */
+  conditions: ConditionalFormat[];
+
+  /**
+   * @generated from field: open_plx.v1.TableInteraction interaction = 6;
+   */
+  interaction?: TableInteraction;
+};
+
+/**
+ * Describes the message open_plx.v1.TableSpec.
+ * Use `create(TableSpecSchema)` to create a new message.
+ */
+export const TableSpecSchema: GenMessage<TableSpec> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_widget_spec, 23);
+
+/**
+ * @generated from message open_plx.v1.TableColumn
+ */
+export type TableColumn = Message<"open_plx.v1.TableColumn"> & {
+  /**
+   * Data field name.
+   *
+   * @generated from field: string field = 1;
+   */
+  field: string;
+
+  /**
+   * Column width in pixels. 0 = auto.
+   *
+   * @generated from field: int32 width = 2;
+   */
+  width: number;
+
+  /**
+   * Alignment override.
+   *
+   * @generated from field: open_plx.v1.TableColumnAlign align = 3;
+   */
+  align: TableColumnAlign;
+};
+
+/**
+ * Describes the message open_plx.v1.TableColumn.
+ * Use `create(TableColumnSchema)` to create a new message.
+ */
+export const TableColumnSchema: GenMessage<TableColumn> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_widget_spec, 24);
+
+/**
+ * @generated from message open_plx.v1.TablePagination
+ */
+export type TablePagination = Message<"open_plx.v1.TablePagination"> & {
+  /**
+   * @generated from field: int32 page_size = 1;
+   */
+  pageSize: number;
+};
+
+/**
+ * Describes the message open_plx.v1.TablePagination.
+ * Use `create(TablePaginationSchema)` to create a new message.
+ */
+export const TablePaginationSchema: GenMessage<TablePagination> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_widget_spec, 25);
+
+/**
+ * @generated from message open_plx.v1.GaugeSpec
+ */
+export type GaugeSpec = Message<"open_plx.v1.GaugeSpec"> & {
+  /**
+   * Column containing the gauge value
+   *
+   * @generated from field: string value_field = 1;
+   */
+  valueField: string;
+
+  /**
+   * Minimum value (default 0)
+   *
+   * @generated from field: double min = 2;
+   */
+  min: number;
+
+  /**
+   * Maximum value (default 100)
+   *
+   * @generated from field: double max = 3;
+   */
+  max: number;
+
+  /**
+   * Display format for the center label
+   *
+   * @generated from field: string format = 4;
+   */
+  format: string;
+
+  /**
+   * Color bands
+   *
+   * @generated from field: repeated open_plx.v1.GaugeRange ranges = 5;
+   */
+  ranges: GaugeRange[];
+};
+
+/**
+ * Describes the message open_plx.v1.GaugeSpec.
+ * Use `create(GaugeSpecSchema)` to create a new message.
+ */
+export const GaugeSpecSchema: GenMessage<GaugeSpec> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_widget_spec, 26);
+
+/**
+ * @generated from message open_plx.v1.GaugeRange
+ */
+export type GaugeRange = Message<"open_plx.v1.GaugeRange"> & {
+  /**
+   * @generated from field: double from = 1;
+   */
+  from: number;
+
+  /**
+   * @generated from field: double to = 2;
+   */
+  to: number;
+
+  /**
+   * Hex color
+   *
+   * @generated from field: string color = 3;
+   */
+  color: string;
+};
+
+/**
+ * Describes the message open_plx.v1.GaugeRange.
+ * Use `create(GaugeRangeSchema)` to create a new message.
+ */
+export const GaugeRangeSchema: GenMessage<GaugeRange> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_widget_spec, 27);
+
+/**
+ * @generated from message open_plx.v1.FunnelSpec
+ */
+export type FunnelSpec = Message<"open_plx.v1.FunnelSpec"> & {
+  /**
+   * Stage name field (ordered)
+   *
+   * @generated from field: string category_field = 1;
+   */
+  categoryField: string;
+
+  /**
+   * Numeric value per stage
+   *
+   * @generated from field: string value_field = 2;
+   */
+  valueField: string;
+
+  /**
+   * Show % between stages
+   *
+   * @generated from field: bool show_conversion_rate = 3;
+   */
+  showConversionRate: boolean;
+
+  /**
+   * @generated from field: open_plx.v1.FunnelShape shape = 4;
+   */
+  shape: FunnelShape;
+};
+
+/**
+ * Describes the message open_plx.v1.FunnelSpec.
+ * Use `create(FunnelSpecSchema)` to create a new message.
+ */
+export const FunnelSpecSchema: GenMessage<FunnelSpec> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_widget_spec, 28);
+
+/**
+ * @generated from message open_plx.v1.TreemapSpec
+ */
+export type TreemapSpec = Message<"open_plx.v1.TreemapSpec"> & {
+  /**
+   * Numeric field for rectangle area
+   *
+   * @generated from field: string value_field = 1;
+   */
+  valueField: string;
+
+  /**
+   * Grouping fields, e.g. ["region", "country"]
+   *
+   * @generated from field: repeated string hierarchy_fields = 2;
+   */
+  hierarchyFields: string[];
+
+  /**
+   * Optional field for color encoding
+   *
+   * @generated from field: string color_field = 3;
+   */
+  colorField: string;
+
+  /**
+   * @generated from field: bool show_labels = 4;
+   */
+  showLabels: boolean;
+};
+
+/**
+ * Describes the message open_plx.v1.TreemapSpec.
+ * Use `create(TreemapSpecSchema)` to create a new message.
+ */
+export const TreemapSpecSchema: GenMessage<TreemapSpec> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_widget_spec, 29);
+
+/**
+ * @generated from message open_plx.v1.SankeySpec
+ */
+export type SankeySpec = Message<"open_plx.v1.SankeySpec"> & {
+  /**
+   * @generated from field: string source_field = 1;
+   */
+  sourceField: string;
+
+  /**
+   * @generated from field: string target_field = 2;
+   */
+  targetField: string;
+
+  /**
+   * @generated from field: string value_field = 3;
+   */
+  valueField: string;
+};
+
+/**
+ * Describes the message open_plx.v1.SankeySpec.
+ * Use `create(SankeySpecSchema)` to create a new message.
+ */
+export const SankeySpecSchema: GenMessage<SankeySpec> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_widget_spec, 30);
+
+/**
+ * @generated from message open_plx.v1.WordCloudSpec
+ */
+export type WordCloudSpec = Message<"open_plx.v1.WordCloudSpec"> & {
+  /**
+   * Word/text field
+   *
+   * @generated from field: string text_field = 1;
+   */
+  textField: string;
+
+  /**
+   * Numeric weight/frequency field
+   *
+   * @generated from field: string weight_field = 2;
+   */
+  weightField: string;
+
+  /**
+   * Max words to display (0 = unlimited)
+   *
+   * @generated from field: int32 max_words = 3;
+   */
+  maxWords: number;
+
+  /**
+   * [min, max] font size, e.g. [12, 60]
+   *
+   * @generated from field: repeated int32 font_size_range = 4;
+   */
+  fontSizeRange: number[];
+};
+
+/**
+ * Describes the message open_plx.v1.WordCloudSpec.
+ * Use `create(WordCloudSpecSchema)` to create a new message.
+ */
+export const WordCloudSpecSchema: GenMessage<WordCloudSpec> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_widget_spec, 31);
+
+/**
+ * @generated from message open_plx.v1.ConditionalThreshold
+ */
+export type ConditionalThreshold = Message<"open_plx.v1.ConditionalThreshold"> & {
+  /**
+   * @generated from field: open_plx.v1.ComparisonOp op = 1;
+   */
+  op: ComparisonOp;
+
+  /**
+   * @generated from field: double value = 2;
+   */
+  value: number;
+
+  /**
+   * For BETWEEN
+   *
+   * @generated from field: optional double value_end = 3;
+   */
+  valueEnd?: number;
+
+  /**
+   * Hex color for text/background/interval
+   *
+   * @generated from field: string color = 4;
+   */
+  color: string;
+
+  /**
+   * Icon name for ICON type
+   *
+   * @generated from field: string icon = 5;
+   */
+  icon: string;
+};
+
+/**
+ * Describes the message open_plx.v1.ConditionalThreshold.
+ * Use `create(ConditionalThresholdSchema)` to create a new message.
+ */
+export const ConditionalThresholdSchema: GenMessage<ConditionalThreshold> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_widget_spec, 32);
+
+/**
+ * @generated from message open_plx.v1.ConditionalFormat
+ */
+export type ConditionalFormat = Message<"open_plx.v1.ConditionalFormat"> & {
+  /**
+   * @generated from field: string field = 1;
+   */
+  field: string;
+
+  /**
+   * @generated from field: open_plx.v1.ConditionalFormatType type = 2;
+   */
+  type: ConditionalFormatType;
+
+  /**
+   * @generated from field: repeated open_plx.v1.ConditionalThreshold thresholds = 3;
+   */
+  thresholds: ConditionalThreshold[];
+
+  /**
+   * For INTERVAL type: min value
+   *
+   * @generated from field: optional double interval_min = 4;
+   */
+  intervalMin?: number;
+
+  /**
+   * For INTERVAL type: max value
+   *
+   * @generated from field: optional double interval_max = 5;
+   */
+  intervalMax?: number;
+};
+
+/**
+ * Describes the message open_plx.v1.ConditionalFormat.
+ * Use `create(ConditionalFormatSchema)` to create a new message.
+ */
+export const ConditionalFormatSchema: GenMessage<ConditionalFormat> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_widget_spec, 33);
+
+/**
+ * @generated from message open_plx.v1.TableInteraction
+ */
+export type TableInteraction = Message<"open_plx.v1.TableInteraction"> & {
+  /**
+   * @generated from field: bool enable_copy = 1;
+   */
+  enableCopy: boolean;
+
+  /**
+   * @generated from field: bool enable_hover_highlight = 2;
+   */
+  enableHoverHighlight: boolean;
+
+  /**
+   * @generated from field: bool enable_resize = 3;
+   */
+  enableResize: boolean;
+
+  /**
+   * @generated from field: bool enable_multi_selection = 4;
+   */
+  enableMultiSelection: boolean;
+
+  /**
+   * @generated from field: bool enable_range_selection = 5;
+   */
+  enableRangeSelection: boolean;
+};
+
+/**
+ * Describes the message open_plx.v1.TableInteraction.
+ * Use `create(TableInteractionSchema)` to create a new message.
+ */
+export const TableInteractionSchema: GenMessage<TableInteraction> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_widget_spec, 34);
+
+/**
  * Semantic chart types. The frontend maps these to rendering library marks.
  *
  * @generated from enum open_plx.v1.ChartType
@@ -1115,6 +1601,13 @@ export enum ChartType {
    * @generated from enum value: CHART_TYPE_RADAR = 10;
    */
   RADAR = 10,
+
+  /**
+   * Statistical distribution (box + whiskers)
+   *
+   * @generated from enum value: CHART_TYPE_BOX_PLOT = 11;
+   */
+  BOX_PLOT = 11,
 }
 
 /**
@@ -1715,4 +2208,156 @@ export enum TextFormat {
  */
 export const TextFormatSchema: GenEnum<TextFormat> = /*@__PURE__*/
   enumDesc(file_open_plx_v1_widget_spec, 15);
+
+/**
+ * @generated from enum open_plx.v1.TableColumnAlign
+ */
+export enum TableColumnAlign {
+  /**
+   * @generated from enum value: TABLE_COLUMN_ALIGN_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: TABLE_COLUMN_ALIGN_LEFT = 1;
+   */
+  LEFT = 1,
+
+  /**
+   * @generated from enum value: TABLE_COLUMN_ALIGN_CENTER = 2;
+   */
+  CENTER = 2,
+
+  /**
+   * @generated from enum value: TABLE_COLUMN_ALIGN_RIGHT = 3;
+   */
+  RIGHT = 3,
+}
+
+/**
+ * Describes the enum open_plx.v1.TableColumnAlign.
+ */
+export const TableColumnAlignSchema: GenEnum<TableColumnAlign> = /*@__PURE__*/
+  enumDesc(file_open_plx_v1_widget_spec, 16);
+
+/**
+ * @generated from enum open_plx.v1.FunnelShape
+ */
+export enum FunnelShape {
+  /**
+   * @generated from enum value: FUNNEL_SHAPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: FUNNEL_SHAPE_FUNNEL = 1;
+   */
+  FUNNEL = 1,
+
+  /**
+   * @generated from enum value: FUNNEL_SHAPE_PYRAMID = 2;
+   */
+  PYRAMID = 2,
+}
+
+/**
+ * Describes the enum open_plx.v1.FunnelShape.
+ */
+export const FunnelShapeSchema: GenEnum<FunnelShape> = /*@__PURE__*/
+  enumDesc(file_open_plx_v1_widget_spec, 17);
+
+/**
+ * @generated from enum open_plx.v1.ConditionalFormatType
+ */
+export enum ConditionalFormatType {
+  /**
+   * @generated from enum value: CONDITIONAL_FORMAT_TYPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * Font color/size
+   *
+   * @generated from enum value: CONDITIONAL_FORMAT_TYPE_TEXT = 1;
+   */
+  TEXT = 1,
+
+  /**
+   * Cell background color
+   *
+   * @generated from enum value: CONDITIONAL_FORMAT_TYPE_BACKGROUND = 2;
+   */
+  BACKGROUND = 2,
+
+  /**
+   * Status icon in cell
+   *
+   * @generated from enum value: CONDITIONAL_FORMAT_TYPE_ICON = 3;
+   */
+  ICON = 3,
+
+  /**
+   * Data bar (mini bar chart)
+   *
+   * @generated from enum value: CONDITIONAL_FORMAT_TYPE_INTERVAL = 4;
+   */
+  INTERVAL = 4,
+}
+
+/**
+ * Describes the enum open_plx.v1.ConditionalFormatType.
+ */
+export const ConditionalFormatTypeSchema: GenEnum<ConditionalFormatType> = /*@__PURE__*/
+  enumDesc(file_open_plx_v1_widget_spec, 18);
+
+/**
+ * @generated from enum open_plx.v1.ComparisonOp
+ */
+export enum ComparisonOp {
+  /**
+   * @generated from enum value: COMPARISON_OP_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: COMPARISON_OP_GT = 1;
+   */
+  GT = 1,
+
+  /**
+   * @generated from enum value: COMPARISON_OP_GTE = 2;
+   */
+  GTE = 2,
+
+  /**
+   * @generated from enum value: COMPARISON_OP_LT = 3;
+   */
+  LT = 3,
+
+  /**
+   * @generated from enum value: COMPARISON_OP_LTE = 4;
+   */
+  LTE = 4,
+
+  /**
+   * @generated from enum value: COMPARISON_OP_EQ = 5;
+   */
+  EQ = 5,
+
+  /**
+   * @generated from enum value: COMPARISON_OP_NEQ = 6;
+   */
+  NEQ = 6,
+
+  /**
+   * @generated from enum value: COMPARISON_OP_BETWEEN = 7;
+   */
+  BETWEEN = 7,
+}
+
+/**
+ * Describes the enum open_plx.v1.ComparisonOp.
+ */
+export const ComparisonOpSchema: GenEnum<ComparisonOp> = /*@__PURE__*/
+  enumDesc(file_open_plx_v1_widget_spec, 19);
 

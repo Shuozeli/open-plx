@@ -62,8 +62,20 @@ fn widget_spec_to_proto(spec: &WidgetSpecYaml) -> Result<pb::WidgetSpec> {
         pb::widget_spec::Spec::MetricCard(metric_card_to_proto(m)?)
     } else if let Some(t) = &spec.text {
         pb::widget_spec::Spec::Text(text_to_proto(t))
+    } else if let Some(t) = &spec.table {
+        pb::widget_spec::Spec::Table(table_to_proto(t))
+    } else if let Some(g) = &spec.gauge {
+        pb::widget_spec::Spec::Gauge(gauge_to_proto(g))
+    } else if let Some(f) = &spec.funnel {
+        pb::widget_spec::Spec::Funnel(funnel_to_proto(f))
+    } else if let Some(t) = &spec.treemap {
+        pb::widget_spec::Spec::Treemap(treemap_to_proto(t))
+    } else if let Some(s) = &spec.sankey {
+        pb::widget_spec::Spec::Sankey(sankey_to_proto(s))
+    } else if let Some(w) = &spec.word_cloud {
+        pb::widget_spec::Spec::WordCloud(word_cloud_to_proto(w))
     } else {
-        bail!("widget spec must have exactly one of: chart, pivot_table, metric_card, text");
+        bail!("widget spec must have exactly one of: chart, pivot_table, metric_card, text, table, gauge, funnel, treemap, sankey, word_cloud");
     };
 
     Ok(pb::WidgetSpec { spec: Some(inner) })
@@ -196,11 +208,16 @@ fn pivot_to_proto(p: &PivotTableSpecYaml) -> Result<pb::PivotTableSpec> {
                 })
             })
             .collect::<Result<Vec<_>>>()?,
-        totals: None, // TODO(refactor): Convert totals from YAML
+        totals: p.totals.as_ref().map(|t| pb::PivotTotals {
+            row: t.row.as_ref().map(total_config_to_proto),
+            col: t.col.as_ref().map(total_config_to_proto),
+        }),
         hierarchy_type: pb::PivotHierarchyType::Unspecified.into(),
         frozen: None,
         pagination: None,
         series_number: None,
+        conditions: p.conditions.iter().map(conditional_format_to_proto).collect(),
+        interaction: p.interaction.as_ref().map(interaction_to_proto),
     })
 }
 
@@ -252,6 +269,168 @@ fn text_to_proto(t: &TextSpecYaml) -> pb::TextSpec {
     }
 }
 
+fn conditional_format_to_proto(c: &ConditionalFormatYaml) -> pb::ConditionalFormat {
+    pb::ConditionalFormat {
+        field: c.field.clone(),
+        r#type: match c.format_type.as_str() {
+            "text" => pb::ConditionalFormatType::Text,
+            "background" => pb::ConditionalFormatType::Background,
+            "icon" => pb::ConditionalFormatType::Icon,
+            "interval" => pb::ConditionalFormatType::Interval,
+            _ => pb::ConditionalFormatType::Unspecified,
+        }
+        .into(),
+        thresholds: c
+            .thresholds
+            .iter()
+            .map(|t| pb::ConditionalThreshold {
+                op: match t.op.as_str() {
+                    "gt" => pb::ComparisonOp::Gt,
+                    "gte" => pb::ComparisonOp::Gte,
+                    "lt" => pb::ComparisonOp::Lt,
+                    "lte" => pb::ComparisonOp::Lte,
+                    "eq" => pb::ComparisonOp::Eq,
+                    "neq" => pb::ComparisonOp::Neq,
+                    "between" => pb::ComparisonOp::Between,
+                    _ => pb::ComparisonOp::Unspecified,
+                }
+                .into(),
+                value: t.value,
+                value_end: t.value_end,
+                color: t.color.clone().unwrap_or_default(),
+                icon: t.icon.clone().unwrap_or_default(),
+            })
+            .collect(),
+        interval_min: c.interval_min,
+        interval_max: c.interval_max,
+    }
+}
+
+fn interaction_to_proto(i: &TableInteractionYaml) -> pb::TableInteraction {
+    pb::TableInteraction {
+        enable_copy: i.enable_copy,
+        enable_hover_highlight: i.enable_hover_highlight,
+        enable_resize: i.enable_resize,
+        enable_multi_selection: i.enable_multi_selection,
+        enable_range_selection: i.enable_range_selection,
+    }
+}
+
+fn total_config_to_proto(c: &PivotTotalConfigYaml) -> pb::PivotTotalConfig {
+    pb::PivotTotalConfig {
+        show_grand_totals: c.show_grand_totals,
+        show_sub_totals: c.show_sub_totals,
+        sub_totals_dimensions: c.sub_totals_dimensions.clone(),
+        grand_totals_label: c.grand_totals_label.clone().unwrap_or_default(),
+        sub_totals_label: c.sub_totals_label.clone().unwrap_or_default(),
+        reverse_grand_totals_layout: c.reverse_grand_totals_layout,
+        reverse_sub_totals_layout: c.reverse_sub_totals_layout,
+        aggregation: match c.aggregation.as_deref() {
+            Some("SUM") => pb::Aggregation::Sum,
+            Some("MIN") => pb::Aggregation::Min,
+            Some("MAX") => pb::Aggregation::Max,
+            Some("AVG") => pb::Aggregation::Avg,
+            Some("COUNT") => pb::Aggregation::Count,
+            _ => pb::Aggregation::Unspecified,
+        }
+        .into(),
+    }
+}
+
+fn word_cloud_to_proto(w: &WordCloudSpecYaml) -> pb::WordCloudSpec {
+    pb::WordCloudSpec {
+        text_field: w.text_field.clone(),
+        weight_field: w.weight_field.clone(),
+        max_words: w.max_words.unwrap_or(0),
+        font_size_range: w.font_size_range.clone(),
+    }
+}
+
+fn treemap_to_proto(t: &TreemapSpecYaml) -> pb::TreemapSpec {
+    pb::TreemapSpec {
+        value_field: t.value_field.clone(),
+        hierarchy_fields: t.hierarchy_fields.clone(),
+        color_field: t.color_field.clone().unwrap_or_default(),
+        show_labels: t.show_labels,
+    }
+}
+
+fn sankey_to_proto(s: &SankeySpecYaml) -> pb::SankeySpec {
+    pb::SankeySpec {
+        source_field: s.source_field.clone(),
+        target_field: s.target_field.clone(),
+        value_field: s.value_field.clone(),
+    }
+}
+
+fn gauge_to_proto(g: &GaugeSpecYaml) -> pb::GaugeSpec {
+    pb::GaugeSpec {
+        value_field: g.value_field.clone(),
+        min: g.min.unwrap_or(0.0),
+        max: g.max.unwrap_or(100.0),
+        format: g.format.clone().unwrap_or_default(),
+        ranges: g
+            .ranges
+            .iter()
+            .map(|r| pb::GaugeRange {
+                from: r.from,
+                to: r.to,
+                color: r.color.clone(),
+            })
+            .collect(),
+    }
+}
+
+fn funnel_to_proto(f: &FunnelSpecYaml) -> pb::FunnelSpec {
+    pb::FunnelSpec {
+        category_field: f.category_field.clone(),
+        value_field: f.value_field.clone(),
+        show_conversion_rate: f.show_conversion_rate,
+        shape: match f.shape.as_deref() {
+            Some("pyramid") => pb::FunnelShape::Pyramid,
+            Some("funnel") => pb::FunnelShape::Funnel,
+            _ => pb::FunnelShape::Unspecified,
+        }
+        .into(),
+    }
+}
+
+fn table_to_proto(t: &TableSpecYaml) -> pb::TableSpec {
+    pb::TableSpec {
+        columns: t
+            .columns
+            .iter()
+            .map(|c| pb::TableColumn {
+                field: c.field.clone(),
+                width: c.width.unwrap_or(0),
+                align: match c.align.as_deref() {
+                    Some("left") => pb::TableColumnAlign::Left,
+                    Some("center") => pb::TableColumnAlign::Center,
+                    Some("right") => pb::TableColumnAlign::Right,
+                    _ => pb::TableColumnAlign::Unspecified,
+                }
+                .into(),
+            })
+            .collect(),
+        meta: t
+            .meta
+            .iter()
+            .map(|m| pb::FieldMeta {
+                field: m.field.clone(),
+                name: m.name.clone().unwrap_or_default(),
+                description: String::new(),
+                formatter: m.formatter.clone().unwrap_or_default(),
+            })
+            .collect(),
+        pagination: t.pagination.as_ref().map(|p| pb::TablePagination {
+            page_size: p.page_size,
+        }),
+        show_row_numbers: t.show_row_numbers,
+        conditions: t.conditions.iter().map(conditional_format_to_proto).collect(),
+        interaction: t.interaction.as_ref().map(interaction_to_proto),
+    }
+}
+
 // --- Enum parsers (all fail on unknown values) ---
 
 fn parse_widget_type(s: &str) -> Result<pb::WidgetType> {
@@ -262,6 +441,17 @@ fn parse_widget_type(s: &str) -> Result<pb::WidgetType> {
         "WIDGET_TYPE_PIVOT_TABLE" => Ok(pb::WidgetType::PivotTable),
         "WIDGET_TYPE_METRIC_CARD" => Ok(pb::WidgetType::MetricCard),
         "WIDGET_TYPE_TEXT" => Ok(pb::WidgetType::Text),
+        "WIDGET_TYPE_SCATTER_CHART" => Ok(pb::WidgetType::ScatterChart),
+        "WIDGET_TYPE_HEATMAP" => Ok(pb::WidgetType::Heatmap),
+        "WIDGET_TYPE_HISTOGRAM" => Ok(pb::WidgetType::Histogram),
+        "WIDGET_TYPE_RADAR_CHART" => Ok(pb::WidgetType::RadarChart),
+        "WIDGET_TYPE_TABLE" => Ok(pb::WidgetType::Table),
+        "WIDGET_TYPE_GAUGE" => Ok(pb::WidgetType::Gauge),
+        "WIDGET_TYPE_FUNNEL" => Ok(pb::WidgetType::Funnel),
+        "WIDGET_TYPE_BOX_PLOT" => Ok(pb::WidgetType::BoxPlot),
+        "WIDGET_TYPE_TREEMAP" => Ok(pb::WidgetType::Treemap),
+        "WIDGET_TYPE_SANKEY" => Ok(pb::WidgetType::Sankey),
+        "WIDGET_TYPE_WORD_CLOUD" => Ok(pb::WidgetType::WordCloud),
         other => bail!("unknown widget_type: '{other}'"),
     }
 }
@@ -278,6 +468,7 @@ fn parse_chart_type(s: &str) -> Result<pb::ChartType> {
         "CHART_TYPE_HEATMAP" => Ok(pb::ChartType::Heatmap),
         "CHART_TYPE_HISTOGRAM" => Ok(pb::ChartType::Histogram),
         "CHART_TYPE_RADAR" => Ok(pb::ChartType::Radar),
+        "CHART_TYPE_BOX_PLOT" => Ok(pb::ChartType::BoxPlot),
         other => bail!("unknown chart_type: '{other}'"),
     }
 }

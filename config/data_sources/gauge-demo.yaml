@@ -1,0 +1,10 @@
+name: dataSources/gauge-demo
+display_name: Gauge Demo
+description: SLA compliance percentage for gauge demo
+
+config:
+  type: static
+  columns:
+    - name: sla_pct
+      arrow_type: float64
+      values: [87.5]

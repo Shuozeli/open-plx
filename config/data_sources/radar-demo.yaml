@@ -1,0 +1,16 @@
+name: dataSources/radar-demo
+display_name: Radar Demo
+description: Multi-dimensional player stats for radar chart demo
+
+config:
+  type: static
+  columns:
+    - name: dimension
+      arrow_type: utf8
+      values: ["Speed","Strength","Defense","Magic","Stamina","Speed","Strength","Defense","Magic","Stamina"]
+    - name: value
+      arrow_type: float64
+      values: [80, 70, 90, 60, 85, 65, 90, 70, 80, 75]
+    - name: player
+      arrow_type: utf8
+      values: ["Warrior","Warrior","Warrior","Warrior","Warrior","Mage","Mage","Mage","Mage","Mage"]

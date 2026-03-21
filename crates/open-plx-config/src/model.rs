@@ -101,6 +101,12 @@ pub struct WidgetSpecYaml {
     pub pivot_table: Option<PivotTableSpecYaml>,
     pub metric_card: Option<MetricCardSpecYaml>,
     pub text: Option<TextSpecYaml>,
+    pub table: Option<TableSpecYaml>,
+    pub gauge: Option<GaugeSpecYaml>,
+    pub funnel: Option<FunnelSpecYaml>,
+    pub treemap: Option<TreemapSpecYaml>,
+    pub sankey: Option<SankeySpecYaml>,
+    pub word_cloud: Option<WordCloudSpecYaml>,
 }
 
 // --- Chart ---
@@ -178,11 +184,15 @@ pub struct PivotTableSpecYaml {
     #[serde(default)]
     pub sort: Vec<PivotSortYaml>,
     #[serde(default)]
-    pub totals: Option<serde_yaml::Value>,
+    pub totals: Option<PivotTotalsYaml>,
     #[serde(default)]
     pub hierarchy_type: Option<String>,
     #[serde(default)]
     pub frozen: Option<serde_yaml::Value>,
+    #[serde(default)]
+    pub conditions: Vec<ConditionalFormatYaml>,
+    #[serde(default)]
+    pub interaction: Option<TableInteractionYaml>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -214,6 +224,36 @@ pub struct PivotSortYaml {
     pub sort_direction: Option<String>,
 }
 
+// --- Pivot Totals ---
+
+#[derive(Debug, Deserialize)]
+pub struct PivotTotalsYaml {
+    #[serde(default)]
+    pub row: Option<PivotTotalConfigYaml>,
+    #[serde(default)]
+    pub col: Option<PivotTotalConfigYaml>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PivotTotalConfigYaml {
+    #[serde(default)]
+    pub show_grand_totals: bool,
+    #[serde(default)]
+    pub show_sub_totals: bool,
+    #[serde(default)]
+    pub sub_totals_dimensions: Vec<String>,
+    #[serde(default)]
+    pub grand_totals_label: Option<String>,
+    #[serde(default)]
+    pub sub_totals_label: Option<String>,
+    #[serde(default)]
+    pub reverse_grand_totals_layout: bool,
+    #[serde(default)]
+    pub reverse_sub_totals_layout: bool,
+    #[serde(default)]
+    pub aggregation: Option<String>,
+}
+
 // --- Metric Card ---
 
 #[derive(Debug, Deserialize)]
@@ -242,6 +282,148 @@ pub struct SparklineYaml {
     pub y: String,
     #[serde(default)]
     pub r#type: Option<String>,
+}
+
+// --- Table ---
+
+#[derive(Debug, Deserialize)]
+pub struct TableSpecYaml {
+    #[serde(default)]
+    pub columns: Vec<TableColumnYaml>,
+    #[serde(default)]
+    pub meta: Vec<FieldMetaYaml>,
+    #[serde(default)]
+    pub pagination: Option<TablePaginationYaml>,
+    #[serde(default)]
+    pub show_row_numbers: bool,
+    #[serde(default)]
+    pub conditions: Vec<ConditionalFormatYaml>,
+    #[serde(default)]
+    pub interaction: Option<TableInteractionYaml>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TableColumnYaml {
+    pub field: String,
+    #[serde(default)]
+    pub width: Option<i32>,
+    #[serde(default)]
+    pub align: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TablePaginationYaml {
+    pub page_size: i32,
+}
+
+// --- Gauge ---
+
+#[derive(Debug, Deserialize)]
+pub struct GaugeSpecYaml {
+    pub value_field: String,
+    #[serde(default)]
+    pub min: Option<f64>,
+    #[serde(default)]
+    pub max: Option<f64>,
+    #[serde(default)]
+    pub format: Option<String>,
+    #[serde(default)]
+    pub ranges: Vec<GaugeRangeYaml>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GaugeRangeYaml {
+    pub from: f64,
+    pub to: f64,
+    pub color: String,
+}
+
+// --- Funnel ---
+
+#[derive(Debug, Deserialize)]
+pub struct FunnelSpecYaml {
+    pub category_field: String,
+    pub value_field: String,
+    #[serde(default)]
+    pub show_conversion_rate: bool,
+    #[serde(default)]
+    pub shape: Option<String>,
+}
+
+// --- Treemap ---
+
+#[derive(Debug, Deserialize)]
+pub struct TreemapSpecYaml {
+    pub value_field: String,
+    pub hierarchy_fields: Vec<String>,
+    #[serde(default)]
+    pub color_field: Option<String>,
+    #[serde(default)]
+    pub show_labels: bool,
+}
+
+// --- Sankey ---
+
+#[derive(Debug, Deserialize)]
+pub struct SankeySpecYaml {
+    pub source_field: String,
+    pub target_field: String,
+    pub value_field: String,
+}
+
+// --- Conditional Formatting ---
+
+#[derive(Debug, Deserialize)]
+pub struct ConditionalFormatYaml {
+    pub field: String,
+    #[serde(rename = "type")]
+    pub format_type: String,
+    #[serde(default)]
+    pub thresholds: Vec<ConditionalThresholdYaml>,
+    #[serde(default)]
+    pub interval_min: Option<f64>,
+    #[serde(default)]
+    pub interval_max: Option<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ConditionalThresholdYaml {
+    pub op: String,
+    pub value: f64,
+    #[serde(default)]
+    pub value_end: Option<f64>,
+    #[serde(default)]
+    pub color: Option<String>,
+    #[serde(default)]
+    pub icon: Option<String>,
+}
+
+// --- Table Interaction ---
+
+#[derive(Debug, Deserialize)]
+pub struct TableInteractionYaml {
+    #[serde(default = "default_true")]
+    pub enable_copy: bool,
+    #[serde(default = "default_true")]
+    pub enable_hover_highlight: bool,
+    #[serde(default = "default_true")]
+    pub enable_resize: bool,
+    #[serde(default)]
+    pub enable_multi_selection: bool,
+    #[serde(default)]
+    pub enable_range_selection: bool,
+}
+
+// --- Word Cloud ---
+
+#[derive(Debug, Deserialize)]
+pub struct WordCloudSpecYaml {
+    pub text_field: String,
+    pub weight_field: String,
+    #[serde(default)]
+    pub max_words: Option<i32>,
+    #[serde(default)]
+    pub font_size_range: Vec<i32>,
 }
 
 // --- Text ---

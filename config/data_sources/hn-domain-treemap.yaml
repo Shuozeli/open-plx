@@ -1,0 +1,19 @@
+name: dataSources/hn-domain-treemap
+display_name: HN Domains Treemap
+description: Top domains by total points (treemap)
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT domain, SUM(points) as total_points
+    FROM hn_stories
+    WHERE domain != ''
+    GROUP BY domain
+    ORDER BY total_points DESC
+    LIMIT 30
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

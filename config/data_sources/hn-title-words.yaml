@@ -1,0 +1,24 @@
+name: dataSources/hn-title-words
+display_name: HN Title Keywords
+description: Most frequent words in HN titles (word cloud)
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    WITH words AS (
+      SELECT UNNEST(STRING_SPLIT(LOWER(title), ' ')) as word
+      FROM hn_stories
+    )
+    SELECT word, COUNT(*) as frequency
+    FROM words
+    WHERE LENGTH(word) > 3
+      AND word NOT IN ('the','that','this','with','from','have','been','will','what','when','your','more','about','than','into','just','like','over','also','some','them','were','their','only','would','could','after','make','most','where','which','they','does','each','much','very','made','being','other','both','many','then','even','back','here','well','still','down','last','want','know','take','came','come')
+    GROUP BY word
+    ORDER BY frequency DESC
+    LIMIT 100
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

@@ -1,0 +1,10 @@
+name: dataSources/histogram-demo
+display_name: Histogram Demo
+description: Response time distribution for histogram demo
+
+config:
+  type: static
+  columns:
+    - name: response_time_ms
+      arrow_type: float64
+      values: [12, 15, 18, 22, 25, 30, 35, 45, 55, 80, 120, 200, 15, 20, 25, 28, 32, 38, 42, 50, 14, 19, 27, 33, 48]

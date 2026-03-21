@@ -1,0 +1,13 @@
+name: dataSources/wordcloud-demo
+display_name: Word Cloud Demo
+description: Programming language popularity for word cloud demo
+
+config:
+  type: static
+  columns:
+    - name: language
+      arrow_type: utf8
+      values: ["JavaScript","Python","TypeScript","Rust","Go","Java","C++","Ruby","Swift","Kotlin","PHP","Scala","Haskell","Elixir","Zig"]
+    - name: popularity
+      arrow_type: float64
+      values: [100, 95, 80, 70, 65, 60, 55, 40, 38, 35, 30, 20, 15, 12, 10]

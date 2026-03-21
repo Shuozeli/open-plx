@@ -1,0 +1,16 @@
+name: dataSources/heatmap-demo
+display_name: Heatmap Demo
+description: Activity data by day and hour for heatmap demo
+
+config:
+  type: static
+  columns:
+    - name: day
+      arrow_type: utf8
+      values: ["Mon","Mon","Mon","Mon","Tue","Tue","Tue","Tue","Wed","Wed","Wed","Wed","Thu","Thu","Thu","Thu","Fri","Fri","Fri","Fri"]
+    - name: hour
+      arrow_type: utf8
+      values: ["9am","12pm","3pm","6pm","9am","12pm","3pm","6pm","9am","12pm","3pm","6pm","9am","12pm","3pm","6pm","9am","12pm","3pm","6pm"]
+    - name: activity
+      arrow_type: float64
+      values: [10, 25, 15, 5, 8, 30, 20, 7, 12, 28, 18, 6, 15, 32, 22, 9, 9, 20, 12, 3]

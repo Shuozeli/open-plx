@@ -1,0 +1,16 @@
+name: dataSources/sankey-demo
+display_name: Sankey Demo
+description: User traffic flow between pages
+
+config:
+  type: static
+  columns:
+    - name: source
+      arrow_type: utf8
+      values: ["Search","Search","Direct","Social","Homepage","Homepage","Product","Product","Cart"]
+    - name: target
+      arrow_type: utf8
+      values: ["Homepage","Product","Homepage","Homepage","Product","Cart","Cart","Exit","Purchase"]
+    - name: flow
+      arrow_type: float64
+      values: [3000, 2000, 1500, 800, 2500, 1800, 1500, 500, 2000]

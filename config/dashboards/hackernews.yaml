@@ -152,3 +152,88 @@ widgets:
             name: Avg Points
           - field: top_score
             name: Top Score
+
+  # Row 32: Heatmap (weekday x hour)
+  - id: activity-heatmap
+    widget_type: WIDGET_TYPE_HEATMAP
+    title: Activity Heatmap (Weekday x Hour)
+    position: { x: 0, y: 32, w: 14, h: 10 }
+    data_source:
+      data_source: dataSources/hn-by-hour
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_HEATMAP
+        data_mapping:
+          x: hour
+          y: weekday
+          group_by: count
+
+  # Row 32: Radar (story type comparison)
+  - id: type-radar
+    widget_type: WIDGET_TYPE_RADAR_CHART
+    title: Story Type Comparison
+    position: { x: 14, y: 32, w: 10, h: 10 }
+    data_source:
+      data_source: dataSources/hn-type-radar
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_RADAR
+        data_mapping:
+          x: metric
+          y: value
+          group_by: story_type
+
+  # Row 42: Domain treemap and word cloud
+  - id: domain-treemap
+    widget_type: WIDGET_TYPE_TREEMAP
+    title: Domains by Total Points
+    position: { x: 0, y: 42, w: 12, h: 10 }
+    data_source:
+      data_source: dataSources/hn-domain-treemap
+      params: {}
+    spec:
+      treemap:
+        value_field: total_points
+        hierarchy_fields: ["domain"]
+        show_labels: true
+
+  - id: title-wordcloud
+    widget_type: WIDGET_TYPE_WORD_CLOUD
+    title: Title Keywords
+    position: { x: 12, y: 42, w: 12, h: 10 }
+    data_source:
+      data_source: dataSources/hn-title-words
+      params: {}
+    spec:
+      word_cloud:
+        text_field: word
+        weight_field: frequency
+        max_words: 80
+        font_size_range: [12, 56]
+
+  # Row 52: Top stories flat table
+  - id: top-stories-table
+    widget_type: WIDGET_TYPE_TABLE
+    title: Top 50 Stories
+    position: { x: 0, y: 52, w: 24, h: 12 }
+    data_source:
+      data_source: dataSources/hn-top-stories
+      params: {}
+    spec:
+      table:
+        columns:
+          - { field: title }
+          - { field: author }
+          - { field: domain }
+          - { field: points }
+          - { field: num_comments }
+          - { field: created_date }
+        meta:
+          - field: points
+            name: Points
+          - field: num_comments
+            name: Comments
+          - field: created_date
+            name: Date
