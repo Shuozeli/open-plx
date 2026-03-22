@@ -1,0 +1,14 @@
+name: dataSources/gh-summary
+display_name: GitHub Summary
+description: GitHub Summary from GitHub trending repos
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT COUNT(*) as total_repos, AVG(stars)::INT as avg_stars, AVG(forks)::INT as avg_forks, MAX(stars) as max_stars FROM github_repos
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

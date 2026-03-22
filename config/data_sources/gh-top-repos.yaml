@@ -1,0 +1,14 @@
+name: dataSources/gh-top-repos
+display_name: Top Repos Table
+description: Top Repos Table from GitHub trending repos
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT full_name, language, stars, forks, open_issues, license, created_date FROM github_repos ORDER BY stars DESC LIMIT 50
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

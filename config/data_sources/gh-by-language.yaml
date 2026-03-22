@@ -1,0 +1,14 @@
+name: dataSources/gh-by-language
+display_name: Repos by Language
+description: Repos by Language from GitHub trending repos
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT language, COUNT(*) as repo_count, SUM(stars) as total_stars, AVG(stars)::INT as avg_stars FROM github_repos GROUP BY language ORDER BY total_stars DESC LIMIT 15
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

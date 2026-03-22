@@ -1,0 +1,14 @@
+name: dataSources/gh-language-treemap
+display_name: Language Treemap
+description: Language Treemap from GitHub trending repos
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT language, SUM(stars) as total_stars FROM github_repos GROUP BY language ORDER BY total_stars DESC LIMIT 20
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

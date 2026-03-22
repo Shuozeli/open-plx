@@ -1,0 +1,14 @@
+name: dataSources/gh-stars-forks
+display_name: Stars vs Forks
+description: Stars vs Forks from GitHub trending repos
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT full_name, language, stars, forks, open_issues FROM github_repos ORDER BY stars DESC LIMIT 100
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

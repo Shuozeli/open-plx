@@ -1,0 +1,14 @@
+name: dataSources/gh-license-dist
+display_name: License Distribution
+description: License Distribution from GitHub trending repos
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT CASE WHEN license = '' OR license IS NULL THEN 'None' ELSE license END as license_type, COUNT(*) as count FROM github_repos GROUP BY license_type ORDER BY count DESC
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []

@@ -1,0 +1,178 @@
+name: dashboards/github
+title: GitHub Trending Repos
+description: "Top 500 GitHub repositories by stars: languages, owners, licenses"
+
+grid:
+  columns: 24
+  row_height: 40
+  gap: 8
+
+widgets:
+  # Row 0: Metric cards
+  - id: total-repos
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Total Repos
+    position: { x: 0, y: 0, w: 6, h: 4 }
+    data_source:
+      data_source: dataSources/gh-summary
+      params: {}
+    spec:
+      metric_card:
+        value: total_repos
+        format: "compact"
+
+  - id: avg-stars
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Avg Stars
+    position: { x: 6, y: 0, w: 6, h: 4 }
+    data_source:
+      data_source: dataSources/gh-summary
+      params: {}
+    spec:
+      metric_card:
+        value: avg_stars
+        format: "compact"
+
+  - id: avg-forks
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Avg Forks
+    position: { x: 12, y: 0, w: 6, h: 4 }
+    data_source:
+      data_source: dataSources/gh-summary
+      params: {}
+    spec:
+      metric_card:
+        value: avg_forks
+        format: "compact"
+
+  - id: max-stars
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: Most Stars
+    position: { x: 18, y: 0, w: 6, h: 4 }
+    data_source:
+      data_source: dataSources/gh-summary
+      params: {}
+    spec:
+      metric_card:
+        value: max_stars
+        format: "compact"
+
+  # Row 4: Stars vs Forks scatter + Language treemap
+  - id: stars-forks-scatter
+    widget_type: WIDGET_TYPE_SCATTER_CHART
+    title: Stars vs Forks
+    position: { x: 0, y: 4, w: 14, h: 10 }
+    data_source:
+      data_source: dataSources/gh-stars-forks
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_SCATTER
+        data_mapping:
+          x: stars
+          y: forks
+          size: open_issues
+          group_by: language
+        x_axis:
+          title: Stars
+        y_axis:
+          title: Forks
+
+  - id: language-treemap
+    widget_type: WIDGET_TYPE_TREEMAP
+    title: Languages by Total Stars
+    position: { x: 14, y: 4, w: 10, h: 10 }
+    data_source:
+      data_source: dataSources/gh-language-treemap
+      params: {}
+    spec:
+      treemap:
+        value_field: total_stars
+        hierarchy_fields: ["language"]
+        show_labels: true
+
+  # Row 14: Language bar chart + License donut
+  - id: language-bars
+    widget_type: WIDGET_TYPE_BAR_CHART
+    title: Top Languages by Repos
+    position: { x: 0, y: 14, w: 14, h: 10 }
+    data_source:
+      data_source: dataSources/gh-by-language
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_HORIZONTAL_BAR
+        data_mapping:
+          x: language
+          y: repo_count
+        y_axis:
+          title: Repos
+
+  - id: license-donut
+    widget_type: WIDGET_TYPE_PIE_CHART
+    title: License Distribution
+    position: { x: 14, y: 14, w: 10, h: 10 }
+    data_source:
+      data_source: dataSources/gh-license-dist
+      params: {}
+    spec:
+      chart:
+        chart_type: CHART_TYPE_DONUT
+        data_mapping:
+          value: count
+          category: license_type
+
+  # Row 24: Top owners pivot + Top repos table
+  - id: top-owners
+    widget_type: WIDGET_TYPE_PIVOT_TABLE
+    title: Top Owners
+    position: { x: 0, y: 24, w: 24, h: 8 }
+    data_source:
+      data_source: dataSources/gh-top-owners
+      params: {}
+    spec:
+      pivot_table:
+        fields:
+          rows: ["owner"]
+          columns: []
+          values: ["repo_count", "total_stars", "avg_stars"]
+          value_in_cols: true
+        meta:
+          - field: repo_count
+            name: Repos
+          - field: total_stars
+            name: Total Stars
+            formatter: "compact"
+          - field: avg_stars
+            name: Avg Stars
+            formatter: "compact"
+
+  - id: top-repos-table
+    widget_type: WIDGET_TYPE_TABLE
+    title: Top 50 Repos
+    position: { x: 0, y: 32, w: 24, h: 12 }
+    data_source:
+      data_source: dataSources/gh-top-repos
+      params: {}
+    spec:
+      table:
+        columns:
+          - { field: full_name }
+          - { field: language }
+          - { field: stars }
+          - { field: forks }
+          - { field: open_issues }
+          - { field: license }
+          - { field: created_date }
+        meta:
+          - field: stars
+            name: Stars
+            formatter: "compact"
+          - field: forks
+            name: Forks
+            formatter: "compact"
+          - field: open_issues
+            name: Issues
+          - field: created_date
+            name: Created
+        show_row_numbers: true

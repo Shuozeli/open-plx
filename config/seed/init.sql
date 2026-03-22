@@ -44,3 +44,24 @@ CREATE TABLE IF NOT EXISTS hn_stories (
 );
 
 COPY hn_stories FROM '/opt/flight_sql/seed/hn_stories.csv' (HEADER, DELIMITER ',');
+
+-- GitHub repos (top 500 by stars, recently active)
+CREATE TABLE IF NOT EXISTS github_repos (
+    name VARCHAR NOT NULL,
+    full_name VARCHAR NOT NULL PRIMARY KEY,
+    description VARCHAR,
+    language VARCHAR,
+    stars INTEGER NOT NULL,
+    forks INTEGER NOT NULL,
+    open_issues INTEGER NOT NULL,
+    watchers INTEGER NOT NULL,
+    size_kb INTEGER NOT NULL,
+    created_date DATE NOT NULL,
+    updated_date DATE NOT NULL,
+    topics VARCHAR,
+    license VARCHAR,
+    is_fork BOOLEAN NOT NULL,
+    owner VARCHAR NOT NULL
+);
+
+COPY github_repos FROM '/opt/flight_sql/seed/github_repos.csv' (HEADER, DELIMITER ',');

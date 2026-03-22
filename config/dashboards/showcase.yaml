@@ -1,0 +1,235 @@
+name: dashboards/showcase
+title: Widget Showcase
+description: "All 17 widget types in one dashboard"
+
+grid:
+  columns: 24
+  row_height: 40
+  gap: 8
+
+widgets:
+  # Row 0: Metric Cards (4)
+  - id: s-metric-1
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: "1. Metric Card"
+    position: { x: 0, y: 0, w: 6, h: 4 }
+    data_source: { data_source: dataSources/demo-static, params: {} }
+    spec:
+      metric_card:
+        value: revenue
+        format: "currency:USD"
+
+  - id: s-text
+    widget_type: WIDGET_TYPE_TEXT
+    title: "2. Text Widget"
+    position: { x: 6, y: 0, w: 6, h: 4 }
+    data_source: { data_source: dataSources/demo-static, params: {} }
+    spec:
+      text:
+        content: "**open-plx** supports 17 widget types. This dashboard showcases all of them."
+        format: markdown
+
+  - id: s-gauge
+    widget_type: WIDGET_TYPE_GAUGE
+    title: "3. Gauge"
+    position: { x: 12, y: 0, w: 6, h: 4 }
+    data_source: { data_source: dataSources/gauge-demo, params: {} }
+    spec:
+      gauge:
+        value_field: sla_pct
+        min: 0
+        max: 100
+        ranges:
+          - { from: 0, to: 60, color: "#F4664A" }
+          - { from: 60, to: 85, color: "#FAAD14" }
+          - { from: 85, to: 100, color: "#30BF78" }
+
+  - id: s-metric-2
+    widget_type: WIDGET_TYPE_METRIC_CARD
+    title: "4. Metric (Compact)"
+    position: { x: 18, y: 0, w: 6, h: 4 }
+    data_source: { data_source: dataSources/demo-static, params: {} }
+    spec:
+      metric_card:
+        value: units_sold
+        format: "compact"
+
+  # Row 4: Line + Bar + Area + Pie
+  - id: s-line
+    widget_type: WIDGET_TYPE_LINE_CHART
+    title: "5. Line Chart"
+    position: { x: 0, y: 4, w: 12, h: 7 }
+    data_source: { data_source: dataSources/demo-static, params: {} }
+    spec:
+      chart:
+        chart_type: CHART_TYPE_LINE
+        data_mapping: { x: quarter, y: revenue }
+        x_axis: { title: Quarter }
+        y_axis: { title: Revenue }
+
+  - id: s-bar
+    widget_type: WIDGET_TYPE_BAR_CHART
+    title: "6. Bar Chart"
+    position: { x: 12, y: 4, w: 12, h: 7 }
+    data_source: { data_source: dataSources/demo-static, params: {} }
+    spec:
+      chart:
+        chart_type: CHART_TYPE_BAR
+        data_mapping: { x: quarter, y: cost }
+        x_axis: { title: Quarter }
+        y_axis: { title: Cost }
+
+  # Row 11: Pie + Scatter + Radar + Heatmap
+  - id: s-pie
+    widget_type: WIDGET_TYPE_PIE_CHART
+    title: "7. Pie / Donut"
+    position: { x: 0, y: 11, w: 6, h: 7 }
+    data_source: { data_source: dataSources/demo-static, params: {} }
+    spec:
+      chart:
+        chart_type: CHART_TYPE_DONUT
+        data_mapping: { value: revenue, category: quarter }
+
+  - id: s-scatter
+    widget_type: WIDGET_TYPE_SCATTER_CHART
+    title: "8. Scatter Plot"
+    position: { x: 6, y: 11, w: 6, h: 7 }
+    data_source: { data_source: dataSources/scatter-demo, params: {} }
+    spec:
+      chart:
+        chart_type: CHART_TYPE_SCATTER
+        data_mapping: { x: height, y: weight, size: bmi, group_by: gender }
+
+  - id: s-radar
+    widget_type: WIDGET_TYPE_RADAR_CHART
+    title: "9. Radar Chart"
+    position: { x: 12, y: 11, w: 6, h: 7 }
+    data_source: { data_source: dataSources/radar-demo, params: {} }
+    spec:
+      chart:
+        chart_type: CHART_TYPE_RADAR
+        data_mapping: { x: dimension, y: value, group_by: player }
+
+  - id: s-heatmap
+    widget_type: WIDGET_TYPE_HEATMAP
+    title: "10. Heatmap"
+    position: { x: 18, y: 11, w: 6, h: 7 }
+    data_source: { data_source: dataSources/heatmap-demo, params: {} }
+    spec:
+      chart:
+        chart_type: CHART_TYPE_HEATMAP
+        data_mapping: { x: day, y: hour, group_by: activity }
+
+  # Row 18: Histogram + Funnel + Box Plot + Word Cloud
+  - id: s-histogram
+    widget_type: WIDGET_TYPE_HISTOGRAM
+    title: "11. Histogram"
+    position: { x: 0, y: 18, w: 6, h: 7 }
+    data_source: { data_source: dataSources/histogram-demo, params: {} }
+    spec:
+      chart:
+        chart_type: CHART_TYPE_HISTOGRAM
+        data_mapping: { x: response_time_ms, y: "" }
+
+  - id: s-funnel
+    widget_type: WIDGET_TYPE_FUNNEL
+    title: "12. Funnel"
+    position: { x: 6, y: 18, w: 6, h: 7 }
+    data_source: { data_source: dataSources/funnel-demo, params: {} }
+    spec:
+      funnel:
+        category_field: stage
+        value_field: count
+        shape: funnel
+
+  - id: s-boxplot
+    widget_type: WIDGET_TYPE_BOX_PLOT
+    title: "13. Box Plot"
+    position: { x: 12, y: 18, w: 6, h: 7 }
+    data_source: { data_source: dataSources/boxplot-demo, params: {} }
+    spec:
+      chart:
+        chart_type: CHART_TYPE_BOX_PLOT
+        data_mapping: { x: service, y: latency_ms }
+
+  - id: s-wordcloud
+    widget_type: WIDGET_TYPE_WORD_CLOUD
+    title: "14. Word Cloud"
+    position: { x: 18, y: 18, w: 6, h: 7 }
+    data_source: { data_source: dataSources/wordcloud-demo, params: {} }
+    spec:
+      word_cloud:
+        text_field: language
+        weight_field: popularity
+        font_size_range: [14, 48]
+
+  # Row 25: Treemap + Sankey
+  - id: s-treemap
+    widget_type: WIDGET_TYPE_TREEMAP
+    title: "15. Treemap"
+    position: { x: 0, y: 25, w: 12, h: 8 }
+    data_source: { data_source: dataSources/treemap-demo, params: {} }
+    spec:
+      treemap:
+        value_field: budget
+        hierarchy_fields: ["department", "team"]
+        show_labels: true
+
+  - id: s-sankey
+    widget_type: WIDGET_TYPE_SANKEY
+    title: "16. Sankey Diagram"
+    position: { x: 12, y: 25, w: 12, h: 8 }
+    data_source: { data_source: dataSources/sankey-demo, params: {} }
+    spec:
+      sankey:
+        source_field: source
+        target_field: target
+        value_field: flow
+
+  # Row 33: Pivot Table + Flat Table
+  - id: s-pivot
+    widget_type: WIDGET_TYPE_PIVOT_TABLE
+    title: "17. Pivot Table (with totals)"
+    position: { x: 0, y: 33, w: 24, h: 8 }
+    data_source: { data_source: dataSources/company-financials, params: {} }
+    spec:
+      pivot_table:
+        fields:
+          rows: ["company"]
+          columns: ["quarter"]
+          values: ["revenue", "profit"]
+          value_in_cols: true
+        meta:
+          - field: revenue
+            name: "Revenue ($B)"
+            formatter: "number:1"
+          - field: profit
+            name: "Profit ($B)"
+            formatter: "number:1"
+        totals:
+          row:
+            show_grand_totals: true
+            grand_totals_label: "Total"
+            aggregation: "SUM"
+
+  - id: s-table
+    widget_type: WIDGET_TYPE_TABLE
+    title: "Flat Table"
+    position: { x: 0, y: 41, w: 24, h: 8 }
+    data_source: { data_source: dataSources/table-demo, params: {} }
+    spec:
+      table:
+        columns:
+          - { field: name }
+          - { field: department }
+          - { field: title }
+          - { field: salary }
+          - { field: tenure_years }
+        meta:
+          - field: salary
+            name: Salary
+            formatter: "currency:USD"
+          - field: tenure_years
+            name: Tenure
+            formatter: "number:1"
+        show_row_numbers: true

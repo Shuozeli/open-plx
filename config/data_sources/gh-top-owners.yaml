@@ -1,0 +1,14 @@
+name: dataSources/gh-top-owners
+display_name: Top Owners
+description: Top Owners from GitHub trending repos
+
+config:
+  type: flight_sql
+  endpoint: "grpc://localhost:31337"
+  query: >
+    SELECT owner, COUNT(*) as repo_count, SUM(stars) as total_stars, AVG(stars)::INT as avg_stars FROM github_repos GROUP BY owner HAVING COUNT(*) >= 2 ORDER BY total_stars DESC LIMIT 20
+  auth:
+    type: basic
+    username: flight_username
+    password: test123
+  params: []
