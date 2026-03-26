@@ -8,8 +8,8 @@ use arrow_flight::{
 };
 use futures::StreamExt;
 use futures::stream::BoxStream;
-use open_plx_core::pb::WidgetDataRequest;
 use open_plx_auth::{check_permission, get_principal};
+use open_plx_core::pb::WidgetDataRequest;
 use prost::Message;
 use std::sync::Arc;
 use tonic::{Request, Response, Status, Streaming};
@@ -76,10 +76,7 @@ impl FlightService for FlightServiceImpl {
             widget_req.widget_id
         );
 
-        let batch = {
-            let ds_name = self.state.resolve_data_source_name(&widget_req)?;
-            self.state.execute_data_source(&ds_name).await?
-        };
+        let batch = self.state.execute_data_source(&ds_name).await?;
         let schema = batch.schema();
 
         let ticket = Ticket {
@@ -137,10 +134,7 @@ impl FlightService for FlightServiceImpl {
             widget_req.widget_id
         );
 
-        let batch = {
-            let ds_name = self.state.resolve_data_source_name(&widget_req)?;
-            self.state.execute_data_source(&ds_name).await?
-        };
+        let batch = self.state.execute_data_source(&ds_name).await?;
         let schema = batch.schema();
 
         // Use FlightDataEncoderBuilder to stream schema + batches

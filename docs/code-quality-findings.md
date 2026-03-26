@@ -7,145 +7,80 @@
 
 ---
 
+## Review Pass 1 (Previous)
+
+All findings from the first review pass are documented below. Items marked FIXED
+were resolved in commit `e21a817`.
+
 ## 1. Silent Failures (HIGH)
 
-### 1.1 Unknown `principal_type` silently ignored in permission check -- FIXED
-- **Location:** `crates/open-plx-auth/src/lib.rs` (check_permission)
-- **Fix applied:** Replaced `_ => {}` catch-all with `other => return Err(Status::internal(...))` that returns an error on unknown principal types.
-
-### 1.2 `parse_date_granularity` error silently swallowed in variable conversion -- FIXED
-- **Location:** `crates/open-plx-config/src/convert.rs` (DatePicker and DateRange controls)
-- **Fix applied:** Changed `.and_then(|g| parse_date_granularity(g).ok())` to `.map(parse_date_granularity).transpose()?` so errors propagate. `variable_to_proto` and `variable_control_to_proto` now return `Result`.
-
-### 1.3 `text_to_proto` silently defaults unknown text format -- FIXED
-- **Location:** `crates/open-plx-config/src/convert.rs` (text_to_proto)
-- **Fix applied:** `text_to_proto` now returns `Result` and uses `bail!("unknown text format: '{other}'")` for unrecognized format strings.
-
-### 1.4 `conditional_format_to_proto` silently defaults unknown format types and comparison ops -- FIXED
-- **Location:** `crates/open-plx-config/src/convert.rs` (conditional_format_to_proto)
-- **Fix applied:** Function now returns `Result`. Both `format_type` and `op` match arms use `bail!` on unknown values instead of defaulting to `Unspecified`.
-
-### 1.5 `total_config_to_proto` silently defaults unknown aggregation -- FIXED
-- **Location:** `crates/open-plx-config/src/convert.rs` (total_config_to_proto)
-- **Fix applied:** Function now returns `Result` and uses `bail!("unknown aggregation: '{other}'")`. Callers use `.transpose()?` to propagate.
-
-### 1.6 `funnel_to_proto` silently defaults unknown funnel shape -- FIXED
-- **Location:** `crates/open-plx-config/src/convert.rs` (funnel_to_proto)
-- **Fix applied:** Function now returns `Result` and uses `bail!("unknown funnel shape: '{other}'")`.
-
-### 1.7 `table_to_proto` silently defaults unknown column alignment -- FIXED
-- **Location:** `crates/open-plx-config/src/convert.rs` (table_to_proto)
-- **Fix applied:** Function now returns `Result`. Column alignment match uses `bail!` on unknown values.
-
-### 1.8 Flight service lacks permission checking -- FIXED
-- **Location:** `crates/open-plx-server/src/services/flight.rs` and `crates/open-plx-server/src/main.rs`
-- **Fix applied:** Auth interceptor wired to `FlightServiceServer::with_interceptor`. Both `get_flight_info` and `do_get` now extract the principal and call `check_permission` before executing queries.
+### 1.1 Unknown `principal_type` silently ignored in permission check -- FIXED (pass 1)
+### 1.2 `parse_date_granularity` error silently swallowed -- FIXED (pass 1)
+### 1.3 `text_to_proto` silently defaults unknown text format -- FIXED (pass 1)
+### 1.4 `conditional_format_to_proto` silently defaults -- FIXED (pass 1)
+### 1.5 `total_config_to_proto` silently defaults unknown aggregation -- FIXED (pass 1)
+### 1.6 `funnel_to_proto` silently defaults unknown funnel shape -- FIXED (pass 1)
+### 1.7 `table_to_proto` silently defaults unknown column alignment -- FIXED (pass 1)
+### 1.8 Flight service lacks permission checking -- FIXED (pass 1)
 
 ---
 
-## 2. Stringly-Typed APIs (MEDIUM)
+## 2. Stringly-Typed APIs (MEDIUM) -- SKIPPED (pass 1)
 
-### 2.1 `principal_type` is a raw string instead of an enum -- SKIPPED
-- **Reason:** Would require changing the YAML schema and all permission-related deserialization. The fail-fast fix in 1.1 mitigates the silent-failure risk. Enum conversion is a larger refactor best done alongside a schema migration.
-
-### 2.2 `role` field is a raw string instead of an enum -- SKIPPED
-- **Reason:** Same as 2.1. `role_to_level` already fails fast on invalid values. Enum conversion is deferred.
-
-### 2.3 `widget_type` field in YAML is a raw string -- SKIPPED
-- **Reason:** `parse_widget_type` already fails with `bail!` on unknown values. Converting to a serde enum is a model-layer refactor with no immediate correctness benefit.
-
-### 2.4 `chart_type` field in YAML is a raw string -- SKIPPED
-- **Reason:** Same as 2.3. `parse_chart_type` already fails fast.
-
-### 2.5 `arrow_type` field in static columns is a raw string -- SKIPPED
-- **Reason:** The type coverage gap between static_data.rs and convert.rs was addressed (see 9.1), but the string-to-enum conversion is deferred. A dedicated `ArrowTypeYaml` enum is a model-layer change.
+### 2.1-2.5 Various string-typed enums in YAML model
+- `principal_type`, `role`, `widget_type`, `chart_type`, `arrow_type`
+- All have fail-fast parsers. Enum conversion deferred as a model-layer refactor.
 
 ---
 
 ## 3. Duplication (MEDIUM)
 
-### 3.1 `static_column_to_arrow` and `static_column_to_proto` duplicate type-dispatch logic -- SKIPPED
-- **Reason:** The type coverage gap was closed (9.1), but the two functions were not unified. Centralizing requires an `ArrowTypeYaml` enum (see 2.5) as a prerequisite.
-
-### 3.2 `FieldMeta` construction is duplicated -- FIXED
-- **Location:** `crates/open-plx-config/src/convert.rs`
-- **Fix applied:** Extracted `field_meta_to_proto(m: &FieldMetaYaml) -> pb::FieldMeta` helper. Both `pivot_to_proto` and `table_to_proto` now call this shared function.
-
-### 3.3 Integration test connection boilerplate is copy-pasted across backends -- FIXED
-- **Location:** `crates/open-plx-server/tests/flight_sql_integration.rs`
-- **Fix applied:** Tests were rewritten using ADBC drivers. Each backend module (duckdb, postgres, mysql) has its own `connect()` helper. Shared `collect()` helper extracted at module top.
+### 3.1 `static_column_to_arrow` and `static_column_to_proto` duplicate type-dispatch -- SKIPPED (pass 1)
+### 3.2 `FieldMeta` construction duplicated -- FIXED (pass 1)
+### 3.3 Integration test connection boilerplate copy-pasted -- FIXED (pass 1)
 
 ---
 
-## 4. Missing Abstractions (MEDIUM)
+## 4. Missing Abstractions (MEDIUM) -- SKIPPED (pass 1)
 
-### 4.1 Enum string parsing should use a macro -- SKIPPED
-- **Reason:** All 11 `parse_*` functions now correctly fail on unknown values. The macro consolidation is a readability improvement, not a correctness fix. Deferred to a dedicated cleanup pass.
-
-### 4.2 `WidgetSpecYaml` should use a tagged enum instead of 10 Option fields -- SKIPPED
-- **Reason:** Structural change to the model layer. The current first-match-wins behavior works correctly for well-formed configs. Deferred.
+### 4.1 Enum string parsing should use a macro
+### 4.2 `WidgetSpecYaml` should use a tagged enum
 
 ---
 
 ## 5. Placeholder / Stub Code (MEDIUM)
 
-### 5.1 OidcAuth is a dead stub -- FIXED
-- **Location:** `crates/open-plx-auth/src/lib.rs`
-- **Fix applied:** Server now panics at startup if `provider: oidc` is configured, with a clear message: "OIDC auth is not yet implemented -- use 'dev' or 'api_key' mode". The struct is annotated `#[allow(dead_code)]` and documented as unimplemented.
-
-### 5.2 DataSourceRef params are not converted -- SKIPPED
-- **Reason:** The TODO remains in the code. Implementing param conversion requires defining `ParamValue` proto conversion logic. Tracked as a feature gap, not a quality fix.
-
-### 5.3 FlightSql auth config not converted from YAML -- SKIPPED
-- **Reason:** The TODO remains. The ADBC rewrite passes credentials via `DatabaseOption::Username`/`Password` at the driver level, so the proto conversion gap is less critical than before. Still a functional gap for `GetDataSource` RPC responses.
+### 5.1 OidcAuth is a dead stub -- FIXED (pass 1)
+### 5.2 DataSourceRef params not converted -- SKIPPED (pass 1)
+### 5.3 FlightSql auth config not converted from YAML -- SKIPPED (pass 1)
 
 ---
 
-## 6. Unsafe Patterns (MEDIUM)
-
-### 6.1 `expect()` calls in shutdown_signal -- SKIPPED
-- **Reason:** Low priority. Signal handler installation failure is extremely rare. Not addressed in this pass.
-
-### 6.2 `unwrap()` in integration test helper (acceptable) -- NO ACTION NEEDED
-- Acceptable in test code.
+## 6-10. Previous categories -- See pass 1 notes above
 
 ---
 
-## 7. Missing Permission Checks (MEDIUM)
+## Review Pass 2 (Current)
 
-### 7.1 `list_data_sources` has no permission check -- FIXED
-- **Location:** `crates/open-plx-server/src/services/data_source.rs`
-- **Fix applied:** Extracts principal via `get_principal`, calls `check_permission` with "reader" role on each data source, and filters the response. Includes structured event logging.
+### 11. Duplicate Data Source Resolution (MEDIUM)
 
-### 7.2 `get_data_source` has no permission check -- FIXED
-- **Location:** `crates/open-plx-server/src/services/data_source.rs`
-- **Fix applied:** Extracts principal, checks "reader" permission. Returns `not_found` (not `permission_denied`) to avoid information disclosure. Includes event logging.
+#### 11.1 `get_flight_info` calls `resolve_data_source_name` twice -- FIXED (pass 2)
+- **Location:** `crates/open-plx-server/src/services/flight.rs`, lines 60 and 80
+- **Problem:** `resolve_data_source_name` is called once for permission checking, then
+  called again inside the block that fetches data. The second call is redundant since
+  `ds_name` is already in scope.
+- **Fix:** Reuse the `ds_name` variable from the first call.
 
----
+#### 11.2 `do_get` calls `resolve_data_source_name` twice -- FIXED (pass 2)
+- **Location:** `crates/open-plx-server/src/services/flight.rs`, lines 121 and 141
+- **Problem:** Same pattern as 11.1.
+- **Fix:** Reuse the `ds_name` variable from the first call.
 
-## 8. Noise / Excessive Section Dividers (LOW)
+### 12. Formatting (LOW)
 
-### 8.1 Heavy section divider comments throughout -- SKIPPED
-- **Reason:** Cosmetic. Not addressed in this pass.
-
----
-
-## 9. Incomplete Type Coverage (LOW)
-
-### 9.1 `static_column_to_arrow` supports fewer types than `static_column_to_proto` -- FIXED
-- **Location:** `crates/open-plx-config/src/static_data.rs`
-- **Fix applied:** Added `boolean`, `date32`, and `timestamp_micros` support to `static_column_to_arrow`. Boolean values use `yaml_value_to_bool`. Date/timestamp values are stored as Utf8 strings in Arrow, consistent with proto conversion.
-
-### 9.2 `UInt64` not handled in `record_batch_to_columns` -- FIXED
-- **Location:** `crates/open-plx-server/src/services/widget_data.rs`
-- **Fix applied:** Added `DataType::UInt64` to the integer cast arm. Values are cast to Int64 (with a doc comment noting overflow behavior for values > i64::MAX).
-
----
-
-## 10. Over-Architecture (LOW)
-
-### 10.1 `open-plx-server/src/lib.rs` exists only to re-export one module -- NO ACTION NEEDED
-- Standard Rust pattern for testing binary crate internals.
+#### 12.1 Multiple files fail `cargo fmt --check` -- FIXED (pass 2)
+- **Location:** `convert.rs`, `flight_sql_client.rs`, `flight.rs`, `flight_sql_integration.rs`
+- **Fix:** Run `cargo fmt`.
 
 ---
 
@@ -155,7 +90,7 @@
 |---|---|---|---|---|
 | Silent Failures (HIGH) | 8 | 8 | 0 | 0 |
 | Stringly-Typed APIs (MEDIUM) | 5 | 0 | 5 | 0 |
-| Duplication (MEDIUM) | 3 | 2 | 1 | 0 |
+| Duplication (MEDIUM) | 5 | 4 | 1 | 0 |
 | Missing Abstractions (MEDIUM) | 2 | 0 | 2 | 0 |
 | Placeholder / Stub Code (MEDIUM) | 3 | 1 | 2 | 0 |
 | Unsafe Patterns (MEDIUM) | 2 | 0 | 1 | 1 |
@@ -163,7 +98,8 @@
 | Noise (LOW) | 1 | 0 | 1 | 0 |
 | Incomplete Type Coverage (LOW) | 2 | 2 | 0 | 0 |
 | Over-Architecture (LOW) | 1 | 0 | 0 | 1 |
-| **Total** | **29** | **15** | **12** | **2** |
+| Formatting (LOW) | 1 | 1 | 0 | 0 |
+| **Total** | **32** | **18** | **12** | **2** |
 
 ### Remaining Priority Items
 1. **Stringly-typed enums** (2.1-2.5) -- model-layer refactor to catch invalid YAML at parse time

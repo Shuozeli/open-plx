@@ -34,9 +34,18 @@ mod duckdb {
         let drv = FlightSqlDriver;
         let db = drv
             .new_database_with_opts([
-                (DatabaseOption::Uri, OptionValue::String("grpc://localhost:31337".into())),
-                (DatabaseOption::Username, OptionValue::String("flight_username".into())),
-                (DatabaseOption::Password, OptionValue::String("test123".into())),
+                (
+                    DatabaseOption::Uri,
+                    OptionValue::String("grpc://localhost:31337".into()),
+                ),
+                (
+                    DatabaseOption::Username,
+                    OptionValue::String("flight_username".into()),
+                ),
+                (
+                    DatabaseOption::Password,
+                    OptionValue::String("test123".into()),
+                ),
             ])
             .await
             .unwrap();
@@ -73,7 +82,17 @@ mod duckdb {
 
         let schema = batch.schema();
         let field_names: Vec<&str> = schema.fields().iter().map(|f| f.name().as_str()).collect();
-        assert_eq!(field_names, vec!["company", "quarter", "revenue", "profit", "eps", "market_cap"]);
+        assert_eq!(
+            field_names,
+            vec![
+                "company",
+                "quarter",
+                "revenue",
+                "profit",
+                "eps",
+                "market_cap"
+            ]
+        );
     }
 
     #[tokio::test]
@@ -114,7 +133,11 @@ mod duckdb {
         // All revenues should be > 100.
         let rev = batch.column(2).as_primitive::<Float64Type>();
         for i in 0..batch.num_rows() {
-            assert!(rev.value(i) > 100.0, "row {i}: revenue {} <= 100", rev.value(i));
+            assert!(
+                rev.value(i) > 100.0,
+                "row {i}: revenue {} <= 100",
+                rev.value(i)
+            );
         }
     }
 
@@ -122,12 +145,14 @@ mod duckdb {
     #[ignore = "requires docker compose up -d"]
     async fn pool_integration() {
         let pool = FlightSqlPool::new();
-        let auth = serde_yaml::from_str("type: basic\nusername: flight_username\npassword: test123")
-            .expect("parse auth yaml");
+        let auth =
+            serde_yaml::from_str("type: basic\nusername: flight_username\npassword: test123")
+                .expect("parse auth yaml");
         let config = DataSourceConfigYaml::FlightSql {
             endpoint: "grpc://localhost:31337".to_string(),
-            query: "SELECT company, quarter, revenue FROM company_financials ORDER BY company, quarter"
-                .to_string(),
+            query:
+                "SELECT company, quarter, revenue FROM company_financials ORDER BY company, quarter"
+                    .to_string(),
             auth: Some(auth),
             params: vec![],
         };
@@ -141,7 +166,9 @@ mod duckdb {
     #[ignore = "requires docker compose up -d"]
     async fn pool_aggregation_query() {
         let pool = FlightSqlPool::new();
-        let auth = serde_yaml::from_str("type: basic\nusername: flight_username\npassword: test123").unwrap();
+        let auth =
+            serde_yaml::from_str("type: basic\nusername: flight_username\npassword: test123")
+                .unwrap();
         let config = DataSourceConfigYaml::FlightSql {
             endpoint: "grpc://localhost:31337".to_string(),
             query: "SELECT company, COUNT(*) AS cnt, SUM(revenue) AS total \
@@ -181,7 +208,8 @@ mod duckdb {
 mod postgres {
     use super::*;
 
-    const PG_URI: &str = "host=localhost port=25432 user=plx_test password=plx_test dbname=plx_test";
+    const PG_URI: &str =
+        "host=localhost port=25432 user=plx_test password=plx_test dbname=plx_test";
 
     // These tests use adbc-postgres directly to verify the data is accessible.
     // In production, open-plx would use FlightSQL gateway in front of PostgreSQL.

@@ -88,7 +88,9 @@ fn widget_spec_to_proto(spec: &WidgetSpecYaml) -> Result<pb::WidgetSpec> {
     } else if let Some(w) = &spec.word_cloud {
         pb::widget_spec::Spec::WordCloud(word_cloud_to_proto(w))
     } else {
-        bail!("widget spec must have exactly one of: chart, pivot_table, metric_card, text, table, gauge, funnel, treemap, sankey, word_cloud");
+        bail!(
+            "widget spec must have exactly one of: chart, pivot_table, metric_card, text, table, gauge, funnel, treemap, sankey, word_cloud"
+        );
     };
 
     Ok(pb::WidgetSpec { spec: Some(inner) })
@@ -192,11 +194,7 @@ fn pivot_to_proto(p: &PivotTableSpecYaml) -> Result<pb::PivotTableSpec> {
             values: p.fields.values.clone(),
             value_in_cols: p.fields.value_in_cols,
         }),
-        meta: p
-            .meta
-            .iter()
-            .map(field_meta_to_proto)
-            .collect(),
+        meta: p.meta.iter().map(field_meta_to_proto).collect(),
         sort: p
             .sort
             .iter()
@@ -230,7 +228,11 @@ fn pivot_to_proto(p: &PivotTableSpecYaml) -> Result<pb::PivotTableSpec> {
         frozen: None,
         pagination: None,
         series_number: None,
-        conditions: p.conditions.iter().map(conditional_format_to_proto).collect::<Result<Vec<_>>>()?,
+        conditions: p
+            .conditions
+            .iter()
+            .map(conditional_format_to_proto)
+            .collect::<Result<Vec<_>>>()?,
         interaction: p.interaction.as_ref().map(interaction_to_proto),
     })
 }
@@ -436,16 +438,16 @@ fn table_to_proto(t: &TableSpecYaml) -> Result<pb::TableSpec> {
         .collect::<Result<Vec<_>>>()?;
     Ok(pb::TableSpec {
         columns,
-        meta: t
-            .meta
-            .iter()
-            .map(field_meta_to_proto)
-            .collect(),
+        meta: t.meta.iter().map(field_meta_to_proto).collect(),
         pagination: t.pagination.as_ref().map(|p| pb::TablePagination {
             page_size: p.page_size,
         }),
         show_row_numbers: t.show_row_numbers,
-        conditions: t.conditions.iter().map(conditional_format_to_proto).collect::<Result<Vec<_>>>()?,
+        conditions: t
+            .conditions
+            .iter()
+            .map(conditional_format_to_proto)
+            .collect::<Result<Vec<_>>>()?,
         interaction: t.interaction.as_ref().map(interaction_to_proto),
     })
 }

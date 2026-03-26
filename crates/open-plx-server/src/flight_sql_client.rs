@@ -4,9 +4,7 @@
 //! executes queries, and returns Arrow RecordBatches.
 //! Connections are pooled per endpoint.
 
-use adbc::{
-    Connection, Database, DatabaseOption, Driver, OptionValue, Statement,
-};
+use adbc::{Connection, Database, DatabaseOption, Driver, OptionValue, Statement};
 use adbc_flightsql::FlightSqlDriver;
 use arrow_array::RecordBatch;
 use open_plx_config::model::DataSourceConfigYaml;
@@ -48,7 +46,9 @@ impl FlightSqlPool {
         };
 
         let credentials = extract_basic_auth(auth);
-        let db = self.get_or_create_db(endpoint, credentials.as_ref()).await?;
+        let db = self
+            .get_or_create_db(endpoint, credentials.as_ref())
+            .await?;
 
         // Create a fresh connection + statement per query for concurrency safety.
         let conn = db
@@ -67,15 +67,15 @@ impl FlightSqlPool {
 
         // TODO(refactor): Bind parameters from DataSourceRef.params
 
-        let (reader, _) = tokio::time::timeout(
-            std::time::Duration::from_secs(timeout_secs),
-            stmt.execute(),
-        )
-        .await
-        .map_err(|_| {
-            Status::deadline_exceeded(format!("Flight SQL query timed out after {timeout_secs}s"))
-        })?
-        .map_err(|e| Status::internal(format!("ADBC execute failed: {e}")))?;
+        let (reader, _) =
+            tokio::time::timeout(std::time::Duration::from_secs(timeout_secs), stmt.execute())
+                .await
+                .map_err(|_| {
+                    Status::deadline_exceeded(format!(
+                        "Flight SQL query timed out after {timeout_secs}s"
+                    ))
+                })?
+                .map_err(|e| Status::internal(format!("ADBC execute failed: {e}")))?;
 
         let schema = reader.schema();
         let batches: Vec<RecordBatch> = reader
@@ -103,8 +103,10 @@ impl FlightSqlPool {
 
         tracing::info!("creating ADBC Flight SQL database for {endpoint}");
 
-        let mut opts: Vec<(DatabaseOption, OptionValue)> =
-            vec![(DatabaseOption::Uri, OptionValue::String(endpoint.to_owned()))];
+        let mut opts: Vec<(DatabaseOption, OptionValue)> = vec![(
+            DatabaseOption::Uri,
+            OptionValue::String(endpoint.to_owned()),
+        )];
 
         if let Some((username, password)) = credentials {
             opts.push((
@@ -118,10 +120,9 @@ impl FlightSqlPool {
         }
 
         let drv = FlightSqlDriver;
-        let db = drv
-            .new_database_with_opts(opts)
-            .await
-            .map_err(|e| Status::internal(format!("ADBC database creation failed for {endpoint}: {e}")))?;
+        let db = drv.new_database_with_opts(opts).await.map_err(|e| {
+            Status::internal(format!("ADBC database creation failed for {endpoint}: {e}"))
+        })?;
 
         let db = Arc::new(db);
         databases.insert(endpoint.to_string(), Arc::clone(&db));
