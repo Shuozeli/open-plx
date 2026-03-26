@@ -1,23 +1,25 @@
-//! Flight SQL client using arrow-flight's FlightSqlServiceClient.
+//! Flight SQL client using ADBC (Arrow Database Connectivity).
 //!
-//! Connects to Flight SQL endpoints, executes queries, and returns
-//! Arrow RecordBatches. Connections are pooled per endpoint.
+//! Connects to Flight SQL endpoints via the `adbc-flightsql` driver,
+//! executes queries, and returns Arrow RecordBatches.
+//! Connections are pooled per endpoint.
 
+use adbc::{
+    Connection, Database, DatabaseOption, Driver, OptionValue, Statement,
+};
+use adbc_flightsql::FlightSqlDriver;
 use arrow_array::RecordBatch;
-use arrow_flight::sql::client::FlightSqlServiceClient;
-use futures::StreamExt;
 use open_plx_config::model::DataSourceConfigYaml;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tonic::Status;
-use tonic::transport::Channel;
 
-type PooledClient = Arc<Mutex<FlightSqlServiceClient<Channel>>>;
+type PooledDatabase = Arc<adbc_flightsql::FlightSqlDatabase>;
 
-/// A pool of Flight SQL clients keyed by endpoint URI.
+/// A pool of ADBC Flight SQL databases keyed by endpoint URI.
 pub struct FlightSqlPool {
-    clients: Mutex<HashMap<String, PooledClient>>,
+    databases: Mutex<HashMap<String, PooledDatabase>>,
 }
 
 impl Default for FlightSqlPool {
@@ -29,13 +31,13 @@ impl Default for FlightSqlPool {
 impl FlightSqlPool {
     pub fn new() -> Self {
         Self {
-            clients: Mutex::new(HashMap::new()),
+            databases: Mutex::new(HashMap::new()),
         }
     }
 
     /// Execute a query against a Flight SQL data source and collect all results.
     pub async fn query(&self, config: &DataSourceConfigYaml) -> Result<RecordBatch, Status> {
-        let (endpoint, query, auth, timeout_secs) = match config {
+        let (endpoint, query_sql, auth, timeout_secs) = match config {
             DataSourceConfigYaml::FlightSql {
                 endpoint,
                 query,
@@ -45,99 +47,86 @@ impl FlightSqlPool {
             _ => return Err(Status::internal("expected FlightSql config")),
         };
 
-        // Extract basic auth credentials from YAML config
         let credentials = extract_basic_auth(auth);
+        let db = self.get_or_create_db(endpoint, credentials.as_ref()).await?;
 
-        let client: PooledClient = self
-            .get_or_create_client(endpoint, credentials.as_ref())
-            .await?;
-        let mut client_guard = client.lock().await;
+        // Create a fresh connection + statement per query for concurrency safety.
+        let conn = db
+            .new_connection()
+            .await
+            .map_err(|e| Status::internal(format!("ADBC connection failed: {e}")))?;
+
+        let mut stmt = conn
+            .new_statement()
+            .await
+            .map_err(|e| Status::internal(format!("ADBC statement creation failed: {e}")))?;
+
+        stmt.set_sql_query(query_sql)
+            .await
+            .map_err(|e| Status::internal(format!("ADBC set query failed: {e}")))?;
 
         // TODO(refactor): Bind parameters from DataSourceRef.params
 
-        let flight_info = tokio::time::timeout(
+        let (reader, _) = tokio::time::timeout(
             std::time::Duration::from_secs(timeout_secs),
-            client_guard.execute(query.to_string(), None),
+            stmt.execute(),
         )
         .await
         .map_err(|_| {
             Status::deadline_exceeded(format!("Flight SQL query timed out after {timeout_secs}s"))
         })?
-        .map_err(|e| Status::internal(format!("Flight SQL execute failed: {e}")))?;
+        .map_err(|e| Status::internal(format!("ADBC execute failed: {e}")))?;
 
-        // Fetch data from all endpoints/tickets
-        let mut batches: Vec<RecordBatch> = Vec::new();
-        let mut schema = None;
+        let schema = reader.schema();
+        let batches: Vec<RecordBatch> = reader
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| Status::internal(format!("ADBC batch read error: {e}")))?;
 
-        for ep in flight_info.endpoint {
-            if let Some(ticket) = ep.ticket {
-                let mut stream = client_guard
-                    .do_get(ticket)
-                    .await
-                    .map_err(|e| Status::internal(format!("Flight SQL do_get failed: {e}")))?;
-
-                while let Some(batch_result) = stream.next().await {
-                    let batch = batch_result.map_err(|e| {
-                        Status::internal(format!("Flight SQL batch read error: {e}"))
-                    })?;
-                    if schema.is_none() {
-                        schema = Some(batch.schema());
-                    }
-                    batches.push(batch);
-                }
-            }
+        if batches.is_empty() {
+            return Err(Status::internal("Flight SQL returned no data"));
         }
-
-        let schema = schema.ok_or_else(|| Status::internal("Flight SQL returned no data"))?;
 
         arrow_select::concat::concat_batches(&schema, &batches)
             .map_err(|e| Status::internal(format!("batch concat error: {e}")))
     }
 
-    async fn get_or_create_client(
+    async fn get_or_create_db(
         &self,
         endpoint: &str,
         credentials: Option<&(String, String)>,
-    ) -> Result<PooledClient, Status> {
-        let mut clients = self.clients.lock().await;
+    ) -> Result<PooledDatabase, Status> {
+        let mut databases = self.databases.lock().await;
 
-        if let Some(client) = clients.get(endpoint) {
-            return Ok(Arc::clone(client));
+        if let Some(db) = databases.get(endpoint) {
+            return Ok(Arc::clone(db));
         }
 
-        tracing::info!("creating Flight SQL connection to {endpoint}");
+        tracing::info!("creating ADBC Flight SQL database for {endpoint}");
 
-        // Convert grpc:// -> http:// for tonic Channel
-        let uri = if endpoint.starts_with("grpc://") {
-            endpoint.replacen("grpc://", "http://", 1)
-        } else if endpoint.starts_with("grpc+tls://") {
-            endpoint.replacen("grpc+tls://", "https://", 1)
-        } else {
-            endpoint.to_string()
-        };
+        let mut opts: Vec<(DatabaseOption, OptionValue)> =
+            vec![(DatabaseOption::Uri, OptionValue::String(endpoint.to_owned()))];
 
-        let channel = Channel::from_shared(uri)
-            .map_err(|e| Status::invalid_argument(format!("invalid endpoint URI: {e}")))?
-            .connect()
-            .await
-            .map_err(|e| {
-                Status::unavailable(format!("Flight SQL connection failed to {endpoint}: {e}"))
-            })?;
-
-        let mut client = FlightSqlServiceClient::new(channel);
-
-        // Perform handshake if credentials are provided
         if let Some((username, password)) = credentials {
-            client.handshake(username, password).await.map_err(|e| {
-                Status::unauthenticated(format!("Flight SQL handshake failed for {endpoint}: {e}"))
-            })?;
-            tracing::info!("Flight SQL handshake successful for {endpoint}");
+            opts.push((
+                DatabaseOption::Username,
+                OptionValue::String(username.clone()),
+            ));
+            opts.push((
+                DatabaseOption::Password,
+                OptionValue::String(password.clone()),
+            ));
         }
 
-        let client: PooledClient = Arc::new(Mutex::new(client));
-        clients.insert(endpoint.to_string(), Arc::clone(&client));
+        let drv = FlightSqlDriver;
+        let db = drv
+            .new_database_with_opts(opts)
+            .await
+            .map_err(|e| Status::internal(format!("ADBC database creation failed for {endpoint}: {e}")))?;
 
-        Ok(client)
+        let db = Arc::new(db);
+        databases.insert(endpoint.to_string(), Arc::clone(&db));
+
+        Ok(db)
     }
 }
 

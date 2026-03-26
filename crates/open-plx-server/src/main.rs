@@ -100,8 +100,9 @@ async fn main() -> Result<()> {
             ),
         )
         .add_service(
-            arrow_flight::flight_service_server::FlightServiceServer::new(
+            arrow_flight::flight_service_server::FlightServiceServer::with_interceptor(
                 flight_service,
+                auth_interceptor.clone(),
             ),
         )
         .add_service(

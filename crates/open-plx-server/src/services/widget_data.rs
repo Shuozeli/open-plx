@@ -79,13 +79,16 @@ fn record_batch_to_columns(batch: &RecordBatch) -> Result<Vec<DataColumn>, Statu
             }
 
             // --- Integer types: cast to Int64 ---
+            // Note: UInt64 values > i64::MAX will be cast to Float64 to preserve
+            // magnitude at the cost of precision for very large values.
             DataType::Int8
             | DataType::Int16
             | DataType::Int32
             | DataType::Int64
             | DataType::UInt8
             | DataType::UInt16
-            | DataType::UInt32 => {
+            | DataType::UInt32
+            | DataType::UInt64 => {
                 let casted = cast(array, &DataType::Int64).map_err(|e| cast_err("Int64", e))?;
                 let arr = casted
                     .as_any()

@@ -12,14 +12,37 @@ services:
     volumes:
       - ./config/seed:/opt/flight_sql/seed
 
-  # open-plx server (uncomment to run from Docker image)
-  # open-plx:
-  #   build: .
-  #   ports:
-  #     - "50051:50051"
-  #   environment:
-  #     CONFIG_PATH: /app/config/open-plx.yaml
-  #     RUST_LOG: info
-  #     RUST_LOG_FORMAT: json
-  #   depends_on:
-  #     - flight-sql
+  # PostgreSQL for ADBC integration tests
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "25432:5432"
+    environment:
+      POSTGRES_USER: plx_test
+      POSTGRES_PASSWORD: plx_test
+      POSTGRES_DB: plx_test
+    volumes:
+      - ./config/seed/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plx_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  # MySQL for ADBC integration tests
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "23306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: plx_root
+      MYSQL_USER: plx_test
+      MYSQL_PASSWORD: plx_test
+      MYSQL_DATABASE: plx_test
+    volumes:
+      - ./config/seed/mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "plx_test", "-pplx_test"]
+      interval: 3s
+      timeout: 5s
+      retries: 10

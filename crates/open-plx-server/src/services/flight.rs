@@ -9,6 +9,7 @@ use arrow_flight::{
 use futures::StreamExt;
 use futures::stream::BoxStream;
 use open_plx_core::pb::WidgetDataRequest;
+use open_plx_auth::{check_permission, get_principal};
 use prost::Message;
 use std::sync::Arc;
 use tonic::{Request, Response, Status, Streaming};
@@ -51,9 +52,23 @@ impl FlightService for FlightServiceImpl {
         &self,
         request: Request<FlightDescriptor>,
     ) -> Result<Response<FlightInfo>, Status> {
+        let principal = get_principal(&request)?;
         let descriptor = request.into_inner();
         let widget_req = WidgetDataRequest::decode(descriptor.cmd.as_ref())
             .map_err(|e| Status::invalid_argument(format!("invalid WidgetDataRequest: {e}")))?;
+
+        let ds_name = self.state.resolve_data_source_name(&widget_req)?;
+        if !check_permission(&principal, &ds_name, "reader", &self.state.permissions)? {
+            tracing::info!(
+                event = "permission.denied",
+                user = %principal.email,
+                resource = %ds_name,
+                required_role = "reader",
+            );
+            return Err(Status::permission_denied(format!(
+                "data access denied for {ds_name}"
+            )));
+        }
 
         tracing::debug!(
             "get_flight_info: dashboard={}, widget={}",
@@ -98,9 +113,23 @@ impl FlightService for FlightServiceImpl {
         &self,
         request: Request<Ticket>,
     ) -> Result<Response<Self::DoGetStream>, Status> {
+        let principal = get_principal(&request)?;
         let ticket = request.into_inner();
         let widget_req = WidgetDataRequest::decode(ticket.ticket.as_ref())
             .map_err(|e| Status::invalid_argument(format!("invalid ticket: {e}")))?;
+
+        let ds_name = self.state.resolve_data_source_name(&widget_req)?;
+        if !check_permission(&principal, &ds_name, "reader", &self.state.permissions)? {
+            tracing::info!(
+                event = "permission.denied",
+                user = %principal.email,
+                resource = %ds_name,
+                required_role = "reader",
+            );
+            return Err(Status::permission_denied(format!(
+                "data access denied for {ds_name}"
+            )));
+        }
 
         tracing::debug!(
             "do_get: dashboard={}, widget={}",

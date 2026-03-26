@@ -7,6 +7,15 @@ use crate::model::*;
 use anyhow::{Result, bail};
 use open_plx_core::pb;
 
+fn field_meta_to_proto(m: &FieldMetaYaml) -> pb::FieldMeta {
+    pb::FieldMeta {
+        field: m.field.clone(),
+        name: m.name.clone().unwrap_or_default(),
+        description: String::new(),
+        formatter: m.formatter.clone().unwrap_or_default(),
+    }
+}
+
 /// Convert a DashboardFile (YAML) to a Dashboard proto message.
 pub fn dashboard_to_proto(file: &DashboardFile) -> Result<pb::Dashboard> {
     Ok(pb::Dashboard {
@@ -23,7 +32,11 @@ pub fn dashboard_to_proto(file: &DashboardFile) -> Result<pb::Dashboard> {
             .iter()
             .map(widget_to_proto)
             .collect::<Result<Vec<_>>>()?,
-        variables: file.variables.iter().map(variable_to_proto).collect(),
+        variables: file
+            .variables
+            .iter()
+            .map(variable_to_proto)
+            .collect::<Result<Vec<_>>>()?,
         permission_denied_behavior: match file.permission_denied_behavior.as_deref() {
             Some("hide") => pb::PermissionDeniedBehavior::Hide.into(),
             _ => pb::PermissionDeniedBehavior::ShowDenied.into(),
@@ -61,13 +74,13 @@ fn widget_spec_to_proto(spec: &WidgetSpecYaml) -> Result<pb::WidgetSpec> {
     } else if let Some(m) = &spec.metric_card {
         pb::widget_spec::Spec::MetricCard(metric_card_to_proto(m)?)
     } else if let Some(t) = &spec.text {
-        pb::widget_spec::Spec::Text(text_to_proto(t))
+        pb::widget_spec::Spec::Text(text_to_proto(t)?)
     } else if let Some(t) = &spec.table {
-        pb::widget_spec::Spec::Table(table_to_proto(t))
+        pb::widget_spec::Spec::Table(table_to_proto(t)?)
     } else if let Some(g) = &spec.gauge {
         pb::widget_spec::Spec::Gauge(gauge_to_proto(g))
     } else if let Some(f) = &spec.funnel {
-        pb::widget_spec::Spec::Funnel(funnel_to_proto(f))
+        pb::widget_spec::Spec::Funnel(funnel_to_proto(f)?)
     } else if let Some(t) = &spec.treemap {
         pb::widget_spec::Spec::Treemap(treemap_to_proto(t))
     } else if let Some(s) = &spec.sankey {
@@ -182,12 +195,7 @@ fn pivot_to_proto(p: &PivotTableSpecYaml) -> Result<pb::PivotTableSpec> {
         meta: p
             .meta
             .iter()
-            .map(|m| pb::FieldMeta {
-                field: m.field.clone(),
-                name: m.name.clone().unwrap_or_default(),
-                description: String::new(),
-                formatter: m.formatter.clone().unwrap_or_default(),
-            })
+            .map(field_meta_to_proto)
             .collect(),
         sort: p
             .sort
@@ -208,15 +216,21 @@ fn pivot_to_proto(p: &PivotTableSpecYaml) -> Result<pb::PivotTableSpec> {
                 })
             })
             .collect::<Result<Vec<_>>>()?,
-        totals: p.totals.as_ref().map(|t| pb::PivotTotals {
-            row: t.row.as_ref().map(total_config_to_proto),
-            col: t.col.as_ref().map(total_config_to_proto),
-        }),
+        totals: p
+            .totals
+            .as_ref()
+            .map(|t| -> Result<pb::PivotTotals> {
+                Ok(pb::PivotTotals {
+                    row: t.row.as_ref().map(total_config_to_proto).transpose()?,
+                    col: t.col.as_ref().map(total_config_to_proto).transpose()?,
+                })
+            })
+            .transpose()?,
         hierarchy_type: pb::PivotHierarchyType::Unspecified.into(),
         frozen: None,
         pagination: None,
         series_number: None,
-        conditions: p.conditions.iter().map(conditional_format_to_proto).collect(),
+        conditions: p.conditions.iter().map(conditional_format_to_proto).collect::<Result<Vec<_>>>()?,
         interaction: p.interaction.as_ref().map(interaction_to_proto),
     })
 }
@@ -258,52 +272,56 @@ fn metric_card_to_proto(m: &MetricCardSpecYaml) -> Result<pb::MetricCardSpec> {
     })
 }
 
-fn text_to_proto(t: &TextSpecYaml) -> pb::TextSpec {
-    pb::TextSpec {
+fn text_to_proto(t: &TextSpecYaml) -> Result<pb::TextSpec> {
+    let format = match t.format.as_deref() {
+        Some("markdown") => pb::TextFormat::Markdown,
+        Some("plain") | None => pb::TextFormat::Plain,
+        Some(other) => bail!("unknown text format: '{other}'"),
+    };
+    Ok(pb::TextSpec {
         content: t.content.clone(),
-        format: match t.format.as_deref() {
-            Some("markdown") => pb::TextFormat::Markdown,
-            _ => pb::TextFormat::Plain,
-        }
-        .into(),
-    }
+        format: format.into(),
+    })
 }
 
-fn conditional_format_to_proto(c: &ConditionalFormatYaml) -> pb::ConditionalFormat {
-    pb::ConditionalFormat {
-        field: c.field.clone(),
-        r#type: match c.format_type.as_str() {
-            "text" => pb::ConditionalFormatType::Text,
-            "background" => pb::ConditionalFormatType::Background,
-            "icon" => pb::ConditionalFormatType::Icon,
-            "interval" => pb::ConditionalFormatType::Interval,
-            _ => pb::ConditionalFormatType::Unspecified,
-        }
-        .into(),
-        thresholds: c
-            .thresholds
-            .iter()
-            .map(|t| pb::ConditionalThreshold {
-                op: match t.op.as_str() {
-                    "gt" => pb::ComparisonOp::Gt,
-                    "gte" => pb::ComparisonOp::Gte,
-                    "lt" => pb::ComparisonOp::Lt,
-                    "lte" => pb::ComparisonOp::Lte,
-                    "eq" => pb::ComparisonOp::Eq,
-                    "neq" => pb::ComparisonOp::Neq,
-                    "between" => pb::ComparisonOp::Between,
-                    _ => pb::ComparisonOp::Unspecified,
-                }
-                .into(),
+fn conditional_format_to_proto(c: &ConditionalFormatYaml) -> Result<pb::ConditionalFormat> {
+    let format_type = match c.format_type.as_str() {
+        "text" => pb::ConditionalFormatType::Text,
+        "background" => pb::ConditionalFormatType::Background,
+        "icon" => pb::ConditionalFormatType::Icon,
+        "interval" => pb::ConditionalFormatType::Interval,
+        other => bail!("unknown conditional format type: '{other}'"),
+    };
+    let thresholds = c
+        .thresholds
+        .iter()
+        .map(|t| {
+            let op = match t.op.as_str() {
+                "gt" => pb::ComparisonOp::Gt,
+                "gte" => pb::ComparisonOp::Gte,
+                "lt" => pb::ComparisonOp::Lt,
+                "lte" => pb::ComparisonOp::Lte,
+                "eq" => pb::ComparisonOp::Eq,
+                "neq" => pb::ComparisonOp::Neq,
+                "between" => pb::ComparisonOp::Between,
+                other => bail!("unknown comparison op: '{other}'"),
+            };
+            Ok(pb::ConditionalThreshold {
+                op: op.into(),
                 value: t.value,
                 value_end: t.value_end,
                 color: t.color.clone().unwrap_or_default(),
                 icon: t.icon.clone().unwrap_or_default(),
             })
-            .collect(),
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(pb::ConditionalFormat {
+        field: c.field.clone(),
+        r#type: format_type.into(),
+        thresholds,
         interval_min: c.interval_min,
         interval_max: c.interval_max,
-    }
+    })
 }
 
 fn interaction_to_proto(i: &TableInteractionYaml) -> pb::TableInteraction {
@@ -316,8 +334,17 @@ fn interaction_to_proto(i: &TableInteractionYaml) -> pb::TableInteraction {
     }
 }
 
-fn total_config_to_proto(c: &PivotTotalConfigYaml) -> pb::PivotTotalConfig {
-    pb::PivotTotalConfig {
+fn total_config_to_proto(c: &PivotTotalConfigYaml) -> Result<pb::PivotTotalConfig> {
+    let aggregation = match c.aggregation.as_deref() {
+        Some("SUM") => pb::Aggregation::Sum,
+        Some("MIN") => pb::Aggregation::Min,
+        Some("MAX") => pb::Aggregation::Max,
+        Some("AVG") => pb::Aggregation::Avg,
+        Some("COUNT") => pb::Aggregation::Count,
+        None => pb::Aggregation::Unspecified,
+        Some(other) => bail!("unknown aggregation: '{other}'"),
+    };
+    Ok(pb::PivotTotalConfig {
         show_grand_totals: c.show_grand_totals,
         show_sub_totals: c.show_sub_totals,
         sub_totals_dimensions: c.sub_totals_dimensions.clone(),
@@ -325,16 +352,8 @@ fn total_config_to_proto(c: &PivotTotalConfigYaml) -> pb::PivotTotalConfig {
         sub_totals_label: c.sub_totals_label.clone().unwrap_or_default(),
         reverse_grand_totals_layout: c.reverse_grand_totals_layout,
         reverse_sub_totals_layout: c.reverse_sub_totals_layout,
-        aggregation: match c.aggregation.as_deref() {
-            Some("SUM") => pb::Aggregation::Sum,
-            Some("MIN") => pb::Aggregation::Min,
-            Some("MAX") => pb::Aggregation::Max,
-            Some("AVG") => pb::Aggregation::Avg,
-            Some("COUNT") => pb::Aggregation::Count,
-            _ => pb::Aggregation::Unspecified,
-        }
-        .into(),
-    }
+        aggregation: aggregation.into(),
+    })
 }
 
 fn word_cloud_to_proto(w: &WordCloudSpecYaml) -> pb::WordCloudSpec {
@@ -381,54 +400,54 @@ fn gauge_to_proto(g: &GaugeSpecYaml) -> pb::GaugeSpec {
     }
 }
 
-fn funnel_to_proto(f: &FunnelSpecYaml) -> pb::FunnelSpec {
-    pb::FunnelSpec {
+fn funnel_to_proto(f: &FunnelSpecYaml) -> Result<pb::FunnelSpec> {
+    let shape = match f.shape.as_deref() {
+        Some("pyramid") => pb::FunnelShape::Pyramid,
+        Some("funnel") => pb::FunnelShape::Funnel,
+        None => pb::FunnelShape::Unspecified,
+        Some(other) => bail!("unknown funnel shape: '{other}'"),
+    };
+    Ok(pb::FunnelSpec {
         category_field: f.category_field.clone(),
         value_field: f.value_field.clone(),
         show_conversion_rate: f.show_conversion_rate,
-        shape: match f.shape.as_deref() {
-            Some("pyramid") => pb::FunnelShape::Pyramid,
-            Some("funnel") => pb::FunnelShape::Funnel,
-            _ => pb::FunnelShape::Unspecified,
-        }
-        .into(),
-    }
+        shape: shape.into(),
+    })
 }
 
-fn table_to_proto(t: &TableSpecYaml) -> pb::TableSpec {
-    pb::TableSpec {
-        columns: t
-            .columns
-            .iter()
-            .map(|c| pb::TableColumn {
+fn table_to_proto(t: &TableSpecYaml) -> Result<pb::TableSpec> {
+    let columns = t
+        .columns
+        .iter()
+        .map(|c| {
+            let align = match c.align.as_deref() {
+                Some("left") => pb::TableColumnAlign::Left,
+                Some("center") => pb::TableColumnAlign::Center,
+                Some("right") => pb::TableColumnAlign::Right,
+                None => pb::TableColumnAlign::Unspecified,
+                Some(other) => bail!("unknown table column align: '{other}'"),
+            };
+            Ok(pb::TableColumn {
                 field: c.field.clone(),
                 width: c.width.unwrap_or(0),
-                align: match c.align.as_deref() {
-                    Some("left") => pb::TableColumnAlign::Left,
-                    Some("center") => pb::TableColumnAlign::Center,
-                    Some("right") => pb::TableColumnAlign::Right,
-                    _ => pb::TableColumnAlign::Unspecified,
-                }
-                .into(),
+                align: align.into(),
             })
-            .collect(),
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(pb::TableSpec {
+        columns,
         meta: t
             .meta
             .iter()
-            .map(|m| pb::FieldMeta {
-                field: m.field.clone(),
-                name: m.name.clone().unwrap_or_default(),
-                description: String::new(),
-                formatter: m.formatter.clone().unwrap_or_default(),
-            })
+            .map(field_meta_to_proto)
             .collect(),
         pagination: t.pagination.as_ref().map(|p| pb::TablePagination {
             page_size: p.page_size,
         }),
         show_row_numbers: t.show_row_numbers,
-        conditions: t.conditions.iter().map(conditional_format_to_proto).collect(),
+        conditions: t.conditions.iter().map(conditional_format_to_proto).collect::<Result<Vec<_>>>()?,
         interaction: t.interaction.as_ref().map(interaction_to_proto),
-    }
+    })
 }
 
 // --- Enum parsers (all fail on unknown values) ---
@@ -553,13 +572,13 @@ fn parse_sparkline_type(s: &str) -> Result<pb::SparklineType> {
 // Variable conversion
 // =============================================================================
 
-fn variable_to_proto(v: &DashboardVariableYaml) -> pb::DashboardVariable {
-    pb::DashboardVariable {
+fn variable_to_proto(v: &DashboardVariableYaml) -> Result<pb::DashboardVariable> {
+    Ok(pb::DashboardVariable {
         name: v.name.clone(),
         label: v.label.clone(),
         default_value: v.default_value.as_ref().map(param_value_yaml_to_proto),
-        control: Some(variable_control_to_proto(&v.control)),
-    }
+        control: Some(variable_control_to_proto(&v.control)?),
+    })
 }
 
 fn param_value_yaml_to_proto(pv: &ParamValueYaml) -> pb::ParamValue {
@@ -572,8 +591,8 @@ fn param_value_yaml_to_proto(pv: &ParamValueYaml) -> pb::ParamValue {
     pb::ParamValue { value: Some(value) }
 }
 
-fn variable_control_to_proto(c: &VariableControlYaml) -> pb::dashboard_variable::Control {
-    match c {
+fn variable_control_to_proto(c: &VariableControlYaml) -> Result<pb::dashboard_variable::Control> {
+    let control = match c {
         VariableControlYaml::TextInput {
             placeholder,
             max_length,
@@ -622,30 +641,36 @@ fn variable_control_to_proto(c: &VariableControlYaml) -> pb::dashboard_variable:
             min_date,
             max_date,
             granularity,
-        } => pb::dashboard_variable::Control::DatePicker(pb::DatePickerControl {
-            min_date: min_date.clone(),
-            max_date: max_date.clone(),
-            granularity: granularity
+        } => {
+            let g = granularity
                 .as_deref()
-                .and_then(|g| parse_date_granularity(g).ok())
-                .unwrap_or(pb::DateGranularity::Unspecified)
-                .into(),
-        }),
+                .map(parse_date_granularity)
+                .transpose()?
+                .unwrap_or(pb::DateGranularity::Unspecified);
+            pb::dashboard_variable::Control::DatePicker(pb::DatePickerControl {
+                min_date: min_date.clone(),
+                max_date: max_date.clone(),
+                granularity: g.into(),
+            })
+        }
         VariableControlYaml::DateRange {
             min_date,
             max_date,
             granularity,
             presets,
-        } => pb::dashboard_variable::Control::DateRange(pb::DateRangeControl {
-            min_date: min_date.clone(),
-            max_date: max_date.clone(),
-            granularity: granularity
+        } => {
+            let g = granularity
                 .as_deref()
-                .and_then(|g| parse_date_granularity(g).ok())
-                .unwrap_or(pb::DateGranularity::Unspecified)
-                .into(),
-            presets: presets.iter().map(date_range_preset_to_proto).collect(),
-        }),
+                .map(parse_date_granularity)
+                .transpose()?
+                .unwrap_or(pb::DateGranularity::Unspecified);
+            pb::dashboard_variable::Control::DateRange(pb::DateRangeControl {
+                min_date: min_date.clone(),
+                max_date: max_date.clone(),
+                granularity: g.into(),
+                presets: presets.iter().map(date_range_preset_to_proto).collect(),
+            })
+        }
         VariableControlYaml::Cascader {
             options,
             placeholder,
@@ -653,7 +678,8 @@ fn variable_control_to_proto(c: &VariableControlYaml) -> pb::dashboard_variable:
             options: options.iter().map(cascader_option_to_proto).collect(),
             placeholder: placeholder.clone(),
         }),
-    }
+    };
+    Ok(control)
 }
 
 fn select_option_to_proto(o: &SelectOptionYaml) -> pb::SelectOption {

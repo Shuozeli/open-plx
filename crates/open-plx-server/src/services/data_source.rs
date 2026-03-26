@@ -1,4 +1,5 @@
 use crate::state::AppState;
+use open_plx_auth::{check_permission, get_principal};
 use open_plx_config::convert::data_source_to_proto;
 use open_plx_core::pb::{
     CreateDataSourceRequest, DataSource, DeleteDataSourceRequest, DeleteDataSourceResponse,
@@ -22,19 +23,32 @@ impl DataSourceServiceImpl {
 impl DataSourceService for DataSourceServiceImpl {
     async fn list_data_sources(
         &self,
-        _request: Request<ListDataSourcesRequest>,
+        request: Request<ListDataSourcesRequest>,
     ) -> Result<Response<ListDataSourcesResponse>, Status> {
+        let principal = get_principal(&request)?;
+
         let data_sources: Vec<DataSource> = self
             .state
             .data_sources
             .values()
-            .map(|d| {
-                data_source_to_proto(d).map_err(|e| Status::internal(format!("config error: {e}")))
+            .filter_map(|d| {
+                match check_permission(&principal, &d.name, "reader", &self.state.permissions) {
+                    Ok(true) => Some(
+                        data_source_to_proto(d)
+                            .map_err(|e| Status::internal(format!("config error: {e}"))),
+                    ),
+                    Ok(false) => None,
+                    Err(e) => Some(Err(e)),
+                }
             })
             .collect::<Result<Vec<_>, _>>()?;
         let total = data_sources.len() as i32;
 
-        tracing::debug!("listing {} data sources", total);
+        tracing::info!(
+            event = "datasource.list",
+            user = %principal.email,
+            count = total,
+        );
 
         Ok(Response::new(ListDataSourcesResponse {
             data_sources,
@@ -47,7 +61,19 @@ impl DataSourceService for DataSourceServiceImpl {
         &self,
         request: Request<GetDataSourceRequest>,
     ) -> Result<Response<DataSource>, Status> {
+        let principal = get_principal(&request)?;
         let name = &request.get_ref().name;
+
+        if !check_permission(&principal, name, "reader", &self.state.permissions)? {
+            tracing::info!(
+                event = "permission.denied",
+                user = %principal.email,
+                resource = %name,
+                required_role = "reader",
+            );
+            return Err(Status::not_found(format!("data source not found: {name}")));
+        }
+
         match self.state.data_sources.get(name) {
             Some(file) => {
                 let data_source = data_source_to_proto(file)

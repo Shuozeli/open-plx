@@ -2,7 +2,7 @@
 
 use crate::model::{DataSourceConfigYaml, DataSourceFile, StaticColumnYaml};
 use anyhow::{Context, Result, bail};
-use arrow_array::{ArrayRef, Float64Array, Int64Array, RecordBatch, StringArray};
+use arrow_array::{ArrayRef, BooleanArray, Float64Array, Int64Array, RecordBatch, StringArray};
 use arrow_schema::{DataType, Field, Schema};
 use std::sync::Arc;
 
@@ -124,7 +124,33 @@ fn static_column_to_arrow(col: &StaticColumnYaml) -> Result<(Field, ArrayRef)> {
             let field = Field::new(&col.name, DataType::Float64, false);
             Ok((field, array))
         }
-        other => bail!("unsupported arrow_type: {other}"),
+        "boolean" => {
+            let values: Vec<bool> = col
+                .values
+                .iter()
+                .enumerate()
+                .map(|(i, v)| yaml_value_to_bool(v, &col.name, i))
+                .collect::<Result<Vec<_>>>()?;
+            let array = Arc::new(BooleanArray::from(values)) as ArrayRef;
+            let field = Field::new(&col.name, DataType::Boolean, false);
+            Ok((field, array))
+        }
+        "date32" | "timestamp_micros" => {
+            // Date and timestamp values are stored as strings in YAML.
+            // We store them as Utf8 in Arrow, consistent with how the proto
+            // conversion stores them as string_values. Downstream consumers
+            // (widget rendering) handle the string-to-date interpretation.
+            let values: Vec<String> = col
+                .values
+                .iter()
+                .enumerate()
+                .map(|(i, v)| yaml_value_to_string(v, &col.name, i))
+                .collect::<Result<Vec<_>>>()?;
+            let array = Arc::new(StringArray::from(values)) as ArrayRef;
+            let field = Field::new(&col.name, DataType::Utf8, false);
+            Ok((field, array))
+        }
+        other => bail!("unsupported arrow_type: '{other}'"),
     }
 }
 

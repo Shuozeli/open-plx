@@ -86,6 +86,8 @@ impl AuthProvider for ApiKeyAuth {
 // =============================================================================
 
 /// OIDC JWT authentication. Validates JWT signature via JWKS.
+/// Currently unimplemented -- server panics at startup if configured.
+#[allow(dead_code)]
 pub struct OidcAuth {
     _issuer: String,
     _audience: String,
@@ -143,16 +145,14 @@ impl AuthInterceptor {
                 Arc::new(ApiKeyAuth::new(keys.clone(), permissions))
             }
             AuthConfig::Oidc {
-                jwks_uri,
+                jwks_uri: _,
                 issuer,
-                audience,
+                audience: _,
             } => {
-                tracing::info!("using OIDC auth (issuer={})", issuer);
-                Arc::new(OidcAuth::new(
-                    issuer.clone(),
-                    audience.clone(),
-                    jwks_uri.clone(),
-                ))
+                panic!(
+                    "OIDC auth (issuer={}) is not yet implemented -- use 'dev' or 'api_key' mode",
+                    issuer
+                );
             }
         };
 
@@ -203,7 +203,11 @@ pub fn check_permission(
                     return Ok(true);
                 }
             }
-            _ => {}
+            other => {
+                return Err(Status::internal(format!(
+                    "unknown principal_type: '{other}' -- check permissions.yaml"
+                )));
+            }
         }
     }
 
