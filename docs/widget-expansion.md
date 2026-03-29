@@ -2,32 +2,39 @@
 
 ## Current State
 
-### Implemented Widgets (6)
+### Implemented Widgets (17)
+
+All widget types from the original 6 plus the 11 expansion types are now
+implemented with proto definitions, Rust YAML models, frontend components,
+mappers, and data source configs.
 
 | Widget Type | Library | Renderer | Status |
 |-------------|---------|----------|--------|
 | LINE_CHART | G2 | `line` mark | Full (line, smooth, step shapes) |
 | BAR_CHART | G2 | `interval` mark | Full (vertical, horizontal, stacked, grouped) |
 | PIE_CHART | G2 | `interval` + theta | Full (pie, donut) |
-| PIVOT_TABLE | S2 | `PivotSheet` | Full (rows, columns, values, meta, sort) |
+| SCATTER_CHART | G2 | `point` mark | Full (size/color encoding) |
+| HEATMAP | G2 | `cell` mark | Full (sequential color scale) |
+| HISTOGRAM | G2 | `rect` + binX | Full |
+| RADAR_CHART | G2 | `line` + radar coord | Full |
+| BOX_PLOT | G2 | `boxplot` mark | Full |
+| PIVOT_TABLE | S2 | `PivotSheet` | Full (rows, columns, values, meta, sort, conditions) |
+| TABLE | S2 | `TableSheet` | Full (columns, pagination, conditions) |
 | METRIC_CARD | Antd | `Statistic` | Full (value, comparison, sparkline) |
 | TEXT | Antd | markdown/plain | Full |
-
-### Proto-defined but Frontend-unimplemented Chart Types (4)
-
-These exist in `widget_spec.proto` as `ChartType` enums and have mapper stubs
-in `chartMapper.ts`, but no dedicated widget component or testing:
-
-| Chart Type | G2 Mark | Mapper Status | Notes |
-|------------|---------|---------------|-------|
-| SCATTER | `point` | Stub | Needs size/color encoding, tooltips |
-| HEATMAP | `cell` | Stub | Needs color scale, x/y categorical axes |
-| HISTOGRAM | `rect` | Stub | Needs binX transform |
-| RADAR | `line` + radar coord | Stub | Needs radar coordinate, area fill |
+| GAUGE | G2 | gauge composite | Full (value, ranges, format) |
+| FUNNEL | G2 | interval + symmetryY | Full (funnel/pyramid shapes) |
+| TREEMAP | G2 | treemap composite | Full (hierarchy fields, labels) |
+| SANKEY | G2 | sankey composite | Full (source/target/value) |
+| WORD_CLOUD | G2 | wordCloud composite | Full (text/weight, font size range) |
 
 ---
 
-## Proposed New Widget Types
+## Original Implementation Plan (Completed)
+
+The following sections document the original expansion plan. All Tier 1-3
+widgets (except Force Graph and Geo Map) are now implemented. These
+sections are preserved as historical reference for the design rationale.
 
 ### Tier 1: High Value, Low Effort
 
@@ -336,8 +343,8 @@ Gauge, Box Plot, Funnel.
 Treemap, Sankey.
 **Effort:** 2-3 days
 
-### Phase E: Specialized Widgets (+2)
-Word Cloud, Force Graph.
+### Phase E: Specialized Widgets (+1 done, +1 future)
+Word Cloud (done), Force Graph (future).
 **Effort:** 3-4 days
 
 ### Phase F: S2 Enhancements
@@ -370,9 +377,9 @@ New chart types fall into two categories:
 
 ### WidgetSpec Oneof Growth
 
-Current oneof has 4 variants: `chart`, `pivot_table`, `metric_card`, `text`.
-With all proposed additions: 11 variants. This is manageable -- proto oneofs
-scale well. Each new spec message is independent.
+Current oneof has 10 variants: `chart`, `pivot_table`, `metric_card`, `text`,
+`table`, `gauge`, `funnel`, `treemap`, `sankey`, `word_cloud`.
+Proto oneofs scale well. Each spec message is independent.
 
 ```protobuf
 message WidgetSpec {
@@ -387,7 +394,7 @@ message WidgetSpec {
     FunnelSpec funnel = 8;             // Conversion funnel
     SankeySpec sankey = 9;             // Flow/Sankey diagram
     WordCloudSpec word_cloud = 10;     // Word cloud
-    ForceGraphSpec force_graph = 11;   // Network graph
+    // ForceGraphSpec force_graph = 11; // Future: network graph (not yet implemented)
   }
 }
 ```

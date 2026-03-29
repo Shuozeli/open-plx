@@ -78,7 +78,7 @@ implements `tonic::service::Interceptor`, injecting the resolved
 ### Custom Auth Plugins
 
 For deployment-specific auth (reverse proxy, SAML, custom SSO), users
-implement the `AuthInterceptor` trait in a Rust crate and register it
+implement the `AuthProvider` trait in a Rust crate and register it
 at server startup:
 
 ```rust
@@ -87,8 +87,8 @@ struct ReverseProxyAuth {
     shared_secret: String,  // Verified against x-auth-secret header
 }
 
-impl AuthInterceptor for ReverseProxyAuth {
-    fn authenticate(&self, metadata: &MetadataMap) -> Result<Principal, Status> {
+impl AuthProvider for ReverseProxyAuth {
+    fn authenticate(&self, request: &Request<()>) -> Result<Principal, Status> {
         // Verify shared secret (NOT source IP -- IPs are unreliable in k8s)
         let secret = metadata.get("x-auth-secret")
             .ok_or(Status::unauthenticated("missing x-auth-secret"))?;
@@ -107,7 +107,7 @@ impl AuthInterceptor for ReverseProxyAuth {
 
 Plugin registration at startup:
 ```rust
-let auth: Box<dyn AuthInterceptor> = match config.auth_provider {
+let auth: Arc<dyn AuthProvider> = match config.auth_provider {
     "oidc" => Box::new(OidcAuth::new(config.oidc)),
     "api_key" => Box::new(ApiKeyAuth::new(pool.clone())),
     "dev" => Box::new(DevAuth::new()),

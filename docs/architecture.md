@@ -47,10 +47,14 @@ Proto files are the source of truth. All types are generated, not handwritten.
 ```
 proto/open_plx/v1/
   dashboard.proto       DashboardService: layout CRUD
+                        WidgetType enum (17 types), DashboardVariable (7 control types)
   data_source.proto     DataSourceService: admin CRUD, TestDataSource
   data.proto            WidgetDataService: browser data access (proto columnar)
                         WidgetDataRequest/Response, Arrow Flight descriptors
-  widget_spec.proto     All widget spec types (ChartSpec, PivotTableSpec, etc.)
+  widget_spec.proto     WidgetSpec oneof (10 variants): ChartSpec, PivotTableSpec,
+                        MetricCardSpec, TextSpec, TableSpec, GaugeSpec, FunnelSpec,
+                        TreemapSpec, SankeySpec, WordCloudSpec
+                        ChartType enum (11 types), conditional formatting
 ```
 
 Arrow Flight's own proto (`arrow.flight.protocol.FlightService`) is provided
@@ -72,6 +76,10 @@ crates/
                          File-based permission checks with wildcard support.
                          Depends on core, config.
 
+  open-plx-cli/           CLI tool (`plx` binary): list, export, validate, import.
+                         Dashboard bundle management with --json output.
+                         Depends on config.
+
   open-plx-server/       tonic gRPC server with 5 services:
                          - DashboardService (serves config-file dashboards, read-only)
                          - DataSourceService (serves config-file data sources, read-only)
@@ -79,15 +87,16 @@ crates/
                          - Arrow Flight service (GetFlightInfo + DoGet)
                          - Health check (grpc.health.v1)
                          Plus: tonic-web, gRPC reflection, CORS, graceful shutdown.
-                         Flight SQL client pool for upstream data sources.
+                         ADBC Flight SQL client pool (adbc + adbc-flightsql) for upstream data sources.
                          Depends on core, config, auth.
 ```
 
 Dependency graph (strictly acyclic):
 ```
 server --> auth --> config --> core
-  |                             ^
-  +-----------------------------+
+  |                   ^         ^
+  +-------------------+---------+
+cli ------------------>
 ```
 
 ## Frontend Package Map
@@ -96,15 +105,26 @@ server --> auth --> config --> core
 frontend/src/
   gen/open_plx/v1/       Generated TypeScript types from protos (via @bufbuild/protoc-gen-es)
   components/
-    widgets/             Widget renderers: G2Chart, S2PivotTable, Line/Bar/Pie/Metric/Text, WidgetRegistry
+    widgets/             17 widget renderers + WidgetRegistry (exhaustive mapping)
+                         G2-based: Line, Bar, HorizontalBar, Pie, Donut, Area, Scatter, Heatmap, Histogram, Radar, BoxPlot
+                         S2-based: PivotTable, Table
+                         Antd-based: MetricCard, Text
+                         Composite: Gauge, Funnel, Treemap, Sankey, WordCloud
     layout/              DashboardGrid (CSS grid), WidgetShell, WidgetErrorBoundary
     variables/           VariableBar, VariableControl (7 Antd control types)
   hooks/                 useDashboard, useDashboardList, useWidgetData, useVariables, useThemeContext
   services/
     grpc/                gRPC-web client via @connectrpc/connect-web (3 service clients)
-    mappers/             Semantic proto -> library config translators
-      chartMapper.ts     ChartSpec -> G2 Spec (10 chart types)
-      pivotMapper.ts     PivotTableSpec -> S2 DataConfig + Options + format string parser
+    mappers/             9 semantic proto -> library config translators:
+      chartMapper.ts     ChartSpec -> G2 Spec (11 chart types)
+      pivotMapper.ts     PivotTableSpec -> S2 PivotSheet config
+      tableMapper.ts     TableSpec -> S2 TableSheet config
+      gaugeMapper.ts     GaugeSpec -> G2 gauge config
+      funnelMapper.ts    FunnelSpec -> G2 funnel config
+      treemapMapper.ts   TreemapSpec -> G2 treemap config
+      sankeyMapper.ts    SankeySpec -> G2 sankey config
+      wordCloudMapper.ts WordCloudSpec -> G2 wordCloud config
+      conditionMapper.ts ConditionalFormat -> S2 conditions config
     testRegistry.ts      Test helper for widget data state
   pages/                 DashboardPage, DashboardListPage
 ```

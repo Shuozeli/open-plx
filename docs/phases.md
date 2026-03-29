@@ -82,8 +82,8 @@ End-to-end vertical slice through every component.
   - Converts RecordBatch to proto DataColumns
 - [x] `DataSourceService.ListDataSources` reads from config (read-only)
 - [x] `DataSourceService.GetDataSource` reads from config (read-only)
-- [ ] `DataSourceService.ListDataSources` returns actual DataSource protos (currently returns empty list with only total_size)
-- [ ] `DataSourceService.GetDataSource` converts config to proto (currently returns unimplemented)
+- [x] `DataSourceService.ListDataSources` returns actual DataSource protos
+- [x] `DataSourceService.GetDataSource` converts config to proto
 
 ### Frontend
 
@@ -138,14 +138,13 @@ End-to-end vertical slice through every component.
 ### Backend
 
 - [x] Flight SQL client in `open-plx-server`
-  - Uses `arrow-flight::sql::FlightSqlServiceClient` directly (not adbc wrapper)
-  - Decision: adbc-flightsql needs tonic 0.12->0.14 migration, deferred
+  - Uses ADBC driver (`adbc` + `adbc-flightsql` crates)
   - Connection pooling per endpoint via `FlightSqlPool`
   - Timeout enforcement via `tokio::time::timeout`
   - Wired into both `WidgetDataService` and `FlightServiceImpl`
 - [x] Basic auth for Flight SQL connections (handshake with username/password)
 - [x] DuckDB Flight SQL test server via docker-compose with seed data
-- [x] 3 integration tests (simple query, company financials, pool integration)
+- [x] 15 integration tests: DuckDB (7), PostgreSQL (4), MySQL (4)
 - [ ] `QueryParam` resolution pipeline (positional param binding, type coercion) -- deferred to Future
 - [ ] `DataSourceService.TestDataSource` -- deferred to Future
 
@@ -254,13 +253,13 @@ End-to-end vertical slice through every component.
 - OpenTelemetry distributed tracing
 - Dashboard config versioning
 - Skeleton screens / progressive Arrow streaming
-- arrow-adbc-rs tonic 0.12 -> 0.14 migration
+- ADBC driver improvements (parameter binding, auth config conversion)
 
 ### New features
-- Dashboard YAML import/export CLI tool
+- ~~Dashboard YAML import/export CLI tool~~ -- DONE (`plx` binary in `crates/open-plx-cli/`)
 - Visual dashboard editor (drag-and-drop widget placement)
-- Cross-widget interactions (click bar -> filter table)
-- Widget conditional visibility (`visible_when` expression)
+- ~~Cross-widget interactions (click bar -> filter table)~~ -- DONE (click_interactions in dashboard config)
+- ~~Widget conditional visibility (`visible_when` expression)~~ -- DONE (visible_when with 9 operators)
 - Per-widget permission_denied_behavior override
 - HTTP/3 (QUIC) support when tonic ecosystem matures
 - Custom widget plugin system

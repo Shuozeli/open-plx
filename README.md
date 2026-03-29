@@ -7,8 +7,11 @@ Open-source server-driven dashboard platform. An alternative to Google PLX.
 - **Server-driven layouts**: Define dashboards declaratively in YAML, served via gRPC
 - **Two-phase rendering**: Layout config pushed first, data pulled per-widget
 - **Fine-grained permissions**: Separate layout visibility from data access (groups + roles)
-- **Rich widgets**: Charts (AntV G2), pivot tables (AntV S2), metric cards, text
+- **17 widget types**: Charts (line, bar, horizontal bar, pie, donut, area, scatter, heatmap, histogram, radar, box plot via AntV G2), pivot tables and flat tables (AntV S2), metric cards, text, gauge, funnel, treemap, sankey, word cloud
 - **Dashboard variables**: Shared filters with 7 control types (select, date range, cascader, etc.)
+- **Cross-widget interactions**: Click an element in one widget to filter others via variable binding
+- **Conditional visibility**: Show/hide widgets based on dashboard variable values (9 operators)
+- **CLI tool**: `plx` binary for dashboard list, export, validate, and import with `--json` output
 - **Flight SQL integration**: Connect to Dremio, DuckDB, Databricks, or any Flight SQL server
 - **Dark/light theme**: Antd-based theme toggle with system preference detection
 - **Stateless backend**: All config is file-based YAML. No database required.
@@ -43,14 +46,16 @@ pnpm install
 pnpm dev
 ```
 
-### Flight SQL Dev Server
+### Dev Servers (Flight SQL + Postgres + MySQL)
 
 ```bash
 docker compose up -d
 ```
 
+This starts a DuckDB Flight SQL server (with seed data), PostgreSQL, and MySQL for integration testing.
+
 ## License
 
 MIT
 
-Last updated: 2026-03-19
+Last updated: 2026-03-26

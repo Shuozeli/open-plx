@@ -36,7 +36,7 @@ Dashboard (proto: Dashboard)
        |- title
        |- GridPosition { x, y, w, h }
        |- DataSourceRef { data_source, params: map<string, ParamValue> }
-       |- spec (WidgetSpec oneof: ChartSpec | PivotTableSpec | MetricCardSpec | TextSpec)
+       |- spec (WidgetSpec oneof: ChartSpec | PivotTableSpec | MetricCardSpec | TextSpec | TableSpec | GaugeSpec | FunnelSpec | TreemapSpec | SankeySpec | WordCloudSpec)
 ```
 
 ## Grid System
@@ -181,6 +181,7 @@ CHART_TYPE_SCATTER              ->  { type: "point" }
 CHART_TYPE_HEATMAP              ->  { type: "cell" }
 CHART_TYPE_HISTOGRAM            ->  { type: "rect", transform: [{ type: "binX" }] }
 CHART_TYPE_RADAR                ->  { type: "line", coordinate: { type: "radar" } }
+CHART_TYPE_BOX_PLOT             ->  { type: "boxplot" }
 
 data_mapping.x: "date"          ->  encode: { x: "date" }
 data_mapping.y: "revenue"       ->  encode: { y: "revenue" }
@@ -373,11 +374,9 @@ The mapper lives in `frontend/src/services/mappers/` and provides a
 clean boundary between the proto spec and the rendering library:
 
 ```typescript
-// Chart mapper: semantic proto + Arrow data -> G2 spec
-function chartProtoToG2(proto: ChartSpec, batch: RecordBatch): G2Spec {
-  // Extract typed arrays from Arrow (zero-copy views, not row objects)
-  const data = arrowToG2Data(batch);
-  const g2: G2Spec = { data };
+// Chart mapper: semantic proto + row data -> G2 spec
+function chartProtoToG2(proto: ChartSpec, data: Record<string, unknown>[]): G2Spec {
+  const g2: G2Spec = { data, autoFit: true };
 
   // Map chart type to G2 mark + coordinate
   switch (proto.chartType) {
@@ -418,9 +417,8 @@ function chartProtoToG2(proto: ChartSpec, batch: RecordBatch): G2Spec {
   return g2;
 }
 
-// Pivot table mapper: semantic proto + Arrow data -> S2 config
-function pivotProtoToS2(proto: PivotTableSpec, batch: RecordBatch): S2Config {
-  const data = arrowToG2Data(batch); // same efficient row materialization
+// Pivot table mapper: semantic proto + row data -> S2 config
+function pivotProtoToS2(proto: PivotTableSpec, data: Record<string, unknown>[]): S2Config {
   // ... translate proto fields to S2 dataCfg + options
 }
 ```
@@ -437,12 +435,16 @@ The proto schema, backend, and widget components remain untouched.
 3. Positions must fit within the grid (`x + w <= columns`).
 4. `data_source` required for all types except `TEXT`.
 5. `WidgetSpec.spec` oneof must match `widget_type`:
-   - `LINE_CHART` -> `chart` with `chart_type: CHART_TYPE_LINE`
-   - `BAR_CHART` -> `chart` with `chart_type: CHART_TYPE_BAR`
-   - `PIE_CHART` -> `chart` with `chart_type: CHART_TYPE_PIE` or `CHART_TYPE_DONUT`
+   - Chart types (LINE_CHART, BAR_CHART, PIE_CHART, SCATTER_CHART, HEATMAP, HISTOGRAM, RADAR_CHART, BOX_PLOT) -> `chart` with matching `chart_type`
    - `PIVOT_TABLE` -> `pivot_table`
+   - `TABLE` -> `table`
    - `METRIC_CARD` -> `metric_card`
    - `TEXT` -> `text`
+   - `GAUGE` -> `gauge`
+   - `FUNNEL` -> `funnel`
+   - `TREEMAP` -> `treemap`
+   - `SANKEY` -> `sankey`
+   - `WORD_CLOUD` -> `word_cloud`
 6. `ParamValue` type must match `FlightSqlParam.param_kind` (enforced at query time).
 7. Variable dependency graph must be acyclic (no cycles in `options_source` variable refs).
 8. `version` must match current version on update (optimistic concurrency).
@@ -452,7 +454,7 @@ The proto schema, backend, and widget components remain untouched.
 Intentionally excluded (frontend-owned):
 
 - **Visual styling**: Colors, fonts, opacity, animations (theme system)
-- **Interaction config**: Hover, click, brush selection, tooltips
+- **Interaction config**: Hover, brush selection, tooltips (note: click interactions and table interactions ARE in the proto via `ClickInteraction` and `TableInteraction` messages)
 - **Container dimensions**: Derived from grid position at render time
 - **Data**: Comes via Arrow Flight, not embedded in the layout config
 - **Functions/callbacks**: Proto messages are pure data

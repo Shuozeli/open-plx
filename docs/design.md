@@ -47,9 +47,10 @@ Proto files are the source of truth. Rust and TypeScript types are generated.
 
 ```
 proto/open_plx/v1/
-  dashboard.proto       -- DashboardService (layout CRUD + watch)
+  dashboard.proto       -- DashboardService (layout CRUD), WidgetType (17), DashboardVariable
   data_source.proto     -- DataSourceService (admin CRUD)
-  data.proto            -- Arrow Flight descriptor/metadata messages
+  data.proto            -- WidgetDataService + Arrow Flight descriptor/metadata messages
+  widget_spec.proto     -- WidgetSpec oneof (10 variants), ChartType (11), conditional formatting
 ```
 
 See also:
@@ -72,19 +73,30 @@ Dashboard
         |-- id, widget_type, title
         |-- GridPosition { x, y, w, h }
         |-- DataSourceRef { data_source, params }
-        |-- spec (WidgetSpec oneof: ChartSpec | PivotTableSpec | MetricCardSpec | TextSpec)
+        |-- spec (WidgetSpec oneof: ChartSpec | PivotTableSpec | MetricCardSpec | TextSpec | TableSpec | GaugeSpec | FunnelSpec | TreemapSpec | SankeySpec | WordCloudSpec)
 ```
 
-### 4.1 Widget Types
+### 4.1 Widget Types (17)
 
-| Type           | Renderer | Description                        |
-|----------------|----------|------------------------------------|
-| `LINE_CHART`   | G2       | Time series, trends                |
-| `BAR_CHART`    | G2       | Comparisons, distributions         |
-| `PIE_CHART`    | G2       | Proportions                        |
-| `PIVOT_TABLE`  | S2       | Tabular data with pivoting         |
-| `METRIC_CARD`  | Antd     | Single KPI with optional sparkline |
-| `TEXT`         | Antd     | Static markdown/text               |
+| Type              | Renderer | Description                            |
+|-------------------|----------|----------------------------------------|
+| `LINE_CHART`      | G2       | Time series, trends                    |
+| `BAR_CHART`       | G2       | Comparisons (vertical/horizontal, stacked/grouped) |
+| `PIE_CHART`       | G2       | Proportions (pie and donut)            |
+| `SCATTER_CHART`   | G2       | Correlation, bubble charts             |
+| `HEATMAP`         | G2       | Matrix density                         |
+| `HISTOGRAM`       | G2       | Distribution                           |
+| `RADAR_CHART`     | G2       | Multi-dimensional comparison           |
+| `BOX_PLOT`        | G2       | Statistical distribution               |
+| `PIVOT_TABLE`     | S2       | Tabular data with pivoting             |
+| `TABLE`           | S2       | Flat tabular data (TableSheet)         |
+| `METRIC_CARD`     | Antd     | Single KPI with optional sparkline     |
+| `TEXT`            | Antd     | Static markdown/text                   |
+| `GAUGE`           | G2       | Radial gauge / speedometer             |
+| `FUNNEL`          | G2       | Conversion funnels                     |
+| `TREEMAP`         | G2       | Hierarchical proportion                |
+| `SANKEY`          | G2       | Flow / transfer diagrams               |
+| `WORD_CLOUD`      | G2       | Text frequency visualization           |
 
 ### 4.2 WidgetSpec Design
 
@@ -127,29 +139,32 @@ Client                          Server
   |  (titles, positions, loading)  |
 ```
 
-### Phase 2: Data Fetch (Arrow Flight, per widget, parallel)
+### Phase 2: Data Fetch (per widget, parallel)
 
 ```
 Client                          Server
   |                                |
-  |  GetFlightInfo(                |
+  |  GetWidgetData(                |
   |    WidgetDataRequest{          |
-  |      dashboard, widget_id })   |
+  |      dashboard, widget_id,     |
+  |      params })                 |
   |------------------------------->|
   |                                | -- check data permission
-  |  FlightInfo (schema + ticket)  |
-  |<-------------------------------|
-  |                                |
-  |  DoGet(ticket)                 |
-  |------------------------------->|
-  |                                | -- execute query
-  |  stream Arrow RecordBatches    |
+  |                                | -- resolve data source
+  |                                | -- query Flight SQL or static
+  |  WidgetDataResponse{           |
+  |    columns[], total_rows }     |
   |<-------------------------------|
   |                                |
   |  Render data into widget       |
 ```
 
-If data permission is denied, `GetFlightInfo` returns `PERMISSION_DENIED`
+The current browser frontend uses `WidgetDataService.GetWidgetData`
+(proto columnar format) for data fetching. The backend also exposes a
+standard Arrow Flight service (GetFlightInfo + DoGet) for non-browser
+clients.
+
+If data permission is denied, `GetWidgetData` returns `PERMISSION_DENIED`
 (gRPC status 7). The widget shell stays visible with an "Access Denied"
 state. No data or schema is leaked.
 
@@ -191,9 +206,8 @@ DataSource
   conversion anywhere.
 - **Standard protocol**: Any Flight SQL server works (Dremio, Databricks,
   DuckDB, InfluxDB, or a custom bridge).
-- **Our own client lib**: Uses `arrow-adbc-rs`
-  (https://github.com/Shuozeli/arrow-adbc-rs.git) for the Flight SQL
-  client. We own this library and can extend it as needed.
+- **ADBC driver**: Uses the `adbc` and `adbc-flightsql` crates for the Flight SQL
+  client, with connection pooling per endpoint (`FlightSqlPool`).
 - **Typed parameters**: `QueryParam` defines the name, position, and
   `ParamKind` for each parameter. `ParamValue` from the widget is
   type-coerced and validated before Flight SQL binding.
@@ -304,8 +318,10 @@ When the backend resolves a widget's data source params:
 | Cascader | `string_value` (leaf value) | Single `Utf8` param |
 
 **v1 scope**: Variables are defined in the proto schema and rendered by the
-frontend. Cross-widget interactions (click bar A -> filter table B) are
-deferred to v2.
+frontend. Cross-widget interactions are implemented via `click_interactions`
+in the dashboard config: clicking an element in widget A extracts a
+`source_field` value and writes it to a `target_variable`, which triggers
+re-fetch of all widgets referencing that variable.
 
 ## 8. Permission Model
 
@@ -437,7 +453,9 @@ crates/
   open-plx-auth/       -- Stateless auth (AuthProvider trait: Dev, ApiKey, OIDC stub)
                           File-based permission checks with wildcard support
   open-plx-server/     -- tonic gRPC server + tonic-web + Arrow Flight + WidgetDataService
-                          Flight SQL client pool for upstream data sources
+                          ADBC Flight SQL client pool for upstream data sources
+  open-plx-cli/        -- CLI tool (`plx` binary): list, export, validate, import
+                          Dashboard bundle management with --json structured output
 ```
 
 Dependency graph (no cycles):
@@ -502,13 +520,14 @@ The mapper lives in `frontend/src/services/mappers/`.
 
 ### Open
 
-1. **Widget conditional visibility**: Should a widget config support
-   `visibleWhen: { variable: "region", value: "US" }`?
-   Now that we have variables, this is expressible. Defer to v2.
+1. ~~**Widget conditional visibility**~~: Resolved. Implemented as
+   `visible_when` conditions on WidgetConfig. Evaluated client-side in
+   `evaluateVisibility.ts` with 9 operators (equals, not_equals, empty,
+   not_empty, in, gt, lt, gte, lte). All conditions ANDed.
 
-2. **Dashboard authoring**: How do admins create configs?
-   (a) raw JSON/YAML, (b) admin gRPC API + CLI tool, (c) visual editor.
-   Propose (b) for v1.
+2. ~~**Dashboard authoring**~~: Partially resolved. CLI tool (`plx`)
+   provides list, export, validate, import commands for dashboard bundles.
+   Admin gRPC API and visual editor remain future work.
 
 3. **Data source error handling**: Error message vs last cached value?
    Propose error message for v1.

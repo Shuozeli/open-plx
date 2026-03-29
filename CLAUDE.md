@@ -20,7 +20,7 @@ and crate/package map. That file is the authoritative reference for agents.
 - Two-phase rendering: layout push first, data pull second. This enables separate permission checks for UI visibility vs data access.
 - Frontend owns ALL rendering logic. Backend never dictates styles, padding, or component internals.
 - Backend is the source of truth for dashboard layout definitions (widget types, grid positions, data source references).
-- Use AntV G2 for charts, AntV S2 for pivot/tabular data. Do NOT use raw canvas or custom chart rendering.
+- Use AntV G2 for charts (11 chart types), AntV S2 for pivot/tabular data. Do NOT use raw canvas or custom chart rendering.
 - Use Antd for UI chrome (layout, menus, forms). Do NOT mix in other UI component libraries.
 - No database. All config is file-based (YAML). Server is stateless.
 - Do NOT use `any` in TypeScript. Use `unknown` with explicit type checking if needed.
@@ -44,7 +44,12 @@ priority. But tech debt must be visible, not silent.
 - **Config:** YAML files on disk (dashboards, data sources, permissions). No database.
 - **Protocol:** gRPC over HTTP/2 (tonic-web for browser). Arrow Flight SQL between backend and data sources.
 - **Data path:** Browser -> WidgetDataService (gRPC, proto columnar) -> Backend -> Flight SQL server (Arrow).
+- **Flight SQL client:** ADBC driver (`adbc` + `adbc-flightsql` crates), pooled per endpoint.
 - **Proto-first:** Proto files are the source of truth. Types are generated.
+- **Widget types:** 17 total (line, bar, pie, scatter, heatmap, histogram, radar, box plot, area, horizontal bar, donut -- all via ChartSpec -- plus pivot table, table, metric card, text, gauge, funnel, treemap, sankey, word cloud).
+- **Cross-widget interactions:** Click interactions (click element in widget A -> set variable -> filter widget B). Configured via `click_interactions` in dashboard YAML.
+- **Conditional visibility:** Widgets can declare `visible_when` conditions evaluated client-side against dashboard variable values (9 operators).
+- **CLI:** `plx` binary (`crates/open-plx-cli/`) for dashboard list, export, validate, import with `--json` flag for structured output.
 
 ## Build & Test
 
@@ -80,4 +85,5 @@ gh run view <run-id>
 - `docs/auth.md` - Authentication & authorization design
 - `docs/phases.md` - Implementation plan (phased rollout)
 - `docs/tasks.md` - Pending TODOs and deferred items
+- `docs/widget-expansion.md` - Widget expansion plan (6 -> 17 types)
 - `docs/codelabs.md` - Walkthroughs
