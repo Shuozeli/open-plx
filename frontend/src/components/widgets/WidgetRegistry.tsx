@@ -25,6 +25,9 @@ export interface WidgetProps {
   data: Record<string, unknown>[] | null;
   loading: boolean;
   error: string | null;
+  /** Called when the user clicks a data element (bar, point, row, etc.).
+   *  Passes the full data record of the clicked element. */
+  onClickInteraction?: (record: Record<string, unknown>) => void;
 }
 
 /** Registry mapping WidgetType enum -> React component. */

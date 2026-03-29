@@ -1,0 +1,19 @@
+[package]
+name = "open-plx-cli"
+description = "CLI tool for open-plx dashboard import/export"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "plx"
+path = "src/main.rs"
+
+[dependencies]
+open-plx-config = { path = "../open-plx-config" }
+serde = { workspace = true }
+serde_json.workspace = true
+serde_yaml.workspace = true
+anyhow.workspace = true
+clap = { version = "4", features = ["derive"] }
+chrono = "0.4"

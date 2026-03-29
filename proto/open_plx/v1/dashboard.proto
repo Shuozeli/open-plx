@@ -99,6 +99,66 @@ message WidgetConfig {
   // Type-specific rendering specification. Typed proto messages for each
   // widget type. See docs/declarative-layout.md and widget_spec.proto.
   WidgetSpec spec = 6;
+
+  // Cross-widget interactions. When the user clicks an element in this widget,
+  // the frontend extracts field values from the clicked data point and writes
+  // them into dashboard variables. Downstream widgets that reference those
+  // variables via "${variable_name}" in data_source.params automatically
+  // re-fetch with the new filter values.
+  repeated ClickInteraction click_interactions = 7;
+
+  // Conditional visibility. ALL conditions must be true (implicit AND) for
+  // the widget to render. If empty, the widget is always visible.
+  // Evaluated client-side against current dashboard variable values.
+  // Hidden widgets skip data fetching entirely (no gRPC call).
+  repeated VisibilityCondition visible_when = 8;
+}
+
+// Declares a click-to-variable binding: "when the user clicks an element in
+// this widget, extract the value of `source_field` from the clicked data point
+// and write it into dashboard variable `target_variable`."
+//
+// Constraints:
+//   - source_field must be a column name present in the widget's data source.
+//   - target_variable must reference a variable declared in Dashboard.variables.
+message ClickInteraction {
+  // Column name in the widget's data to extract from the clicked element.
+  string source_field = 1;
+
+  // Dashboard variable name to write the extracted value into.
+  string target_variable = 2;
+}
+
+// Comparison operator for visibility conditions.
+enum ConditionOperator {
+  CONDITION_OPERATOR_UNSPECIFIED = 0;
+  CONDITION_OPERATOR_EQUALS = 1;
+  CONDITION_OPERATOR_NOT_EQUALS = 2;
+  CONDITION_OPERATOR_EMPTY = 3;       // Variable has no value or is empty string/list.
+  CONDITION_OPERATOR_NOT_EMPTY = 4;   // Variable has a non-empty value.
+  CONDITION_OPERATOR_IN = 5;          // Scalar value exists in a string_list variable.
+  CONDITION_OPERATOR_GT = 6;
+  CONDITION_OPERATOR_LT = 7;
+  CONDITION_OPERATOR_GTE = 8;
+  CONDITION_OPERATOR_LTE = 9;
+}
+
+// A single visibility condition: "variable <operator> [value]".
+// Used in WidgetConfig.visible_when. All conditions are ANDed.
+//
+// Constraints:
+//   - variable must reference a variable declared in Dashboard.variables.
+//   - value is required for equals/not_equals/in/gt/lt/gte/lte.
+//   - value is ignored for empty/not_empty.
+message VisibilityCondition {
+  // Dashboard variable name to evaluate.
+  string variable = 1;
+
+  // Comparison operator.
+  ConditionOperator operator = 2;
+
+  // Comparison value. Required for value-comparing operators.
+  ParamValue value = 3;
 }
 
 enum WidgetType {

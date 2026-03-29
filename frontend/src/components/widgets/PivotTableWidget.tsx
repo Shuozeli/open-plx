@@ -6,7 +6,7 @@ import { S2PivotTable } from "./S2PivotTable.js";
 import { registerWidget } from "../../services/testRegistry.js";
 import { WidgetType } from "../../gen/open_plx/v1/dashboard_pb.js";
 
-export function PivotTableWidget({ config, data, loading, error }: WidgetProps) {
+export function PivotTableWidget({ config, data, loading, error, onClickInteraction }: WidgetProps) {
   const spec = config.spec?.spec.case === "pivotTable" ? config.spec.spec.value : null;
   const bodyRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ w: 800, h: 300 });
@@ -61,7 +61,7 @@ export function PivotTableWidget({ config, data, loading, error }: WidgetProps) 
     >
       <div ref={bodyRef} style={{ width: "100%", height: "100%" }}>
         {dims.w > 0 && dims.h > 0 && (
-          <S2PivotTable dataCfg={dataCfg} options={options} />
+          <S2PivotTable dataCfg={dataCfg} options={options} onRowClick={onClickInteraction} />
         )}
       </div>
     </Card>

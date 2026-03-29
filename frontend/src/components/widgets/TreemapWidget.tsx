@@ -6,7 +6,7 @@ import { G2Chart } from "./G2Chart.js";
 import { registerWidget } from "../../services/testRegistry.js";
 import { WidgetType } from "../../gen/open_plx/v1/dashboard_pb.js";
 
-export function TreemapWidget({ config, data, loading, error }: WidgetProps) {
+export function TreemapWidget({ config, data, loading, error, onClickInteraction }: WidgetProps) {
   const spec = config.spec?.spec.case === "treemap" ? config.spec.spec.value : null;
   const g2Spec = spec && data ? treemapProtoToG2(spec, data) : null;
 
@@ -36,7 +36,7 @@ export function TreemapWidget({ config, data, loading, error }: WidgetProps) {
 
   return (
     <Card title={config.title} style={{ height: "100%" }} styles={{ body: { height: "calc(100% - 56px)", padding: 12 } }}>
-      <G2Chart spec={g2Spec} />
+      <G2Chart spec={g2Spec} onElementClick={onClickInteraction} />
     </Card>
   );
 }

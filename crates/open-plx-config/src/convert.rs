@@ -6,6 +6,7 @@
 use crate::model::*;
 use anyhow::{Result, bail};
 use open_plx_core::pb;
+use std::collections::HashSet;
 
 fn field_meta_to_proto(m: &FieldMetaYaml) -> pb::FieldMeta {
     pb::FieldMeta {
@@ -18,6 +19,8 @@ fn field_meta_to_proto(m: &FieldMetaYaml) -> pb::FieldMeta {
 
 /// Convert a DashboardFile (YAML) to a Dashboard proto message.
 pub fn dashboard_to_proto(file: &DashboardFile) -> Result<pb::Dashboard> {
+    validate_click_interactions(file)?;
+    validate_visible_when(file)?;
     Ok(pb::Dashboard {
         name: file.name.clone(),
         title: file.title.clone(),
@@ -63,7 +66,79 @@ fn widget_to_proto(w: &WidgetConfigYaml) -> Result<pb::WidgetConfig> {
             params: std::collections::HashMap::new(), // TODO(refactor): Convert typed params
         }),
         spec: Some(widget_spec_to_proto(&w.spec)?),
+        click_interactions: w
+            .click_interactions
+            .iter()
+            .map(|ci| pb::ClickInteraction {
+                source_field: ci.source_field.clone(),
+                target_variable: ci.target_variable.clone(),
+            })
+            .collect(),
+        visible_when: w
+            .visible_when
+            .iter()
+            .map(|c| {
+                Ok(pb::VisibilityCondition {
+                    variable: c.variable.clone(),
+                    operator: parse_condition_operator(&c.operator)?.into(),
+                    value: c.value.as_ref().map(param_value_yaml_to_proto),
+                })
+            })
+            .collect::<Result<Vec<_>>>()?,
     })
+}
+
+/// Validate that every click_interaction.target_variable references a declared
+/// dashboard variable. Fails fast at config load time so agents get clear errors.
+fn validate_click_interactions(dashboard: &DashboardFile) -> Result<()> {
+    let var_names: HashSet<&str> = dashboard.variables.iter().map(|v| v.name.as_str()).collect();
+    for widget in &dashboard.widgets {
+        for ci in &widget.click_interactions {
+            if !var_names.contains(ci.target_variable.as_str()) {
+                bail!(
+                    "widget '{}' click_interaction targets variable '{}' \
+                     which is not declared in dashboard variables (available: {:?})",
+                    widget.id,
+                    ci.target_variable,
+                    var_names,
+                );
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Validate that every visible_when condition references a declared variable,
+/// and that value-requiring operators have a value.
+fn validate_visible_when(dashboard: &DashboardFile) -> Result<()> {
+    let var_names: HashSet<&str> = dashboard.variables.iter().map(|v| v.name.as_str()).collect();
+    for widget in &dashboard.widgets {
+        for cond in &widget.visible_when {
+            if !var_names.contains(cond.variable.as_str()) {
+                bail!(
+                    "widget '{}' visible_when references variable '{}' \
+                     which is not declared in dashboard variables (available: {:?})",
+                    widget.id,
+                    cond.variable,
+                    var_names,
+                );
+            }
+            let op = parse_condition_operator(&cond.operator)?;
+            let needs_value = !matches!(
+                op,
+                pb::ConditionOperator::Empty | pb::ConditionOperator::NotEmpty
+            );
+            if needs_value && cond.value.is_none() {
+                bail!(
+                    "widget '{}' visible_when condition on '{}' with operator '{}' requires a value",
+                    widget.id,
+                    cond.variable,
+                    cond.operator,
+                );
+            }
+        }
+    }
+    Ok(())
 }
 
 fn widget_spec_to_proto(spec: &WidgetSpecYaml) -> Result<pb::WidgetSpec> {
@@ -453,6 +528,21 @@ fn table_to_proto(t: &TableSpecYaml) -> Result<pb::TableSpec> {
 }
 
 // --- Enum parsers (all fail on unknown values) ---
+
+fn parse_condition_operator(s: &str) -> Result<pb::ConditionOperator> {
+    match s {
+        "equals" => Ok(pb::ConditionOperator::Equals),
+        "not_equals" => Ok(pb::ConditionOperator::NotEquals),
+        "empty" => Ok(pb::ConditionOperator::Empty),
+        "not_empty" => Ok(pb::ConditionOperator::NotEmpty),
+        "in" => Ok(pb::ConditionOperator::In),
+        "gt" => Ok(pb::ConditionOperator::Gt),
+        "lt" => Ok(pb::ConditionOperator::Lt),
+        "gte" => Ok(pb::ConditionOperator::Gte),
+        "lte" => Ok(pb::ConditionOperator::Lte),
+        other => bail!("unknown condition_operator: '{other}'"),
+    }
+}
 
 fn parse_widget_type(s: &str) -> Result<pb::WidgetType> {
     match s {

@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file open_plx/v1/dashboard.proto.
  */
 export const file_open_plx_v1_dashboard: GenFile = /*@__PURE__*/
-  fileDesc("ChtvcGVuX3BseC92MS9kYXNoYm9hcmQucHJvdG8SC29wZW5fcGx4LnYxIoEDCglEYXNoYm9hcmQSDAoEbmFtZRgBIAEoCRINCgV0aXRsZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIlCgRncmlkGAQgASgLMhcub3Blbl9wbHgudjEuR3JpZENvbmZpZxIqCgd3aWRnZXRzGAUgAygLMhkub3Blbl9wbHgudjEuV2lkZ2V0Q29uZmlnEjEKCXZhcmlhYmxlcxgJIAMoCzIeLm9wZW5fcGx4LnYxLkRhc2hib2FyZFZhcmlhYmxlEkkKGnBlcm1pc3Npb25fZGVuaWVkX2JlaGF2aW9yGAogASgOMiUub3Blbl9wbHgudjEuUGVybWlzc2lvbkRlbmllZEJlaGF2aW9yEi8KC2NyZWF0ZV90aW1lGAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgt1cGRhdGVfdGltZRgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHdmVyc2lvbhgIIAEoAyI+CgpHcmlkQ29uZmlnEg8KB2NvbHVtbnMYASABKAUSEgoKcm93X2hlaWdodBgCIAEoBRILCgNnYXAYAyABKAUi3AEKDFdpZGdldENvbmZpZxIKCgJpZBgBIAEoCRIsCgt3aWRnZXRfdHlwZRgCIAEoDjIXLm9wZW5fcGx4LnYxLldpZGdldFR5cGUSDQoFdGl0bGUYAyABKAkSKwoIcG9zaXRpb24YBCABKAsyGS5vcGVuX3BseC52MS5HcmlkUG9zaXRpb24SLwoLZGF0YV9zb3VyY2UYBSABKAsyGi5vcGVuX3BseC52MS5EYXRhU291cmNlUmVmEiUKBHNwZWMYBiABKAsyFy5vcGVuX3BseC52MS5XaWRnZXRTcGVjIjoKDEdyaWRQb3NpdGlvbhIJCgF4GAEgASgFEgkKAXkYAiABKAUSCQoBdxgDIAEoBRIJCgFoGAQgASgFIqQBCg1EYXRhU291cmNlUmVmEhMKC2RhdGFfc291cmNlGAEgASgJEjYKBnBhcmFtcxgCIAMoCzImLm9wZW5fcGx4LnYxLkRhdGFTb3VyY2VSZWYuUGFyYW1zRW50cnkaRgoLUGFyYW1zRW50cnkSCwoDa2V5GAEgASgJEiYKBXZhbHVlGAIgASgLMhcub3Blbl9wbHgudjEuUGFyYW1WYWx1ZToCOAEi5gEKClBhcmFtVmFsdWUSFgoMc3RyaW5nX3ZhbHVlGAEgASgJSAASEwoJaW50X3ZhbHVlGAIgASgDSAASFgoMZG91YmxlX3ZhbHVlGAMgASgBSAASFAoKYm9vbF92YWx1ZRgEIAEoCEgAEhYKDHZhcmlhYmxlX3JlZhgFIAEoCUgAEi4KC3N0cmluZ19saXN0GAYgASgLMhcub3Blbl9wbHgudjEuU3RyaW5nTGlzdEgAEiwKCmRhdGVfcmFuZ2UYByABKAsyFi5vcGVuX3BseC52MS5EYXRlUmFuZ2VIAEIHCgV2YWx1ZSIcCgpTdHJpbmdMaXN0Eg4KBnZhbHVlcxgBIAMoCSInCglEYXRlUmFuZ2USDQoFc3RhcnQYASABKAkSCwoDZW5kGAIgASgJIt4DChFEYXNoYm9hcmRWYXJpYWJsZRIMCgRuYW1lGAEgASgJEg0KBWxhYmVsGAIgASgJEi4KDWRlZmF1bHRfdmFsdWUYAyABKAsyFy5vcGVuX3BseC52MS5QYXJhbVZhbHVlEjMKCnRleHRfaW5wdXQYBCABKAsyHS5vcGVuX3BseC52MS5UZXh0SW5wdXRDb250cm9sSAASNwoMbnVtYmVyX2lucHV0GAUgASgLMh8ub3Blbl9wbHgudjEuTnVtYmVySW5wdXRDb250cm9sSAASLAoGc2VsZWN0GAYgASgLMhoub3Blbl9wbHgudjEuU2VsZWN0Q29udHJvbEgAEjcKDG11bHRpX3NlbGVjdBgHIAEoCzIfLm9wZW5fcGx4LnYxLk11bHRpU2VsZWN0Q29udHJvbEgAEjUKC2RhdGVfcGlja2VyGAggASgLMh4ub3Blbl9wbHgudjEuRGF0ZVBpY2tlckNvbnRyb2xIABIzCgpkYXRlX3JhbmdlGAkgASgLMh0ub3Blbl9wbHgudjEuRGF0ZVJhbmdlQ29udHJvbEgAEjAKCGNhc2NhZGVyGAogASgLMhwub3Blbl9wbHgudjEuQ2FzY2FkZXJDb250cm9sSABCCQoHY29udHJvbCI7ChBUZXh0SW5wdXRDb250cm9sEhMKC3BsYWNlaG9sZGVyGAEgASgJEhIKCm1heF9sZW5ndGgYAiABKAUieQoSTnVtYmVySW5wdXRDb250cm9sEhAKA21pbhgBIAEoAUgAiAEBEhAKA21heBgCIAEoAUgBiAEBEhEKBHN0ZXAYAyABKAFIAogBARITCgtwbGFjZWhvbGRlchgEIAEoCUIGCgRfbWluQgYKBF9tYXhCBwoFX3N0ZXAi2AEKDVNlbGVjdENvbnRyb2wSKgoHb3B0aW9ucxgBIAMoCzIZLm9wZW5fcGx4LnYxLlNlbGVjdE9wdGlvbhITCgthbGxvd19jbGVhchgCIAEoCBITCgtzaG93X3NlYXJjaBgDIAEoCBITCgtwbGFjZWhvbGRlchgEIAEoCRIyCg5vcHRpb25zX3NvdXJjZRgFIAEoCzIaLm9wZW5fcGx4LnYxLkRhdGFTb3VyY2VSZWYSEwoLdmFsdWVfZmllbGQYBiABKAkSEwoLbGFiZWxfZmllbGQYByABKAkiywEKEk11bHRpU2VsZWN0Q29udHJvbBIqCgdvcHRpb25zGAEgAygLMhkub3Blbl9wbHgudjEuU2VsZWN0T3B0aW9uEhYKDm1heF9zZWxlY3Rpb25zGAIgASgFEhMKC3BsYWNlaG9sZGVyGAMgASgJEjIKDm9wdGlvbnNfc291cmNlGAQgASgLMhoub3Blbl9wbHgudjEuRGF0YVNvdXJjZVJlZhITCgt2YWx1ZV9maWVsZBgFIAEoCRITCgtsYWJlbF9maWVsZBgGIAEoCSJqChFEYXRlUGlja2VyQ29udHJvbBIQCghtaW5fZGF0ZRgBIAEoCRIQCghtYXhfZGF0ZRgCIAEoCRIxCgtncmFudWxhcml0eRgDIAEoDjIcLm9wZW5fcGx4LnYxLkRhdGVHcmFudWxhcml0eSKYAQoQRGF0ZVJhbmdlQ29udHJvbBIQCghtaW5fZGF0ZRgBIAEoCRIQCghtYXhfZGF0ZRgCIAEoCRIxCgtncmFudWxhcml0eRgDIAEoDjIcLm9wZW5fcGx4LnYxLkRhdGVHcmFudWxhcml0eRItCgdwcmVzZXRzGAQgAygLMhwub3Blbl9wbHgudjEuRGF0ZVJhbmdlUHJlc2V0IlQKD0Nhc2NhZGVyQ29udHJvbBIsCgdvcHRpb25zGAEgAygLMhsub3Blbl9wbHgudjEuQ2FzY2FkZXJPcHRpb24SEwoLcGxhY2Vob2xkZXIYAiABKAkiLAoMU2VsZWN0T3B0aW9uEg0KBXZhbHVlGAEgASgJEg0KBWxhYmVsGAIgASgJIl0KDkNhc2NhZGVyT3B0aW9uEg0KBXZhbHVlGAEgASgJEg0KBWxhYmVsGAIgASgJEi0KCGNoaWxkcmVuGAMgAygLMhsub3Blbl9wbHgudjEuQ2FzY2FkZXJPcHRpb24iPAoPRGF0ZVJhbmdlUHJlc2V0Eg0KBWxhYmVsGAEgASgJEg0KBXN0YXJ0GAIgASgJEgsKA2VuZBgDIAEoCSI+ChVMaXN0RGFzaGJvYXJkc1JlcXVlc3QSEQoJcGFnZV9zaXplGAEgASgFEhIKCnBhZ2VfdG9rZW4YAiABKAkicQoWTGlzdERhc2hib2FyZHNSZXNwb25zZRIqCgpkYXNoYm9hcmRzGAEgAygLMhYub3Blbl9wbHgudjEuRGFzaGJvYXJkEhcKD25leHRfcGFnZV90b2tlbhgCIAEoCRISCgp0b3RhbF9zaXplGAMgASgFIiMKE0dldERhc2hib2FyZFJlcXVlc3QSDAoEbmFtZRgBIAEoCSJDChZDcmVhdGVEYXNoYm9hcmRSZXF1ZXN0EikKCWRhc2hib2FyZBgBIAEoCzIWLm9wZW5fcGx4LnYxLkRhc2hib2FyZCJ0ChZVcGRhdGVEYXNoYm9hcmRSZXF1ZXN0EikKCWRhc2hib2FyZBgBIAEoCzIWLm9wZW5fcGx4LnYxLkRhc2hib2FyZBIvCgt1cGRhdGVfbWFzaxgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE1hc2siJgoWRGVsZXRlRGFzaGJvYXJkUmVxdWVzdBIMCgRuYW1lGAEgASgJIhkKF0RlbGV0ZURhc2hib2FyZFJlc3BvbnNlKugDCgpXaWRnZXRUeXBlEhsKF1dJREdFVF9UWVBFX1VOU1BFQ0lGSUVEEAASGgoWV0lER0VUX1RZUEVfTElORV9DSEFSVBABEhkKFVdJREdFVF9UWVBFX0JBUl9DSEFSVBACEhkKFVdJREdFVF9UWVBFX1BJRV9DSEFSVBADEhsKF1dJREdFVF9UWVBFX1BJVk9UX1RBQkxFEAQSGwoXV0lER0VUX1RZUEVfTUVUUklDX0NBUkQQBRIUChBXSURHRVRfVFlQRV9URVhUEAYSHQoZV0lER0VUX1RZUEVfU0NBVFRFUl9DSEFSVBAHEhcKE1dJREdFVF9UWVBFX0hFQVRNQVAQCBIZChVXSURHRVRfVFlQRV9ISVNUT0dSQU0QCRIbChdXSURHRVRfVFlQRV9SQURBUl9DSEFSVBAKEhUKEVdJREdFVF9UWVBFX1RBQkxFEAsSFQoRV0lER0VUX1RZUEVfR0FVR0UQDBIWChJXSURHRVRfVFlQRV9GVU5ORUwQDRIYChRXSURHRVRfVFlQRV9CT1hfUExPVBAOEhcKE1dJREdFVF9UWVBFX1RSRUVNQVAQDxIWChJXSURHRVRfVFlQRV9TQU5LRVkQEBIaChZXSURHRVRfVFlQRV9XT1JEX0NMT1VEEBEqvQEKD0RhdGVHcmFudWxhcml0eRIgChxEQVRFX0dSQU5VTEFSSVRZX1VOU1BFQ0lGSUVEEAASGAoUREFURV9HUkFOVUxBUklUWV9EQVkQARIZChVEQVRFX0dSQU5VTEFSSVRZX1dFRUsQAhIaChZEQVRFX0dSQU5VTEFSSVRZX01PTlRIEAMSHAoYREFURV9HUkFOVUxBUklUWV9RVUFSVEVSEAQSGQoVREFURV9HUkFOVUxBUklUWV9ZRUFSEAUqlwEKGFBlcm1pc3Npb25EZW5pZWRCZWhhdmlvchIqCiZQRVJNSVNTSU9OX0RFTklFRF9CRUhBVklPUl9VTlNQRUNJRklFRBAAEioKJlBFUk1JU1NJT05fREVOSUVEX0JFSEFWSU9SX1NIT1dfREVOSUVEEAESIwofUEVSTUlTU0lPTl9ERU5JRURfQkVIQVZJT1JfSElERRACMrUDChBEYXNoYm9hcmRTZXJ2aWNlElkKDkxpc3REYXNoYm9hcmRzEiIub3Blbl9wbHgudjEuTGlzdERhc2hib2FyZHNSZXF1ZXN0GiMub3Blbl9wbHgudjEuTGlzdERhc2hib2FyZHNSZXNwb25zZRJICgxHZXREYXNoYm9hcmQSIC5vcGVuX3BseC52MS5HZXREYXNoYm9hcmRSZXF1ZXN0GhYub3Blbl9wbHgudjEuRGFzaGJvYXJkEk4KD0NyZWF0ZURhc2hib2FyZBIjLm9wZW5fcGx4LnYxLkNyZWF0ZURhc2hib2FyZFJlcXVlc3QaFi5vcGVuX3BseC52MS5EYXNoYm9hcmQSTgoPVXBkYXRlRGFzaGJvYXJkEiMub3Blbl9wbHgudjEuVXBkYXRlRGFzaGJvYXJkUmVxdWVzdBoWLm9wZW5fcGx4LnYxLkRhc2hib2FyZBJcCg9EZWxldGVEYXNoYm9hcmQSIy5vcGVuX3BseC52MS5EZWxldGVEYXNoYm9hcmRSZXF1ZXN0GiQub3Blbl9wbHgudjEuRGVsZXRlRGFzaGJvYXJkUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_google_protobuf_field_mask, file_open_plx_v1_widget_spec]);
+  fileDesc("ChtvcGVuX3BseC92MS9kYXNoYm9hcmQucHJvdG8SC29wZW5fcGx4LnYxIoEDCglEYXNoYm9hcmQSDAoEbmFtZRgBIAEoCRINCgV0aXRsZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIlCgRncmlkGAQgASgLMhcub3Blbl9wbHgudjEuR3JpZENvbmZpZxIqCgd3aWRnZXRzGAUgAygLMhkub3Blbl9wbHgudjEuV2lkZ2V0Q29uZmlnEjEKCXZhcmlhYmxlcxgJIAMoCzIeLm9wZW5fcGx4LnYxLkRhc2hib2FyZFZhcmlhYmxlEkkKGnBlcm1pc3Npb25fZGVuaWVkX2JlaGF2aW9yGAogASgOMiUub3Blbl9wbHgudjEuUGVybWlzc2lvbkRlbmllZEJlaGF2aW9yEi8KC2NyZWF0ZV90aW1lGAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCgt1cGRhdGVfdGltZRgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHdmVyc2lvbhgIIAEoAyI+CgpHcmlkQ29uZmlnEg8KB2NvbHVtbnMYASABKAUSEgoKcm93X2hlaWdodBgCIAEoBRILCgNnYXAYAyABKAUizwIKDFdpZGdldENvbmZpZxIKCgJpZBgBIAEoCRIsCgt3aWRnZXRfdHlwZRgCIAEoDjIXLm9wZW5fcGx4LnYxLldpZGdldFR5cGUSDQoFdGl0bGUYAyABKAkSKwoIcG9zaXRpb24YBCABKAsyGS5vcGVuX3BseC52MS5HcmlkUG9zaXRpb24SLwoLZGF0YV9zb3VyY2UYBSABKAsyGi5vcGVuX3BseC52MS5EYXRhU291cmNlUmVmEiUKBHNwZWMYBiABKAsyFy5vcGVuX3BseC52MS5XaWRnZXRTcGVjEjkKEmNsaWNrX2ludGVyYWN0aW9ucxgHIAMoCzIdLm9wZW5fcGx4LnYxLkNsaWNrSW50ZXJhY3Rpb24SNgoMdmlzaWJsZV93aGVuGAggAygLMiAub3Blbl9wbHgudjEuVmlzaWJpbGl0eUNvbmRpdGlvbiJBChBDbGlja0ludGVyYWN0aW9uEhQKDHNvdXJjZV9maWVsZBgBIAEoCRIXCg90YXJnZXRfdmFyaWFibGUYAiABKAkigQEKE1Zpc2liaWxpdHlDb25kaXRpb24SEAoIdmFyaWFibGUYASABKAkSMAoIb3BlcmF0b3IYAiABKA4yHi5vcGVuX3BseC52MS5Db25kaXRpb25PcGVyYXRvchImCgV2YWx1ZRgDIAEoCzIXLm9wZW5fcGx4LnYxLlBhcmFtVmFsdWUiOgoMR3JpZFBvc2l0aW9uEgkKAXgYASABKAUSCQoBeRgCIAEoBRIJCgF3GAMgASgFEgkKAWgYBCABKAUipAEKDURhdGFTb3VyY2VSZWYSEwoLZGF0YV9zb3VyY2UYASABKAkSNgoGcGFyYW1zGAIgAygLMiYub3Blbl9wbHgudjEuRGF0YVNvdXJjZVJlZi5QYXJhbXNFbnRyeRpGCgtQYXJhbXNFbnRyeRILCgNrZXkYASABKAkSJgoFdmFsdWUYAiABKAsyFy5vcGVuX3BseC52MS5QYXJhbVZhbHVlOgI4ASLmAQoKUGFyYW1WYWx1ZRIWCgxzdHJpbmdfdmFsdWUYASABKAlIABITCglpbnRfdmFsdWUYAiABKANIABIWCgxkb3VibGVfdmFsdWUYAyABKAFIABIUCgpib29sX3ZhbHVlGAQgASgISAASFgoMdmFyaWFibGVfcmVmGAUgASgJSAASLgoLc3RyaW5nX2xpc3QYBiABKAsyFy5vcGVuX3BseC52MS5TdHJpbmdMaXN0SAASLAoKZGF0ZV9yYW5nZRgHIAEoCzIWLm9wZW5fcGx4LnYxLkRhdGVSYW5nZUgAQgcKBXZhbHVlIhwKClN0cmluZ0xpc3QSDgoGdmFsdWVzGAEgAygJIicKCURhdGVSYW5nZRINCgVzdGFydBgBIAEoCRILCgNlbmQYAiABKAki3gMKEURhc2hib2FyZFZhcmlhYmxlEgwKBG5hbWUYASABKAkSDQoFbGFiZWwYAiABKAkSLgoNZGVmYXVsdF92YWx1ZRgDIAEoCzIXLm9wZW5fcGx4LnYxLlBhcmFtVmFsdWUSMwoKdGV4dF9pbnB1dBgEIAEoCzIdLm9wZW5fcGx4LnYxLlRleHRJbnB1dENvbnRyb2xIABI3CgxudW1iZXJfaW5wdXQYBSABKAsyHy5vcGVuX3BseC52MS5OdW1iZXJJbnB1dENvbnRyb2xIABIsCgZzZWxlY3QYBiABKAsyGi5vcGVuX3BseC52MS5TZWxlY3RDb250cm9sSAASNwoMbXVsdGlfc2VsZWN0GAcgASgLMh8ub3Blbl9wbHgudjEuTXVsdGlTZWxlY3RDb250cm9sSAASNQoLZGF0ZV9waWNrZXIYCCABKAsyHi5vcGVuX3BseC52MS5EYXRlUGlja2VyQ29udHJvbEgAEjMKCmRhdGVfcmFuZ2UYCSABKAsyHS5vcGVuX3BseC52MS5EYXRlUmFuZ2VDb250cm9sSAASMAoIY2FzY2FkZXIYCiABKAsyHC5vcGVuX3BseC52MS5DYXNjYWRlckNvbnRyb2xIAEIJCgdjb250cm9sIjsKEFRleHRJbnB1dENvbnRyb2wSEwoLcGxhY2Vob2xkZXIYASABKAkSEgoKbWF4X2xlbmd0aBgCIAEoBSJ5ChJOdW1iZXJJbnB1dENvbnRyb2wSEAoDbWluGAEgASgBSACIAQESEAoDbWF4GAIgASgBSAGIAQESEQoEc3RlcBgDIAEoAUgCiAEBEhMKC3BsYWNlaG9sZGVyGAQgASgJQgYKBF9taW5CBgoEX21heEIHCgVfc3RlcCLYAQoNU2VsZWN0Q29udHJvbBIqCgdvcHRpb25zGAEgAygLMhkub3Blbl9wbHgudjEuU2VsZWN0T3B0aW9uEhMKC2FsbG93X2NsZWFyGAIgASgIEhMKC3Nob3dfc2VhcmNoGAMgASgIEhMKC3BsYWNlaG9sZGVyGAQgASgJEjIKDm9wdGlvbnNfc291cmNlGAUgASgLMhoub3Blbl9wbHgudjEuRGF0YVNvdXJjZVJlZhITCgt2YWx1ZV9maWVsZBgGIAEoCRITCgtsYWJlbF9maWVsZBgHIAEoCSLLAQoSTXVsdGlTZWxlY3RDb250cm9sEioKB29wdGlvbnMYASADKAsyGS5vcGVuX3BseC52MS5TZWxlY3RPcHRpb24SFgoObWF4X3NlbGVjdGlvbnMYAiABKAUSEwoLcGxhY2Vob2xkZXIYAyABKAkSMgoOb3B0aW9uc19zb3VyY2UYBCABKAsyGi5vcGVuX3BseC52MS5EYXRhU291cmNlUmVmEhMKC3ZhbHVlX2ZpZWxkGAUgASgJEhMKC2xhYmVsX2ZpZWxkGAYgASgJImoKEURhdGVQaWNrZXJDb250cm9sEhAKCG1pbl9kYXRlGAEgASgJEhAKCG1heF9kYXRlGAIgASgJEjEKC2dyYW51bGFyaXR5GAMgASgOMhwub3Blbl9wbHgudjEuRGF0ZUdyYW51bGFyaXR5IpgBChBEYXRlUmFuZ2VDb250cm9sEhAKCG1pbl9kYXRlGAEgASgJEhAKCG1heF9kYXRlGAIgASgJEjEKC2dyYW51bGFyaXR5GAMgASgOMhwub3Blbl9wbHgudjEuRGF0ZUdyYW51bGFyaXR5Ei0KB3ByZXNldHMYBCADKAsyHC5vcGVuX3BseC52MS5EYXRlUmFuZ2VQcmVzZXQiVAoPQ2FzY2FkZXJDb250cm9sEiwKB29wdGlvbnMYASADKAsyGy5vcGVuX3BseC52MS5DYXNjYWRlck9wdGlvbhITCgtwbGFjZWhvbGRlchgCIAEoCSIsCgxTZWxlY3RPcHRpb24SDQoFdmFsdWUYASABKAkSDQoFbGFiZWwYAiABKAkiXQoOQ2FzY2FkZXJPcHRpb24SDQoFdmFsdWUYASABKAkSDQoFbGFiZWwYAiABKAkSLQoIY2hpbGRyZW4YAyADKAsyGy5vcGVuX3BseC52MS5DYXNjYWRlck9wdGlvbiI8Cg9EYXRlUmFuZ2VQcmVzZXQSDQoFbGFiZWwYASABKAkSDQoFc3RhcnQYAiABKAkSCwoDZW5kGAMgASgJIj4KFUxpc3REYXNoYm9hcmRzUmVxdWVzdBIRCglwYWdlX3NpemUYASABKAUSEgoKcGFnZV90b2tlbhgCIAEoCSJxChZMaXN0RGFzaGJvYXJkc1Jlc3BvbnNlEioKCmRhc2hib2FyZHMYASADKAsyFi5vcGVuX3BseC52MS5EYXNoYm9hcmQSFwoPbmV4dF9wYWdlX3Rva2VuGAIgASgJEhIKCnRvdGFsX3NpemUYAyABKAUiIwoTR2V0RGFzaGJvYXJkUmVxdWVzdBIMCgRuYW1lGAEgASgJIkMKFkNyZWF0ZURhc2hib2FyZFJlcXVlc3QSKQoJZGFzaGJvYXJkGAEgASgLMhYub3Blbl9wbHgudjEuRGFzaGJvYXJkInQKFlVwZGF0ZURhc2hib2FyZFJlcXVlc3QSKQoJZGFzaGJvYXJkGAEgASgLMhYub3Blbl9wbHgudjEuRGFzaGJvYXJkEi8KC3VwZGF0ZV9tYXNrGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLkZpZWxkTWFzayImChZEZWxldGVEYXNoYm9hcmRSZXF1ZXN0EgwKBG5hbWUYASABKAkiGQoXRGVsZXRlRGFzaGJvYXJkUmVzcG9uc2UqwgIKEUNvbmRpdGlvbk9wZXJhdG9yEiIKHkNPTkRJVElPTl9PUEVSQVRPUl9VTlNQRUNJRklFRBAAEh0KGUNPTkRJVElPTl9PUEVSQVRPUl9FUVVBTFMQARIhCh1DT05ESVRJT05fT1BFUkFUT1JfTk9UX0VRVUFMUxACEhwKGENPTkRJVElPTl9PUEVSQVRPUl9FTVBUWRADEiAKHENPTkRJVElPTl9PUEVSQVRPUl9OT1RfRU1QVFkQBBIZChVDT05ESVRJT05fT1BFUkFUT1JfSU4QBRIZChVDT05ESVRJT05fT1BFUkFUT1JfR1QQBhIZChVDT05ESVRJT05fT1BFUkFUT1JfTFQQBxIaChZDT05ESVRJT05fT1BFUkFUT1JfR1RFEAgSGgoWQ09ORElUSU9OX09QRVJBVE9SX0xURRAJKugDCgpXaWRnZXRUeXBlEhsKF1dJREdFVF9UWVBFX1VOU1BFQ0lGSUVEEAASGgoWV0lER0VUX1RZUEVfTElORV9DSEFSVBABEhkKFVdJREdFVF9UWVBFX0JBUl9DSEFSVBACEhkKFVdJREdFVF9UWVBFX1BJRV9DSEFSVBADEhsKF1dJREdFVF9UWVBFX1BJVk9UX1RBQkxFEAQSGwoXV0lER0VUX1RZUEVfTUVUUklDX0NBUkQQBRIUChBXSURHRVRfVFlQRV9URVhUEAYSHQoZV0lER0VUX1RZUEVfU0NBVFRFUl9DSEFSVBAHEhcKE1dJREdFVF9UWVBFX0hFQVRNQVAQCBIZChVXSURHRVRfVFlQRV9ISVNUT0dSQU0QCRIbChdXSURHRVRfVFlQRV9SQURBUl9DSEFSVBAKEhUKEVdJREdFVF9UWVBFX1RBQkxFEAsSFQoRV0lER0VUX1RZUEVfR0FVR0UQDBIWChJXSURHRVRfVFlQRV9GVU5ORUwQDRIYChRXSURHRVRfVFlQRV9CT1hfUExPVBAOEhcKE1dJREdFVF9UWVBFX1RSRUVNQVAQDxIWChJXSURHRVRfVFlQRV9TQU5LRVkQEBIaChZXSURHRVRfVFlQRV9XT1JEX0NMT1VEEBEqvQEKD0RhdGVHcmFudWxhcml0eRIgChxEQVRFX0dSQU5VTEFSSVRZX1VOU1BFQ0lGSUVEEAASGAoUREFURV9HUkFOVUxBUklUWV9EQVkQARIZChVEQVRFX0dSQU5VTEFSSVRZX1dFRUsQAhIaChZEQVRFX0dSQU5VTEFSSVRZX01PTlRIEAMSHAoYREFURV9HUkFOVUxBUklUWV9RVUFSVEVSEAQSGQoVREFURV9HUkFOVUxBUklUWV9ZRUFSEAUqlwEKGFBlcm1pc3Npb25EZW5pZWRCZWhhdmlvchIqCiZQRVJNSVNTSU9OX0RFTklFRF9CRUhBVklPUl9VTlNQRUNJRklFRBAAEioKJlBFUk1JU1NJT05fREVOSUVEX0JFSEFWSU9SX1NIT1dfREVOSUVEEAESIwofUEVSTUlTU0lPTl9ERU5JRURfQkVIQVZJT1JfSElERRACMrUDChBEYXNoYm9hcmRTZXJ2aWNlElkKDkxpc3REYXNoYm9hcmRzEiIub3Blbl9wbHgudjEuTGlzdERhc2hib2FyZHNSZXF1ZXN0GiMub3Blbl9wbHgudjEuTGlzdERhc2hib2FyZHNSZXNwb25zZRJICgxHZXREYXNoYm9hcmQSIC5vcGVuX3BseC52MS5HZXREYXNoYm9hcmRSZXF1ZXN0GhYub3Blbl9wbHgudjEuRGFzaGJvYXJkEk4KD0NyZWF0ZURhc2hib2FyZBIjLm9wZW5fcGx4LnYxLkNyZWF0ZURhc2hib2FyZFJlcXVlc3QaFi5vcGVuX3BseC52MS5EYXNoYm9hcmQSTgoPVXBkYXRlRGFzaGJvYXJkEiMub3Blbl9wbHgudjEuVXBkYXRlRGFzaGJvYXJkUmVxdWVzdBoWLm9wZW5fcGx4LnYxLkRhc2hib2FyZBJcCg9EZWxldGVEYXNoYm9hcmQSIy5vcGVuX3BseC52MS5EZWxldGVEYXNoYm9hcmRSZXF1ZXN0GiQub3Blbl9wbHgudjEuRGVsZXRlRGFzaGJvYXJkUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_google_protobuf_field_mask, file_open_plx_v1_widget_spec]);
 
 /**
  * @generated from message open_plx.v1.Dashboard
@@ -175,6 +175,27 @@ export type WidgetConfig = Message<"open_plx.v1.WidgetConfig"> & {
    * @generated from field: open_plx.v1.WidgetSpec spec = 6;
    */
   spec?: WidgetSpec;
+
+  /**
+   * Cross-widget interactions. When the user clicks an element in this widget,
+   * the frontend extracts field values from the clicked data point and writes
+   * them into dashboard variables. Downstream widgets that reference those
+   * variables via "${variable_name}" in data_source.params automatically
+   * re-fetch with the new filter values.
+   *
+   * @generated from field: repeated open_plx.v1.ClickInteraction click_interactions = 7;
+   */
+  clickInteractions: ClickInteraction[];
+
+  /**
+   * Conditional visibility. ALL conditions must be true (implicit AND) for
+   * the widget to render. If empty, the widget is always visible.
+   * Evaluated client-side against current dashboard variable values.
+   * Hidden widgets skip data fetching entirely (no gRPC call).
+   *
+   * @generated from field: repeated open_plx.v1.VisibilityCondition visible_when = 8;
+   */
+  visibleWhen: VisibilityCondition[];
 };
 
 /**
@@ -183,6 +204,81 @@ export type WidgetConfig = Message<"open_plx.v1.WidgetConfig"> & {
  */
 export const WidgetConfigSchema: GenMessage<WidgetConfig> = /*@__PURE__*/
   messageDesc(file_open_plx_v1_dashboard, 2);
+
+/**
+ * Declares a click-to-variable binding: "when the user clicks an element in
+ * this widget, extract the value of `source_field` from the clicked data point
+ * and write it into dashboard variable `target_variable`."
+ *
+ * Constraints:
+ *   - source_field must be a column name present in the widget's data source.
+ *   - target_variable must reference a variable declared in Dashboard.variables.
+ *
+ * @generated from message open_plx.v1.ClickInteraction
+ */
+export type ClickInteraction = Message<"open_plx.v1.ClickInteraction"> & {
+  /**
+   * Column name in the widget's data to extract from the clicked element.
+   *
+   * @generated from field: string source_field = 1;
+   */
+  sourceField: string;
+
+  /**
+   * Dashboard variable name to write the extracted value into.
+   *
+   * @generated from field: string target_variable = 2;
+   */
+  targetVariable: string;
+};
+
+/**
+ * Describes the message open_plx.v1.ClickInteraction.
+ * Use `create(ClickInteractionSchema)` to create a new message.
+ */
+export const ClickInteractionSchema: GenMessage<ClickInteraction> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_dashboard, 3);
+
+/**
+ * A single visibility condition: "variable <operator> [value]".
+ * Used in WidgetConfig.visible_when. All conditions are ANDed.
+ *
+ * Constraints:
+ *   - variable must reference a variable declared in Dashboard.variables.
+ *   - value is required for equals/not_equals/in/gt/lt/gte/lte.
+ *   - value is ignored for empty/not_empty.
+ *
+ * @generated from message open_plx.v1.VisibilityCondition
+ */
+export type VisibilityCondition = Message<"open_plx.v1.VisibilityCondition"> & {
+  /**
+   * Dashboard variable name to evaluate.
+   *
+   * @generated from field: string variable = 1;
+   */
+  variable: string;
+
+  /**
+   * Comparison operator.
+   *
+   * @generated from field: open_plx.v1.ConditionOperator operator = 2;
+   */
+  operator: ConditionOperator;
+
+  /**
+   * Comparison value. Required for value-comparing operators.
+   *
+   * @generated from field: open_plx.v1.ParamValue value = 3;
+   */
+  value?: ParamValue;
+};
+
+/**
+ * Describes the message open_plx.v1.VisibilityCondition.
+ * Use `create(VisibilityConditionSchema)` to create a new message.
+ */
+export const VisibilityConditionSchema: GenMessage<VisibilityCondition> = /*@__PURE__*/
+  messageDesc(file_open_plx_v1_dashboard, 4);
 
 /**
  * Position of a widget within the grid coordinate system.
@@ -224,7 +320,7 @@ export type GridPosition = Message<"open_plx.v1.GridPosition"> & {
  * Use `create(GridPositionSchema)` to create a new message.
  */
 export const GridPositionSchema: GenMessage<GridPosition> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 3);
+  messageDesc(file_open_plx_v1_dashboard, 5);
 
 /**
  * Reference from a widget to a data source. The widget never knows how data
@@ -271,7 +367,7 @@ export type DataSourceRef = Message<"open_plx.v1.DataSourceRef"> & {
  * Use `create(DataSourceRefSchema)` to create a new message.
  */
 export const DataSourceRefSchema: GenMessage<DataSourceRef> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 4);
+  messageDesc(file_open_plx_v1_dashboard, 6);
 
 /**
  * A typed parameter value. Ensures the value matches the expected Arrow
@@ -345,7 +441,7 @@ export type ParamValue = Message<"open_plx.v1.ParamValue"> & {
  * Use `create(ParamValueSchema)` to create a new message.
  */
 export const ParamValueSchema: GenMessage<ParamValue> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 5);
+  messageDesc(file_open_plx_v1_dashboard, 7);
 
 /**
  * @generated from message open_plx.v1.StringList
@@ -362,7 +458,7 @@ export type StringList = Message<"open_plx.v1.StringList"> & {
  * Use `create(StringListSchema)` to create a new message.
  */
 export const StringListSchema: GenMessage<StringList> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 6);
+  messageDesc(file_open_plx_v1_dashboard, 8);
 
 /**
  * @generated from message open_plx.v1.DateRange
@@ -386,7 +482,7 @@ export type DateRange = Message<"open_plx.v1.DateRange"> & {
  * Use `create(DateRangeSchema)` to create a new message.
  */
 export const DateRangeSchema: GenMessage<DateRange> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 7);
+  messageDesc(file_open_plx_v1_dashboard, 9);
 
 /**
  * Dashboard-level variable. Widgets reference these in data_source.params
@@ -486,7 +582,7 @@ export type DashboardVariable = Message<"open_plx.v1.DashboardVariable"> & {
  * Use `create(DashboardVariableSchema)` to create a new message.
  */
 export const DashboardVariableSchema: GenMessage<DashboardVariable> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 8);
+  messageDesc(file_open_plx_v1_dashboard, 10);
 
 /**
  * @generated from message open_plx.v1.TextInputControl
@@ -510,7 +606,7 @@ export type TextInputControl = Message<"open_plx.v1.TextInputControl"> & {
  * Use `create(TextInputControlSchema)` to create a new message.
  */
 export const TextInputControlSchema: GenMessage<TextInputControl> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 9);
+  messageDesc(file_open_plx_v1_dashboard, 11);
 
 /**
  * @generated from message open_plx.v1.NumberInputControl
@@ -544,7 +640,7 @@ export type NumberInputControl = Message<"open_plx.v1.NumberInputControl"> & {
  * Use `create(NumberInputControlSchema)` to create a new message.
  */
 export const NumberInputControlSchema: GenMessage<NumberInputControl> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 10);
+  messageDesc(file_open_plx_v1_dashboard, 12);
 
 /**
  * @generated from message open_plx.v1.SelectControl
@@ -601,7 +697,7 @@ export type SelectControl = Message<"open_plx.v1.SelectControl"> & {
  * Use `create(SelectControlSchema)` to create a new message.
  */
 export const SelectControlSchema: GenMessage<SelectControl> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 11);
+  messageDesc(file_open_plx_v1_dashboard, 13);
 
 /**
  * @generated from message open_plx.v1.MultiSelectControl
@@ -647,7 +743,7 @@ export type MultiSelectControl = Message<"open_plx.v1.MultiSelectControl"> & {
  * Use `create(MultiSelectControlSchema)` to create a new message.
  */
 export const MultiSelectControlSchema: GenMessage<MultiSelectControl> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 12);
+  messageDesc(file_open_plx_v1_dashboard, 14);
 
 /**
  * @generated from message open_plx.v1.DatePickerControl
@@ -680,7 +776,7 @@ export type DatePickerControl = Message<"open_plx.v1.DatePickerControl"> & {
  * Use `create(DatePickerControlSchema)` to create a new message.
  */
 export const DatePickerControlSchema: GenMessage<DatePickerControl> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 13);
+  messageDesc(file_open_plx_v1_dashboard, 15);
 
 /**
  * @generated from message open_plx.v1.DateRangeControl
@@ -714,7 +810,7 @@ export type DateRangeControl = Message<"open_plx.v1.DateRangeControl"> & {
  * Use `create(DateRangeControlSchema)` to create a new message.
  */
 export const DateRangeControlSchema: GenMessage<DateRangeControl> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 14);
+  messageDesc(file_open_plx_v1_dashboard, 16);
 
 /**
  * @generated from message open_plx.v1.CascaderControl
@@ -738,7 +834,7 @@ export type CascaderControl = Message<"open_plx.v1.CascaderControl"> & {
  * Use `create(CascaderControlSchema)` to create a new message.
  */
 export const CascaderControlSchema: GenMessage<CascaderControl> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 15);
+  messageDesc(file_open_plx_v1_dashboard, 17);
 
 /**
  * @generated from message open_plx.v1.SelectOption
@@ -760,7 +856,7 @@ export type SelectOption = Message<"open_plx.v1.SelectOption"> & {
  * Use `create(SelectOptionSchema)` to create a new message.
  */
 export const SelectOptionSchema: GenMessage<SelectOption> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 16);
+  messageDesc(file_open_plx_v1_dashboard, 18);
 
 /**
  * @generated from message open_plx.v1.CascaderOption
@@ -787,7 +883,7 @@ export type CascaderOption = Message<"open_plx.v1.CascaderOption"> & {
  * Use `create(CascaderOptionSchema)` to create a new message.
  */
 export const CascaderOptionSchema: GenMessage<CascaderOption> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 17);
+  messageDesc(file_open_plx_v1_dashboard, 19);
 
 /**
  * @generated from message open_plx.v1.DateRangePreset
@@ -820,7 +916,7 @@ export type DateRangePreset = Message<"open_plx.v1.DateRangePreset"> & {
  * Use `create(DateRangePresetSchema)` to create a new message.
  */
 export const DateRangePresetSchema: GenMessage<DateRangePreset> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 18);
+  messageDesc(file_open_plx_v1_dashboard, 20);
 
 /**
  * @generated from message open_plx.v1.ListDashboardsRequest
@@ -846,7 +942,7 @@ export type ListDashboardsRequest = Message<"open_plx.v1.ListDashboardsRequest">
  * Use `create(ListDashboardsRequestSchema)` to create a new message.
  */
 export const ListDashboardsRequestSchema: GenMessage<ListDashboardsRequest> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 19);
+  messageDesc(file_open_plx_v1_dashboard, 21);
 
 /**
  * @generated from message open_plx.v1.ListDashboardsResponse
@@ -873,7 +969,7 @@ export type ListDashboardsResponse = Message<"open_plx.v1.ListDashboardsResponse
  * Use `create(ListDashboardsResponseSchema)` to create a new message.
  */
 export const ListDashboardsResponseSchema: GenMessage<ListDashboardsResponse> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 20);
+  messageDesc(file_open_plx_v1_dashboard, 22);
 
 /**
  * @generated from message open_plx.v1.GetDashboardRequest
@@ -892,7 +988,7 @@ export type GetDashboardRequest = Message<"open_plx.v1.GetDashboardRequest"> & {
  * Use `create(GetDashboardRequestSchema)` to create a new message.
  */
 export const GetDashboardRequestSchema: GenMessage<GetDashboardRequest> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 21);
+  messageDesc(file_open_plx_v1_dashboard, 23);
 
 /**
  * @generated from message open_plx.v1.CreateDashboardRequest
@@ -909,7 +1005,7 @@ export type CreateDashboardRequest = Message<"open_plx.v1.CreateDashboardRequest
  * Use `create(CreateDashboardRequestSchema)` to create a new message.
  */
 export const CreateDashboardRequestSchema: GenMessage<CreateDashboardRequest> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 22);
+  messageDesc(file_open_plx_v1_dashboard, 24);
 
 /**
  * @generated from message open_plx.v1.UpdateDashboardRequest
@@ -933,7 +1029,7 @@ export type UpdateDashboardRequest = Message<"open_plx.v1.UpdateDashboardRequest
  * Use `create(UpdateDashboardRequestSchema)` to create a new message.
  */
 export const UpdateDashboardRequestSchema: GenMessage<UpdateDashboardRequest> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 23);
+  messageDesc(file_open_plx_v1_dashboard, 25);
 
 /**
  * @generated from message open_plx.v1.DeleteDashboardRequest
@@ -952,7 +1048,7 @@ export type DeleteDashboardRequest = Message<"open_plx.v1.DeleteDashboardRequest
  * Use `create(DeleteDashboardRequestSchema)` to create a new message.
  */
 export const DeleteDashboardRequestSchema: GenMessage<DeleteDashboardRequest> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 24);
+  messageDesc(file_open_plx_v1_dashboard, 26);
 
 /**
  * @generated from message open_plx.v1.DeleteDashboardResponse
@@ -965,7 +1061,76 @@ export type DeleteDashboardResponse = Message<"open_plx.v1.DeleteDashboardRespon
  * Use `create(DeleteDashboardResponseSchema)` to create a new message.
  */
 export const DeleteDashboardResponseSchema: GenMessage<DeleteDashboardResponse> = /*@__PURE__*/
-  messageDesc(file_open_plx_v1_dashboard, 25);
+  messageDesc(file_open_plx_v1_dashboard, 27);
+
+/**
+ * Comparison operator for visibility conditions.
+ *
+ * @generated from enum open_plx.v1.ConditionOperator
+ */
+export enum ConditionOperator {
+  /**
+   * @generated from enum value: CONDITION_OPERATOR_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: CONDITION_OPERATOR_EQUALS = 1;
+   */
+  EQUALS = 1,
+
+  /**
+   * @generated from enum value: CONDITION_OPERATOR_NOT_EQUALS = 2;
+   */
+  NOT_EQUALS = 2,
+
+  /**
+   * Variable has no value or is empty string/list.
+   *
+   * @generated from enum value: CONDITION_OPERATOR_EMPTY = 3;
+   */
+  EMPTY = 3,
+
+  /**
+   * Variable has a non-empty value.
+   *
+   * @generated from enum value: CONDITION_OPERATOR_NOT_EMPTY = 4;
+   */
+  NOT_EMPTY = 4,
+
+  /**
+   * Scalar value exists in a string_list variable.
+   *
+   * @generated from enum value: CONDITION_OPERATOR_IN = 5;
+   */
+  IN = 5,
+
+  /**
+   * @generated from enum value: CONDITION_OPERATOR_GT = 6;
+   */
+  GT = 6,
+
+  /**
+   * @generated from enum value: CONDITION_OPERATOR_LT = 7;
+   */
+  LT = 7,
+
+  /**
+   * @generated from enum value: CONDITION_OPERATOR_GTE = 8;
+   */
+  GTE = 8,
+
+  /**
+   * @generated from enum value: CONDITION_OPERATOR_LTE = 9;
+   */
+  LTE = 9,
+}
+
+/**
+ * Describes the enum open_plx.v1.ConditionOperator.
+ */
+export const ConditionOperatorSchema: GenEnum<ConditionOperator> = /*@__PURE__*/
+  enumDesc(file_open_plx_v1_dashboard, 0);
 
 /**
  * @generated from enum open_plx.v1.WidgetType
@@ -1066,7 +1231,7 @@ export enum WidgetType {
  * Describes the enum open_plx.v1.WidgetType.
  */
 export const WidgetTypeSchema: GenEnum<WidgetType> = /*@__PURE__*/
-  enumDesc(file_open_plx_v1_dashboard, 0);
+  enumDesc(file_open_plx_v1_dashboard, 1);
 
 /**
  * @generated from enum open_plx.v1.DateGranularity
@@ -1107,7 +1272,7 @@ export enum DateGranularity {
  * Describes the enum open_plx.v1.DateGranularity.
  */
 export const DateGranularitySchema: GenEnum<DateGranularity> = /*@__PURE__*/
-  enumDesc(file_open_plx_v1_dashboard, 1);
+  enumDesc(file_open_plx_v1_dashboard, 2);
 
 /**
  * Controls what the frontend shows when a widget's data access is denied.
@@ -1142,7 +1307,7 @@ export enum PermissionDeniedBehavior {
  * Describes the enum open_plx.v1.PermissionDeniedBehavior.
  */
 export const PermissionDeniedBehaviorSchema: GenEnum<PermissionDeniedBehavior> = /*@__PURE__*/
-  enumDesc(file_open_plx_v1_dashboard, 2);
+  enumDesc(file_open_plx_v1_dashboard, 3);
 
 /**
  * @generated from service open_plx.v1.DashboardService

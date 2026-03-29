@@ -4,6 +4,7 @@ members = [
     "crates/open-plx-config",
     "crates/open-plx-auth",
     "crates/open-plx-server",
+    "crates/open-plx-cli",
 ]
 resolver = "2"
 
@@ -33,9 +34,7 @@ serde_yaml = "0.9"
 
 # Utils
 uuid = { version = "1", features = ["v4", "serde"] }
-thiserror = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 anyhow = "1"
-tower = "0.5"
 tower-http = { version = "0.6", features = ["cors", "trace"] }

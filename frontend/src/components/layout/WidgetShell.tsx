@@ -1,5 +1,7 @@
-import type { WidgetConfig } from "../../gen/open_plx/v1/dashboard_pb.js";
-import { WidgetType } from "../../gen/open_plx/v1/dashboard_pb.js";
+import { useCallback } from "react";
+import type { WidgetConfig, ParamValue } from "../../gen/open_plx/v1/dashboard_pb.js";
+import { WidgetType, ParamValueSchema } from "../../gen/open_plx/v1/dashboard_pb.js";
+import { create } from "@bufbuild/protobuf";
 import { useWidgetData } from "../../hooks/useWidgetData.js";
 import type { VariableValues } from "../../hooks/useVariables.js";
 import { getWidgetComponent } from "../widgets/WidgetRegistry.js";
@@ -11,9 +13,27 @@ interface WidgetShellProps {
   config: WidgetConfig;
   variableValues?: VariableValues;
   revision?: number;
+  onVariableChange?: (name: string, value: ParamValue) => void;
 }
 
-export function WidgetShell({ dashboardName, config, variableValues, revision }: WidgetShellProps) {
+/** Convert a JS value to a typed ParamValue proto. */
+function toParamValue(value: unknown): ParamValue {
+  if (typeof value === "string") {
+    return create(ParamValueSchema, { value: { case: "stringValue", value } });
+  }
+  if (typeof value === "number") {
+    if (Number.isInteger(value)) {
+      return create(ParamValueSchema, { value: { case: "intValue", value: BigInt(value) } });
+    }
+    return create(ParamValueSchema, { value: { case: "doubleValue", value } });
+  }
+  if (typeof value === "boolean") {
+    return create(ParamValueSchema, { value: { case: "boolValue", value } });
+  }
+  return create(ParamValueSchema, { value: { case: "stringValue", value: String(value) } });
+}
+
+export function WidgetShell({ dashboardName, config, variableValues, revision, onVariableChange }: WidgetShellProps) {
   const { data, loading, error, permissionDenied } = useWidgetData(
     dashboardName,
     config.id,
@@ -21,6 +41,21 @@ export function WidgetShell({ dashboardName, config, variableValues, revision }:
     revision,
   );
   const Component = getWidgetComponent(config.widgetType);
+
+  const hasClickInteractions = config.clickInteractions.length > 0;
+
+  const handleClickInteraction = useCallback(
+    (clickedRecord: Record<string, unknown>) => {
+      if (!onVariableChange) return;
+      for (const ci of config.clickInteractions) {
+        const value = clickedRecord[ci.sourceField];
+        if (value !== undefined) {
+          onVariableChange(ci.targetVariable, toParamValue(value));
+        }
+      }
+    },
+    [config.clickInteractions, onVariableChange],
+  );
 
   if (permissionDenied) {
     return (
@@ -43,5 +78,13 @@ export function WidgetShell({ dashboardName, config, variableValues, revision }:
     );
   }
 
-  return <Component config={config} data={data} loading={loading} error={error} />;
+  return (
+    <Component
+      config={config}
+      data={data}
+      loading={loading}
+      error={error}
+      onClickInteraction={hasClickInteractions ? handleClickInteraction : undefined}
+    />
+  );
 }

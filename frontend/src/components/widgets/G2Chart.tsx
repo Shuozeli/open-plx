@@ -10,9 +10,11 @@ import { useDarkMode } from "../../hooks/useThemeContext.js";
 
 interface G2ChartProps {
   spec: G2Spec;
+  /** Called when the user clicks a chart element (bar, point, slice, etc.). */
+  onElementClick?: (record: Record<string, unknown>) => void;
 }
 
-export function G2Chart({ spec }: G2ChartProps) {
+export function G2Chart({ spec, onElementClick }: G2ChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Chart | null>(null);
   const dark = useDarkMode();
@@ -38,6 +40,19 @@ export function G2Chart({ spec }: G2ChartProps) {
 
     chart.options(themedSpec as Parameters<typeof chart.options>[0]);
     chart.render();
+
+    if (onElementClick) {
+      chart.on("element:click", (event: Record<string, unknown>) => {
+        const data = event.data as Record<string, unknown> | undefined;
+        if (data) {
+          // G2 v5: event.data is the datum bound to the clicked mark.
+          // For grouped/stacked marks, event.data.data may contain the row.
+          const record = (data.data as Record<string, unknown>) ?? data;
+          onElementClick(record);
+        }
+      });
+    }
+
     chartRef.current = chart;
 
     return () => {
@@ -46,7 +61,16 @@ export function G2Chart({ spec }: G2ChartProps) {
         chartRef.current = null;
       }
     };
-  }, [spec, dark]);
+  }, [spec, dark, onElementClick]);
 
-  return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        width: "100%",
+        height: "100%",
+        cursor: onElementClick ? "pointer" : undefined,
+      }}
+    />
+  );
 }

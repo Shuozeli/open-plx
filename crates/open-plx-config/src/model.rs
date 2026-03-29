@@ -77,6 +77,30 @@ pub struct WidgetConfigYaml {
     pub position: PositionYaml,
     pub data_source: DataSourceRefYaml,
     pub spec: WidgetSpecYaml,
+    #[serde(default)]
+    pub click_interactions: Vec<ClickInteractionYaml>,
+    #[serde(default)]
+    pub visible_when: Vec<VisibilityConditionYaml>,
+}
+
+/// Visibility condition for conditional widget rendering.
+/// All conditions on a widget are ANDed (all must pass for the widget to show).
+#[derive(Debug, Deserialize)]
+pub struct VisibilityConditionYaml {
+    pub variable: String,
+    pub operator: String,
+    #[serde(default)]
+    pub value: Option<ParamValueYaml>,
+}
+
+/// Cross-widget click interaction binding.
+/// When the user clicks an element in the widget, the value of `source_field`
+/// from the clicked data point is written into the dashboard variable
+/// `target_variable`.
+#[derive(Debug, Deserialize)]
+pub struct ClickInteractionYaml {
+    pub source_field: String,
+    pub target_variable: String,
 }
 
 #[derive(Debug, Deserialize)]

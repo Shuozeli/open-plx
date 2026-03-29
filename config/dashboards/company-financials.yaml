@@ -1,6 +1,6 @@
 name: dashboards/company-financials
 title: Company Financials (Dark Launch)
-description: "Dark launch test: AAPL, TSLA, AVGO, AMZN quarterly financials"
+description: "Dark launch test: AAPL, TSLA, AVGO, AMZN quarterly financials. Click a bar to filter the detail table."
 
 grid:
   columns: 24
@@ -30,6 +30,19 @@ variables:
         - { value: "AVGO", label: "Broadcom" }
         - { value: "AMZN", label: "Amazon" }
       placeholder: Select companies
+
+  - name: selected_company
+    label: Company
+    default_value: "AAPL"
+    control:
+      type: select
+      options:
+        - { value: "AAPL", label: "Apple" }
+        - { value: "TSLA", label: "Tesla" }
+        - { value: "AVGO", label: "Broadcom" }
+        - { value: "AMZN", label: "Amazon" }
+      allow_clear: true
+      placeholder: Click a bar to filter
 
 widgets:
   # Row 0: Three metric cards
@@ -88,12 +101,16 @@ widgets:
           title: Quarter
         y_axis:
           title: "Revenue ($B)"
+    click_interactions:
+      - source_field: company
+        target_variable: selected_company
 
   # Row 12: Bar chart - revenue comparison, grouped
+  # Clicking a bar sets selected_company variable.
   - id: revenue-comparison
     widget_type: WIDGET_TYPE_BAR_CHART
-    title: Revenue Comparison (Grouped)
-    position: { x: 0, y: 12, w: 24, h: 8 }
+    title: Revenue Comparison (Grouped) -- click a bar to filter
+    position: { x: 0, y: 12, w: 12, h: 8 }
     data_source:
       data_source: dataSources/company-financials
       params: {}
@@ -109,6 +126,30 @@ widgets:
           title: Quarter
         y_axis:
           title: "Revenue ($B)"
+    click_interactions:
+      - source_field: company
+        target_variable: selected_company
+
+  # Row 12: Detail table - only visible when a company is selected via click
+  - id: company-detail
+    widget_type: WIDGET_TYPE_TABLE
+    title: Company Detail (filtered by click)
+    position: { x: 12, y: 12, w: 12, h: 8 }
+    visible_when:
+      - variable: selected_company
+        operator: not_empty
+    data_source:
+      data_source: dataSources/company-financials
+      params: {}
+    spec:
+      table:
+        columns:
+          - { field: company }
+          - { field: quarter }
+          - { field: revenue }
+          - { field: profit }
+          - { field: eps }
+          - { field: market_cap }
 
   # Row 20: Pivot table - company x quarter x metrics
   - id: financials-pivot

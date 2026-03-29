@@ -74,7 +74,7 @@ export function DashboardPage({ dashboardName }: DashboardPageProps) {
         values={variableValues}
         onValueChange={setVariableValue}
       />
-      <DashboardGrid dashboard={dashboard} variableValues={variableValues} revision={revision} />
+      <DashboardGrid dashboard={dashboard} variableValues={variableValues} revision={revision} onVariableChange={setVariableValue} />
     </div>
   );
 }
