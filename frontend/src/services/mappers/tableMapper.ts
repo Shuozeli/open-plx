@@ -122,7 +122,7 @@ export function tableProtoToTestState(
   return {
     columnCount: proto.columns.length || (data.length > 0 ? Object.keys(data[0]).length : 0),
     rowCount: data.length,
-    hasPageination: !!proto.pagination,
+    hasPagination: !!proto.pagination,
     showRowNumbers: proto.showRowNumbers,
   };
 }

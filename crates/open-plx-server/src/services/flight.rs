@@ -76,6 +76,9 @@ impl FlightService for FlightServiceImpl {
             widget_req.widget_id
         );
 
+        // TODO(perf): This executes the full query just to get schema. For expensive
+        // Flight SQL queries, data is fetched twice (here + do_get). Fix requires
+        // either a schema-only query path or result caching with short TTL.
         let batch = self.state.execute_data_source(&ds_name).await?;
         let schema = batch.schema();
 

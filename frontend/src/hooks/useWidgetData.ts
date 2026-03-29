@@ -85,6 +85,11 @@ export function useWidgetData(
     } finally {
       setLoading(false);
     }
+    // Note: variableValues is intentionally excluded from this dependency array.
+    // The revision counter (from useVariables) MUST increment whenever variableValues
+    // changes. This avoids re-creating the callback on every render due to object
+    // identity changes in the variableValues record. The contract is enforced by
+    // useVariables.setValue which always increments revision alongside value updates.
   }, [dashboardName, widgetId, revision]);
 
   useEffect(() => {

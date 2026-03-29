@@ -19,6 +19,8 @@ export function wordCloudProtoToG2(
     type: "wordCloud",
     data: limited,
     encode: {
+      text: proto.textField,
+      size: proto.weightField,
       color: proto.textField,
     },
     layout: {

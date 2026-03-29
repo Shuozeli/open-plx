@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { DashboardVariable, ParamValue } from "../gen/open_plx/v1/dashboard_pb.js";
 
 /** Variable values keyed by variable name. */
@@ -24,6 +24,7 @@ function getDefaultValue(variable: DashboardVariable): ParamValue | undefined {
  * Manages dashboard variable state.
  * Initializes from proto default values, provides current values
  * and a setter that triggers widget re-fetches via revision counter.
+ * Re-initializes when the dashboard changes (new variables array).
  */
 export function useVariables(variables: DashboardVariable[]): UseVariablesResult {
   const defaults = useMemo(() => {
@@ -39,6 +40,12 @@ export function useVariables(variables: DashboardVariable[]): UseVariablesResult
 
   const [values, setValues] = useState<VariableValues>(defaults);
   const [revision, setRevision] = useState(0);
+
+  // Re-initialize when dashboard changes (new defaults computed from new variables).
+  useEffect(() => {
+    setValues(defaults);
+    setRevision(0);
+  }, [defaults]);
 
   const setValue = useCallback((name: string, value: ParamValue) => {
     setValues((prev) => ({ ...prev, [name]: value }));
