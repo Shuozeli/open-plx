@@ -6,3 +6,6 @@
 	path = vendor/S2
 	url = https://github.com/antvis/S2.git
 	branch = next
+[submodule ".claude/rules/shared"]
+	path = .claude/rules/shared
+	url = https://github.com/shuozeli/claude-rules.git
