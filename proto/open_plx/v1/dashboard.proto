@@ -143,7 +143,7 @@ enum ConditionOperator {
   CONDITION_OPERATOR_LTE = 9;
 }
 
-// A single visibility condition: "variable <operator> [value]".
+// A single visibility condition: "variable {operator} [value]".
 // Used in WidgetConfig.visible_when. All conditions are ANDed.
 //
 // Constraints:

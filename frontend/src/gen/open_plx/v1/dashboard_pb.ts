@@ -240,7 +240,7 @@ export const ClickInteractionSchema: GenMessage<ClickInteraction> = /*@__PURE__*
   messageDesc(file_open_plx_v1_dashboard, 3);
 
 /**
- * A single visibility condition: "variable <operator> [value]".
+ * A single visibility condition: "variable {operator} [value]".
  * Used in WidgetConfig.visible_when. All conditions are ANDed.
  *
  * Constraints:
