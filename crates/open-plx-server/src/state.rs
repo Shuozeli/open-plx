@@ -76,14 +76,14 @@ impl AppState {
             .find(|w| w.id == req.widget_id)
             .ok_or_else(|| Status::not_found(format!("widget not found: {}", req.widget_id)))?;
 
-        if let Some(ref table_spec) = widget.spec.table {
-            if let Some(ref sp) = table_spec.server_pagination {
-                return Ok(Some((
-                    sp.page_size.unwrap_or(20),
-                    sp.show_total_count,
-                    sp.show_page_size_selector,
-                )));
-            }
+        if let Some(ref table_spec) = widget.spec.table
+            && let Some(ref sp) = table_spec.server_pagination
+        {
+            return Ok(Some((
+                sp.page_size.unwrap_or(20),
+                sp.show_total_count,
+                sp.show_page_size_selector,
+            )));
         }
         Ok(None)
     }
