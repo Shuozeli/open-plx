@@ -80,11 +80,13 @@ export function WidgetShell({ dashboardName, config, variableValues, revision, o
 
   return (
     <Component
+      dashboardName={dashboardName}
       config={config}
       data={data}
       loading={loading}
       error={error}
       onClickInteraction={hasClickInteractions ? handleClickInteraction : undefined}
+      onVariableChange={onVariableChange}
     />
   );
 }

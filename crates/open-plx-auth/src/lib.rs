@@ -82,41 +82,6 @@ impl AuthProvider for ApiKeyAuth {
 }
 
 // =============================================================================
-// OIDC JWT Auth (stub)
-// =============================================================================
-
-/// OIDC JWT authentication. Validates JWT signature via JWKS.
-/// Currently unimplemented -- server panics at startup if configured.
-#[allow(dead_code)]
-pub struct OidcAuth {
-    _issuer: String,
-    _audience: String,
-    _jwks_uri: String,
-}
-
-impl OidcAuth {
-    pub fn new(issuer: String, audience: String, jwks_uri: String) -> Self {
-        Self {
-            _issuer: issuer,
-            _audience: audience,
-            _jwks_uri: jwks_uri,
-        }
-    }
-}
-
-impl AuthProvider for OidcAuth {
-    fn authenticate(&self, _request: &Request<()>) -> Result<Principal, Status> {
-        // TODO(refactor): Implement real OIDC JWT validation.
-        // 1. Extract Bearer token from authorization header
-        // 2. Fetch JWKS from jwks_uri (cache with TTL)
-        // 3. Verify JWT signature, issuer, audience, expiry
-        // 4. Extract sub, email, groups claims
-        Err(Status::unimplemented(
-            "OIDC JWT auth not yet implemented -- use dev or api_key mode",
-        ))
-    }
-}
-
 // =============================================================================
 // Auth Interceptor
 // =============================================================================
@@ -149,10 +114,15 @@ impl AuthInterceptor {
                 issuer,
                 audience: _,
             } => {
-                panic!(
-                    "OIDC auth (issuer={}) is not yet implemented -- use 'dev' or 'api_key' mode",
+                // TODO: Implement OIDC JWT validation.
+                // 1. Extract Bearer token from authorization header
+                // 2. Fetch JWKS from jwks_uri (cache with TTL)
+                // 3. Verify JWT signature, issuer, audience, expiry
+                // 4. Extract sub, email, groups claims
+                todo!(
+                    "OIDC auth (issuer={}) not yet implemented -- use 'dev' or 'api_key' mode",
                     issuer
-                );
+                )
             }
         };
 

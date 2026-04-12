@@ -207,3 +207,128 @@ Items marked FIXED were resolved in commits `e21a817` and `d24003d`.
 6. **Dead Code (MEDIUM):** 2.1 (unused client), 2.2 (unused workspace deps), 2.3 (allow dead_code)
 7. **Unsafe (MEDIUM):** 5.1 (unwrap in CLI), 5.2 (fragile name matching)
 8. **Low priority:** Stubs, noise, typos
+
+---
+
+## Review Pass 4 (2026-04-12) -- Pipeline Code Review
+
+### 1. Silent Failures / Swallowed Errors (HIGH)
+
+#### 1.1 Silent YAML serialization fallback
+- **Location:** `crates/open-plx-config/src/convert.rs:1153`
+- **Problem:** When YAML serialization of sequence/mapping values fails, `unwrap_or_default()` silently returns an empty string. A YAML config error becomes an invisible empty string instead of failing fast.
+- **Fix:** Return a `Result` or at minimum log a warning when falling back to empty string.
+
+#### 1.2 Server startup panics on signal handler failure
+- **Location:** `crates/open-plx-server/src/main.rs:133, 139`
+- **Problem:** `.expect()` calls on signal handler installation will panic the entire server if it fails (e.g., in restricted environments).
+- **Fix:** Replace with graceful error handling that logs and continues, or gracefully shuts down.
+
+#### 1.3 Chained unwrap in test code
+- **Location:** `crates/open-plx-config/src/loader.rs:183, 195, 199`
+- **Problem:** Inside tests, chained `.unwrap()` calls will panic on malformed test fixtures rather than giving a clear error.
+- **Fix:** Use `expect()` with descriptive messages, or add a test helper that validates fixtures upfront.
+
+---
+
+### 2. Stub Implementations That Return Empty Data (CRITICAL)
+
+#### 2.1 gRPC proxy returns empty Struct (Critical - silent data loss)
+- **Location:** `crates/open-plx-server/src/grpc_proxy_client.rs:220-238` (`call_grpc`)
+- **Problem:** The gRPC proxy client returns an empty `Struct` (no fields). Widgets using gRPC proxy silently receive empty RecordBatches with no indication the call was stubbed. Caller cannot distinguish "stubbed" from "genuinely empty data."
+- **Fix:** Return an error with clear message indicating the gRPC forwarding is not yet implemented, instead of silent empty struct.
+
+#### 2.2 Widget action stub returns fake success (Critical - silent failure)
+- **Location:** `crates/open-plx-server/src/services/widget_action.rs:146-162` (`forward_grpc_call`)
+- **Problem:** Stub returns `{"success": true}` regardless of method or request body. Actions silently do nothing in production.
+- **Fix:** Return an error indicating the feature is not implemented, or implement actual gRPC forwarding.
+
+---
+
+### 3. Dead Code (HIGH)
+
+#### 3.1 OidcAuth struct completely dead
+- **Location:** `crates/open-plx-auth/src/lib.rs:90`
+- **Problem:** `OidcAuth` struct annotated `#[allow(dead_code)]` with `authenticate` always returning `Status::unimplemented`. Never instantiated anywhere.
+- **Fix:** Either implement OIDC properly or remove the dead code entirely. The TODO at line 109 confirms it was planned but never finished.
+
+#### 3.2 Redundant shadowing import
+- **Location:** `crates/open-plx-config/src/convert.rs:1086`
+- **Problem:** `use std::collections::HashMap;` inside `grpc_proxy_to_proto` shadows the module-level import unnecessarily.
+- **Fix:** Remove the redundant local `use` statement.
+
+#### 3.3 Flight SQL params field explicitly ignored
+- **Location:** `crates/open-plx-server/src/flight_sql_client.rs:43-44`
+- **Problem:** `params: _` is matched but never used. Query parameters cannot be bound from `DataSourceRef.params`.
+- **Fix:** Implement parameter binding per the TODO at line 68, or document why it's not yet supported.
+
+---
+
+### 4. Unsafe Patterns (MEDIUM)
+
+#### 4.1 S2 `as any` casts accessing internal APIs
+- **Location:** `frontend/src/components/widgets/S2Table.tsx:66, 73, 100`
+- **Problem:** Three `as any` casts to access S2 internal APIs. Project rules prohibit `any` types.
+- **Fix:** Create typed wrapper functions for S2 internals, or file a type issue with @antv/s2 to expose these APIs properly.
+
+---
+
+### 5. Missing Abstractions / Code Duplication (MEDIUM)
+
+#### 5.1 Repeated permission check logging blocks (4 copies)
+- **Location:**
+  - `crates/open-plx-server/src/services/widget_data.rs:149-157`
+  - `crates/open-plx-server/src/services/flight.rs:62-70` and `122-131`
+  - `crates/open-plx-server/src/services/widget_action.rs:73-81`
+- **Problem:** Identical permission-denied logging pattern copy-pasted 4 times.
+- **Fix:** Extract to a shared helper: `permission_denied(principal: &Principal, resource: &str, required_role: &str) -> Status`.
+
+#### 5.2 `extract_basic_auth` silently ignores non-basic auth
+- **Location:** `crates/open-plx-server/src/flight_sql_client.rs:223-225`
+- **Problem:** When user configures `bearer_token_secret` or `mtls` auth, `extract_basic_auth` returns `None` and code proceeds without credentials. No warning that auth type was silently ignored.
+- **Fix:** Add validation that returns an error if non-basic auth is configured, or log a warning.
+
+#### 5.3 Repetitive yaml_value conversion functions
+- **Location:** `crates/open-plx-config/src/static_data.rs:31-90`
+- **Problem:** Four nearly identical functions (`yaml_value_to_string`, `_to_i64`, `_to_f64`, `_to_bool`) follow the same pattern. Could be a single generic function.
+- **Fix:** Consolidate into a generic `yaml_value_to<T>` function using `TryFrom` trait.
+
+#### 5.4 Repeated frontend catch blocks
+- **Location:**
+  - `frontend/src/hooks/useDashboard.ts:24`
+  - `frontend/src/hooks/useDashboardList.ts:23`
+  - `frontend/src/hooks/useWidgetData.ts:78`
+  - `frontend/src/components/widgets/TableWidget.tsx:86`
+- **Problem:** Identical `catch (err)` pattern duplicated 4 times.
+- **Fix:** Extract to a shared utility: `function parseError(err: unknown): string`.
+
+---
+
+### 6. Wildcard Import (LOW)
+
+#### 6.1 `use crate::model::*` in convert.rs
+- **Location:** `crates/open-plx-config/src/convert.rs:6`
+- **Problem:** Wildcard import makes it unclear what's being used. The model module has many types (50+).
+- **Fix:** Replace with explicit imports for only the types actually used.
+
+---
+
+### 7. Performance Issue (MEDIUM)
+
+#### 7.1 Double query execution for schema-only queries
+- **Location:** `crates/open-plx-server/src/services/flight.rs:79-82`
+- **Problem:** `get_flight_info` executes the full query just to get schema, then `do_get` executes it again. Doubles load for expensive queries.
+- **Fix:** Implement schema-only query path per the TODO comment.
+
+---
+
+## Summary (Pass 4)
+
+| Severity | Count | Issues |
+|----------|-------|--------|
+| **Critical** | 2 | gRPC stub returning empty struct, YAML silent fallback |
+| **High** | 3 | OIDC dead code, gRPC forwarding stubs, action stub |
+| **Medium** | 6 | Service discovery, params not bound, double query, auth silent ignore, signal handler panic, test unwrap |
+| **Low** | 5 | Duplicate logging, duplicate catch, wildcard import, shadowing import, repetitive yaml functions |
+
+**Total Pass 4: 18 issues**

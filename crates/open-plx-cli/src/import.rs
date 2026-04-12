@@ -9,7 +9,10 @@ pub fn import(bundle_dir: &Path, config_path: &Path, force: bool) -> Result<Impo
     // First validate the bundle.
     let validation = crate::validate::validate(bundle_dir)?;
     if !validation.valid {
-        bail!("bundle validation failed with {} error(s)", validation.errors.len());
+        bail!(
+            "bundle validation failed with {} error(s)",
+            validation.errors.len()
+        );
     }
 
     // Load server config to find target directories.
@@ -18,9 +21,8 @@ pub fn import(bundle_dir: &Path, config_path: &Path, force: bool) -> Result<Impo
     let config: open_plx_config::OpenPlxConfig = serde_yaml::from_str(&config_str)
         .with_context(|| format!("failed to parse {}", config_path.display()))?;
 
-    let manifest: Manifest = serde_yaml::from_str(&std::fs::read_to_string(
-        bundle_dir.join("manifest.yaml"),
-    )?)?;
+    let manifest: Manifest =
+        serde_yaml::from_str(&std::fs::read_to_string(bundle_dir.join("manifest.yaml"))?)?;
 
     let mut imported: Vec<String> = Vec::new();
     let mut skipped: Vec<String> = Vec::new();
@@ -31,8 +33,14 @@ pub fn import(bundle_dir: &Path, config_path: &Path, force: bool) -> Result<Impo
         for entry in std::fs::read_dir(&src_dash)? {
             let entry = entry?;
             let path = entry.path();
-            if path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
-                let dest = config.dashboards_dir.join(path.file_name().ok_or_else(|| anyhow::anyhow!("path has no file name: {}", path.display()))?);
+            if path
+                .extension()
+                .is_some_and(|ext| ext == "yaml" || ext == "yml")
+            {
+                let dest =
+                    config.dashboards_dir.join(path.file_name().ok_or_else(|| {
+                        anyhow::anyhow!("path has no file name: {}", path.display())
+                    })?);
                 if dest.exists() && !force {
                     let msg = format!("{} (already exists)", dest.display());
                     eprintln!("  skipped: {}", msg);
@@ -53,8 +61,16 @@ pub fn import(bundle_dir: &Path, config_path: &Path, force: bool) -> Result<Impo
         for entry in std::fs::read_dir(&src_ds)? {
             let entry = entry?;
             let path = entry.path();
-            if path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
-                let dest = config.data_sources_dir.join(path.file_name().ok_or_else(|| anyhow::anyhow!("path has no file name: {}", path.display()))?);
+            if path
+                .extension()
+                .is_some_and(|ext| ext == "yaml" || ext == "yml")
+            {
+                let dest =
+                    config
+                        .data_sources_dir
+                        .join(path.file_name().ok_or_else(|| {
+                            anyhow::anyhow!("path has no file name: {}", path.display())
+                        })?);
                 if dest.exists() && !force {
                     let msg = format!("{} (already exists)", dest.display());
                     eprintln!("  skipped: {}", msg);
@@ -77,7 +93,10 @@ pub fn import(bundle_dir: &Path, config_path: &Path, force: bool) -> Result<Impo
     );
 
     if !skipped.is_empty() && !force {
-        bail!("{} file(s) skipped due to conflicts. Use --force to overwrite.", skipped.len());
+        bail!(
+            "{} file(s) skipped due to conflicts. Use --force to overwrite.",
+            skipped.len()
+        );
     }
 
     Ok(ImportOutput { imported, skipped })

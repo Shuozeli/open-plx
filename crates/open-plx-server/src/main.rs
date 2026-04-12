@@ -9,6 +9,7 @@ use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
 
 mod flight_sql_client;
+mod grpc_proxy_client;
 mod services;
 mod state;
 
@@ -59,6 +60,8 @@ async fn main() -> Result<()> {
     let data_source_service = services::data_source::DataSourceServiceImpl::new(app_state.clone());
     let flight_service = services::flight::FlightServiceImpl::new(app_state.clone());
     let widget_data_service = services::widget_data::WidgetDataServiceImpl::new(app_state.clone());
+    let widget_action_service =
+        services::widget_action::WidgetActionServiceImpl::new(app_state.clone());
     let (health_reporter, health_service) = tonic_health::server::health_reporter();
     tokio::spawn(async move {
         health_reporter
@@ -108,6 +111,12 @@ async fn main() -> Result<()> {
         .add_service(
             open_plx_core::pb::widget_data_service_server::WidgetDataServiceServer::with_interceptor(
                 widget_data_service,
+                auth_interceptor.clone(),
+            ),
+        )
+        .add_service(
+            open_plx_core::pb::widget_action_service_server::WidgetActionServiceServer::with_interceptor(
+                widget_action_service,
                 auth_interceptor,
             ),
         )
@@ -119,6 +128,8 @@ async fn main() -> Result<()> {
 }
 
 async fn shutdown_signal() {
+    // Fail-fast: if we cannot install signal handlers, the server cannot shut down
+    // gracefully. Panicking is the correct behavior per the fail-fast principle.
     let ctrl_c = async {
         signal::ctrl_c()
             .await

@@ -180,6 +180,7 @@ enum WidgetType {
   WIDGET_TYPE_TREEMAP = 15;
   WIDGET_TYPE_SANKEY = 16;
   WIDGET_TYPE_WORD_CLOUD = 17;
+  WIDGET_TYPE_GRAPH = 18;
 }
 
 // Position of a widget within the grid coordinate system.

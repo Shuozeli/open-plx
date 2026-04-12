@@ -63,7 +63,12 @@ fn widget_to_proto(w: &WidgetConfigYaml) -> Result<pb::WidgetConfig> {
         }),
         data_source: Some(pb::DataSourceRef {
             data_source: w.data_source.data_source.clone(),
-            params: std::collections::HashMap::new(), // TODO(refactor): Convert typed params
+            params: w
+                .data_source
+                .params
+                .iter()
+                .map(|(k, v)| (k.clone(), serde_yaml_value_to_param_value(v)))
+                .collect(),
         }),
         spec: Some(widget_spec_to_proto(&w.spec)?),
         click_interactions: w
@@ -91,7 +96,11 @@ fn widget_to_proto(w: &WidgetConfigYaml) -> Result<pb::WidgetConfig> {
 /// Validate that every click_interaction.target_variable references a declared
 /// dashboard variable. Fails fast at config load time so agents get clear errors.
 fn validate_click_interactions(dashboard: &DashboardFile) -> Result<()> {
-    let var_names: HashSet<&str> = dashboard.variables.iter().map(|v| v.name.as_str()).collect();
+    let var_names: HashSet<&str> = dashboard
+        .variables
+        .iter()
+        .map(|v| v.name.as_str())
+        .collect();
     for widget in &dashboard.widgets {
         for ci in &widget.click_interactions {
             if !var_names.contains(ci.target_variable.as_str()) {
@@ -111,7 +120,11 @@ fn validate_click_interactions(dashboard: &DashboardFile) -> Result<()> {
 /// Validate that every visible_when condition references a declared variable,
 /// and that value-requiring operators have a value.
 fn validate_visible_when(dashboard: &DashboardFile) -> Result<()> {
-    let var_names: HashSet<&str> = dashboard.variables.iter().map(|v| v.name.as_str()).collect();
+    let var_names: HashSet<&str> = dashboard
+        .variables
+        .iter()
+        .map(|v| v.name.as_str())
+        .collect();
     for widget in &dashboard.widgets {
         for cond in &widget.visible_when {
             if !var_names.contains(cond.variable.as_str()) {
@@ -162,9 +175,11 @@ fn widget_spec_to_proto(spec: &WidgetSpecYaml) -> Result<pb::WidgetSpec> {
         pb::widget_spec::Spec::Sankey(sankey_to_proto(s))
     } else if let Some(w) = &spec.word_cloud {
         pb::widget_spec::Spec::WordCloud(word_cloud_to_proto(w))
+    } else if let Some(g) = &spec.graph {
+        pb::widget_spec::Spec::Graph(graph_to_proto(g))
     } else {
         bail!(
-            "widget spec must have exactly one of: chart, pivot_table, metric_card, text, table, gauge, funnel, treemap, sankey, word_cloud"
+            "widget spec must have exactly one of: chart, pivot_table, metric_card, text, table, gauge, funnel, treemap, sankey, word_cloud, graph"
         );
     };
 
@@ -408,6 +423,7 @@ fn interaction_to_proto(i: &TableInteractionYaml) -> pb::TableInteraction {
         enable_resize: i.enable_resize,
         enable_multi_selection: i.enable_multi_selection,
         enable_range_selection: i.enable_range_selection,
+        enable_column_drag: i.enable_column_drag,
     }
 }
 
@@ -439,6 +455,55 @@ fn word_cloud_to_proto(w: &WordCloudSpecYaml) -> pb::WordCloudSpec {
         weight_field: w.weight_field.clone(),
         max_words: w.max_words.unwrap_or(0),
         font_size_range: w.font_size_range.clone(),
+    }
+}
+
+fn graph_to_proto(g: &GraphSpecYaml) -> pb::GraphSpec {
+    let layout_type = match g.layout.as_ref().and_then(|l| l.r#type.as_deref()) {
+        Some("force") => pb::GraphLayoutType::Force,
+        Some("dagre") => pb::GraphLayoutType::Dagre,
+        Some("circular") => pb::GraphLayoutType::Circular,
+        Some("grid") => pb::GraphLayoutType::Grid,
+        Some("concentric") => pb::GraphLayoutType::Concentric,
+        _ => pb::GraphLayoutType::Unspecified,
+    };
+    pb::GraphSpec {
+        data_mapping: Some(pb::GraphDataMapping {
+            source_field: g.data_mapping.source_field.clone(),
+            target_field: g.data_mapping.target_field.clone(),
+            value_field: g.data_mapping.value_field.clone().unwrap_or_default(),
+            label_field: g.data_mapping.label_field.clone().unwrap_or_default(),
+            group_field: g.data_mapping.group_field.clone().unwrap_or_default(),
+        }),
+        layout: g.layout.as_ref().map(|l| pb::GraphLayout {
+            r#type: layout_type as i32,
+            iterations: l.iterations.unwrap_or(0),
+            direction: l.direction.clone().unwrap_or_default(),
+            node_spacing: l.node_spacing.unwrap_or(0),
+            rank_spacing: l.rank_spacing.unwrap_or(0),
+        }),
+        node_style: g.node_style.as_ref().map(|n| pb::GraphNodeStyle {
+            size: n.size.unwrap_or(20.0),
+            color: n.color.clone().unwrap_or_default(),
+            show_label: n.show_label.unwrap_or(false),
+            label_font_size: n.label_font_size.unwrap_or(0),
+            border_color: n.border_color.clone().unwrap_or_default(),
+            border_width: n.border_width.unwrap_or(0.0),
+        }),
+        edge_style: g.edge_style.as_ref().map(|e| pb::GraphEdgeStyle {
+            color: e.color.clone().unwrap_or_default(),
+            width: e.width.unwrap_or(1.0),
+            style: e.style.clone().unwrap_or_default(),
+            show_arrow: e.show_arrow.unwrap_or(false),
+            arrow_size: e.arrow_size.unwrap_or(0.0),
+        }),
+        interaction: g.interaction.as_ref().map(|i| pb::GraphInteraction {
+            enable_drag: i.enable_drag.unwrap_or(false),
+            enable_zoom: i.enable_zoom.unwrap_or(false),
+            enable_click_select: i.enable_click_select.unwrap_or(false),
+            enable_tooltip: i.enable_tooltip.unwrap_or(false),
+            enable_edge_click: i.enable_edge_click.unwrap_or(false),
+        }),
     }
 }
 
@@ -492,6 +557,77 @@ fn funnel_to_proto(f: &FunnelSpecYaml) -> Result<pb::FunnelSpec> {
     })
 }
 
+fn action_to_proto(a: &TableActionYaml) -> Result<pb::TableAction> {
+    let style = match a.style.as_deref() {
+        Some("primary") => pb::ActionStyle::Primary,
+        Some("secondary") => pb::ActionStyle::Secondary,
+        Some("danger") => pb::ActionStyle::Danger,
+        Some("link") => pb::ActionStyle::Link,
+        _ => pb::ActionStyle::Unspecified,
+    };
+
+    let result_handling = match a.grpc_call.result_handling.as_deref() {
+        Some("set_variable") => pb::ActionResultHandling::SetVariable,
+        Some("refresh") => pb::ActionResultHandling::Refresh,
+        Some("toast") => pb::ActionResultHandling::Toast,
+        _ => pb::ActionResultHandling::Unspecified,
+    };
+
+    Ok(pb::TableAction {
+        id: a.id.clone(),
+        label: a.label.clone(),
+        icon: a.icon.clone().unwrap_or_default(),
+        style: style.into(),
+        confirm_message: a.confirm_message.clone().unwrap_or_default(),
+        grpc_call: Some(pb::ActionGrpcCall {
+            method: a.grpc_call.method.clone(),
+            request_template: a.grpc_call.request_template.clone(),
+            result_handling: result_handling.into(),
+        }),
+    })
+}
+
+fn cell_renderer_to_proto(r: &TableCellRendererYaml) -> Result<pb::TableCellRenderer> {
+    use pb::table_cell_renderer::Renderer;
+
+    match r {
+        TableCellRendererYaml::Text { text: _ } => Ok(pb::TableCellRenderer {
+            renderer: Some(Renderer::Text(pb::TableCellRendererText {})),
+        }),
+        TableCellRendererYaml::Icon { icon } => {
+            let value_to_icon = icon.value_to_icon.clone();
+            Ok(pb::TableCellRenderer {
+                renderer: Some(Renderer::Icon(pb::TableCellRendererIcon {
+                    value_to_icon,
+                    fallback_icon: icon.fallback_icon.clone().unwrap_or_default(),
+                })),
+            })
+        }
+        TableCellRendererYaml::Bar { bar } => Ok(pb::TableCellRenderer {
+            renderer: Some(Renderer::Bar(pb::TableCellRendererBar {
+                value_field: bar.value_field.clone().unwrap_or_default(),
+                max_value: bar.max_value.unwrap_or(0.0),
+                show_label: bar.show_label.unwrap_or(false),
+                color: bar.color.clone().unwrap_or_default(),
+            })),
+        }),
+        TableCellRendererYaml::Link { link } => Ok(pb::TableCellRenderer {
+            renderer: Some(Renderer::Link(pb::TableCellRendererLink {
+                url_template: link.url_template.clone(),
+                new_tab: link.new_tab.unwrap_or(false),
+            })),
+        }),
+        TableCellRendererYaml::Progress { progress } => Ok(pb::TableCellRenderer {
+            renderer: Some(Renderer::Progress(pb::TableCellRendererProgress {
+                value_field: progress.value_field.clone().unwrap_or_default(),
+                total_field: progress.total_field.clone().unwrap_or_default(),
+                max_value: progress.max_value.unwrap_or(0.0),
+                show_label: progress.show_label.unwrap_or(false),
+            })),
+        }),
+    }
+}
+
 fn table_to_proto(t: &TableSpecYaml) -> Result<pb::TableSpec> {
     let columns = t
         .columns
@@ -504,13 +640,89 @@ fn table_to_proto(t: &TableSpecYaml) -> Result<pb::TableSpec> {
                 None => pb::TableColumnAlign::Unspecified,
                 Some(other) => bail!("unknown table column align: '{other}'"),
             };
+            let filter = c
+                .filter
+                .as_ref()
+                .map(|f| -> Result<pb::TableFilterConfig> {
+                    let filter_type = match f.r#type.as_deref() {
+                        Some("list") => pb::TableFilterType::List,
+                        Some("text") => pb::TableFilterType::Text,
+                        Some("range") => pb::TableFilterType::Range,
+                        None => pb::TableFilterType::Unspecified,
+                        Some(other) => bail!("unknown table filter type: '{other}'"),
+                    };
+                    Ok(pb::TableFilterConfig {
+                        r#type: filter_type.into(),
+                        filter_values: f.filter_values.clone(),
+                    })
+                })
+                .transpose()?;
+            let renderer = c
+                .renderer
+                .as_ref()
+                .map(cell_renderer_to_proto)
+                .transpose()?;
+            let action = c.action.as_ref().map(action_to_proto).transpose()?;
             Ok(pb::TableColumn {
                 field: c.field.clone(),
                 width: c.width.unwrap_or(0),
                 align: align.into(),
+                sortable: c.sortable,
+                filterable: c.filterable,
+                filter,
+                hidden: c.hidden,
+                order: c.order,
+                renderer,
+                action,
             })
         })
         .collect::<Result<Vec<_>>>()?;
+
+    let view = t.view.as_ref().map(|v| pb::TableViewConfig {
+        enable_search: v.enable_search,
+        search_placeholder: v.search_placeholder.clone().unwrap_or_default(),
+        case_sensitive: v.case_sensitive,
+        search_fields: v.search_fields.clone(),
+    });
+
+    let default_sort = t.default_sort.as_ref().map(|s| pb::TableDefaultSort {
+        field: s.field.clone(),
+        direction: match s.direction.as_deref() {
+            Some("asc") => pb::SortDirection::Asc as i32,
+            Some("desc") => pb::SortDirection::Desc as i32,
+            _ => pb::SortDirection::Unspecified as i32,
+        },
+    });
+
+    let selection = t.selection.as_ref().map(|s| pb::TableSelectionConfig {
+        enabled: s.enabled,
+        single: s.single,
+        persistent: s.persistent,
+    });
+
+    let export = t.export.as_ref().map(|e| pb::TableExportConfig {
+        enable_csv: e.enable_csv,
+        enable_excel: e.enable_excel,
+        filename_template: e.filename_template.clone().unwrap_or_default(),
+    });
+
+    let expandable = t.expandable.as_ref().map(|e| pb::TableExpandConfig {
+        enabled: e.enabled,
+        row_id_field: e.row_id_field.clone().unwrap_or_default(),
+        hierarchy_fields: e.hierarchy_fields.clone(),
+        default_expanded: e.default_expanded,
+    });
+
+    let col_spans = t
+        .col_spans
+        .iter()
+        .map(|c| pb::TableColSpan {
+            field: c.field.clone(),
+            condition: c.condition.clone().unwrap_or_default(),
+            col_span: c.col_span,
+        })
+        .collect();
+
     Ok(pb::TableSpec {
         columns,
         meta: t.meta.iter().map(field_meta_to_proto).collect(),
@@ -524,6 +736,22 @@ fn table_to_proto(t: &TableSpecYaml) -> Result<pb::TableSpec> {
             .map(conditional_format_to_proto)
             .collect::<Result<Vec<_>>>()?,
         interaction: t.interaction.as_ref().map(interaction_to_proto),
+        view,
+        frozen_cols_left: t.frozen_cols_left.clone(),
+        frozen_cols_right: t.frozen_cols_right.clone(),
+        default_sort,
+        selection,
+        export,
+        expandable,
+        col_spans,
+        server_pagination: t
+            .server_pagination
+            .as_ref()
+            .map(|sp| pb::ServerSidePagination {
+                page_size: sp.page_size.unwrap_or(20),
+                show_total_count: sp.show_total_count,
+                show_page_size_selector: sp.show_page_size_selector,
+            }),
     })
 }
 
@@ -563,6 +791,7 @@ fn parse_widget_type(s: &str) -> Result<pb::WidgetType> {
         "WIDGET_TYPE_TREEMAP" => Ok(pb::WidgetType::Treemap),
         "WIDGET_TYPE_SANKEY" => Ok(pb::WidgetType::Sankey),
         "WIDGET_TYPE_WORD_CLOUD" => Ok(pb::WidgetType::WordCloud),
+        "WIDGET_TYPE_GRAPH" => Ok(pb::WidgetType::Graph),
         other => bail!("unknown widget_type: '{other}'"),
     }
 }
@@ -814,11 +1043,18 @@ fn parse_date_granularity(s: &str) -> Result<pb::DateGranularity> {
 
 /// Convert a DataSourceFile (YAML) to a DataSource proto message.
 pub fn data_source_to_proto(file: &DataSourceFile) -> Result<pb::DataSource> {
+    // GrpcProxy takes precedence if both are set
+    let config = if let Some(ref g) = file.grpc_proxy {
+        pb::data_source::Config::GrpcProxy(grpc_proxy_to_proto(g)?)
+    } else {
+        data_source_config_to_proto(&file.config)?
+    };
+
     Ok(pb::DataSource {
         name: file.name.clone(),
         display_name: file.display_name.clone(),
         description: file.description.clone(),
-        config: Some(data_source_config_to_proto(&file.config)?),
+        config: Some(config),
         create_time: None,
         update_time: None,
     })
@@ -837,12 +1073,12 @@ fn data_source_config_to_proto(config: &DataSourceConfigYaml) -> Result<pb::data
         DataSourceConfigYaml::FlightSql {
             endpoint,
             query,
-            auth: _,
+            auth,
             params,
         } => Ok(pb::data_source::Config::FlightSql(pb::FlightSqlConfig {
             endpoint: endpoint.clone(),
             query: query.clone(),
-            auth: None, // TODO(refactor): Convert auth from YAML
+            auth: auth.as_ref().and_then(yaml_auth_to_flight_auth),
             params: params
                 .iter()
                 .map(query_param_to_proto)
@@ -851,6 +1087,152 @@ fn data_source_config_to_proto(config: &DataSourceConfigYaml) -> Result<pb::data
             query_timeout_seconds: 0,
         })),
     }
+}
+
+fn grpc_proxy_to_proto(g: &GrpcProxyConfigYaml) -> Result<pb::GrpcProxyConfig> {
+    use std::collections::HashMap;
+
+    let request_template: HashMap<String, pb::ParamValue> = g
+        .request_template
+        .iter()
+        .map(|(k, v)| {
+            let param_value = string_to_param_value(v);
+            (k.clone(), param_value)
+        })
+        .collect();
+
+    let response_schema = g.response_schema.as_ref().map(|rs| pb::ResponseSchema {
+        columns: rs
+            .columns
+            .iter()
+            .map(|c| {
+                let data_type = match c.r#type.as_str() {
+                    "STRING" => pb::DataType::String as i32,
+                    "INT64" => pb::DataType::Int64 as i32,
+                    "DOUBLE" => pb::DataType::Double as i32,
+                    "BOOL" => pb::DataType::Bool as i32,
+                    "TIMESTAMP" => pb::DataType::Timestamp as i32,
+                    _ => pb::DataType::String as i32,
+                };
+                pb::ColumnSchema {
+                    field: c.field.clone(),
+                    r#type: data_type,
+                }
+            })
+            .collect(),
+    });
+
+    Ok(pb::GrpcProxyConfig {
+        service: g.service.clone(),
+        method: g.method.clone(),
+        request_template,
+        response_schema,
+        endpoint: g.endpoint.clone().unwrap_or_default(),
+    })
+}
+
+/// Convert a string to a ParamValue (always as string type).
+fn string_to_param_value(s: &str) -> pb::ParamValue {
+    pb::ParamValue {
+        value: Some(pb::param_value::Value::StringValue(s.to_string())),
+    }
+}
+
+/// Convert a serde_yaml::Value to a ParamValue.
+/// Handles string, int, float, bool, and null values.
+fn serde_yaml_value_to_param_value(v: &serde_yaml::Value) -> pb::ParamValue {
+    let value = match v {
+        serde_yaml::Value::String(s) => pb::param_value::Value::StringValue(s.clone()),
+        serde_yaml::Value::Bool(b) => pb::param_value::Value::BoolValue(*b),
+        serde_yaml::Value::Number(n) => {
+            if let Some(i) = n.as_i64() {
+                pb::param_value::Value::IntValue(i)
+            } else if let Some(f) = n.as_f64() {
+                pb::param_value::Value::DoubleValue(f)
+            } else {
+                // Fallback: serialize as string
+                pb::param_value::Value::StringValue(n.to_string())
+            }
+        }
+        serde_yaml::Value::Null => pb::param_value::Value::StringValue(String::new()),
+        _ => {
+            // Sequence, Mapping: serialize to string.
+            // Note: serde_yaml::to_string rarely fails on valid YAML values.
+            // If it does, empty string is a safe fallback that will likely fail
+            // at the data source level rather than silently producing wrong results.
+            pb::param_value::Value::StringValue(serde_yaml::to_string(v).unwrap_or_default())
+        }
+    };
+    pb::ParamValue { value: Some(value) }
+}
+
+/// Convert a YAML auth value to FlightAuth proto.
+/// Supports bearer_token_secret, basic_auth, mtls, and no_auth methods.
+fn yaml_auth_to_flight_auth(auth: &serde_yaml::Value) -> Option<pb::FlightAuth> {
+    let mapping = auth.as_mapping()?;
+    for (key, value) in mapping {
+        let key_str = key.as_str()?;
+        match key_str {
+            "bearer_token_secret" => {
+                return Some(pb::FlightAuth {
+                    method: Some(pb::flight_auth::Method::BearerTokenSecret(
+                        value.as_str().unwrap_or_default().to_string(),
+                    )),
+                });
+            }
+            "basic_auth" => {
+                let sub_mapping = value.as_mapping()?;
+                let username = sub_mapping
+                    .get(serde_yaml::Value::String("username_secret".to_string()))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_default()
+                    .to_string();
+                let password = sub_mapping
+                    .get(serde_yaml::Value::String("password_secret".to_string()))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_default()
+                    .to_string();
+                return Some(pb::FlightAuth {
+                    method: Some(pb::flight_auth::Method::BasicAuth(pb::BasicAuth {
+                        username_secret: username,
+                        password_secret: password,
+                    })),
+                });
+            }
+            "mtls" => {
+                let sub_mapping = value.as_mapping()?;
+                let client_cert_path = sub_mapping
+                    .get(serde_yaml::Value::String("client_cert_path".to_string()))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_default()
+                    .to_string();
+                let client_key_path = sub_mapping
+                    .get(serde_yaml::Value::String("client_key_path".to_string()))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_default()
+                    .to_string();
+                let ca_cert_path = sub_mapping
+                    .get(serde_yaml::Value::String("ca_cert_path".to_string()))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or_default()
+                    .to_string();
+                return Some(pb::FlightAuth {
+                    method: Some(pb::flight_auth::Method::Mtls(pb::MtlsAuth {
+                        client_cert_path,
+                        client_key_path,
+                        ca_cert_path,
+                    })),
+                });
+            }
+            "no_auth" => {
+                return Some(pb::FlightAuth {
+                    method: Some(pb::flight_auth::Method::NoAuth(pb::NoAuth {})),
+                });
+            }
+            _ => {}
+        }
+    }
+    None
 }
 
 fn static_column_to_proto(col: &StaticColumnYaml) -> Result<pb::StaticColumn> {

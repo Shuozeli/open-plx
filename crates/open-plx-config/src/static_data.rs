@@ -184,6 +184,7 @@ mod tests {
                     },
                 ],
             },
+            grpc_proxy: None,
         };
 
         let batch = static_config_to_record_batch(&ds).unwrap();
@@ -206,6 +207,7 @@ mod tests {
                     values: vec![serde_yaml::Value::String("not_a_number".to_string())],
                 }],
             },
+            grpc_proxy: None,
         };
 
         let result = static_config_to_record_batch(&ds);

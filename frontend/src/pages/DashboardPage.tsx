@@ -14,7 +14,7 @@ interface DashboardPageProps {
 
 export function DashboardPage({ dashboardName }: DashboardPageProps) {
   const { dashboard, loading, error, refresh } = useDashboard(dashboardName);
-  const { values: variableValues, setValue: setVariableValue, revision } = useVariables(
+  const { values: variableValues, setValue: setVariableValue, revision, initFromUrl } = useVariables(
     dashboard?.variables ?? [],
   );
   const dark = useDarkMode();
@@ -28,6 +28,11 @@ export function DashboardPage({ dashboardName }: DashboardPageProps) {
   useEffect(() => {
     registerTheme(dark);
   }, [dark]);
+
+  // Initialize variables from URL params on mount
+  useEffect(() => {
+    initFromUrl();
+  }, [initFromUrl]);
 
   // Register dashboard state for e2e tests
   useEffect(() => {

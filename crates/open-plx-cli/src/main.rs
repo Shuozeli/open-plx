@@ -136,8 +136,10 @@ fn run(cli: Cli) -> Result<CommandOutput> {
 
             if !cli.json {
                 for e in &entries {
-                    println!("{:40} {:30} ({} widgets, {} vars)",
-                        e.name, e.title, e.widget_count, e.variable_count);
+                    println!(
+                        "{:40} {:30} ({} widgets, {} vars)",
+                        e.name, e.title, e.widget_count, e.variable_count
+                    );
                 }
                 eprintln!("{} dashboard(s)", entries.len());
             }
@@ -147,7 +149,9 @@ fn run(cli: Cli) -> Result<CommandOutput> {
                 success: true,
                 error: None,
                 warnings: vec![],
-                data: OutputData::List(ListOutput { dashboards: entries }),
+                data: OutputData::List(ListOutput {
+                    dashboards: entries,
+                }),
             })
         }
         Command::Export {

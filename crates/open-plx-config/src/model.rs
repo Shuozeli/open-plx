@@ -131,6 +131,7 @@ pub struct WidgetSpecYaml {
     pub treemap: Option<TreemapSpecYaml>,
     pub sankey: Option<SankeySpecYaml>,
     pub word_cloud: Option<WordCloudSpecYaml>,
+    pub graph: Option<GraphSpecYaml>,
 }
 
 // --- Chart ---
@@ -324,6 +325,24 @@ pub struct TableSpecYaml {
     pub conditions: Vec<ConditionalFormatYaml>,
     #[serde(default)]
     pub interaction: Option<TableInteractionYaml>,
+    #[serde(default)]
+    pub view: Option<TableViewConfigYaml>,
+    #[serde(default)]
+    pub frozen_cols_left: Vec<String>,
+    #[serde(default)]
+    pub frozen_cols_right: Vec<String>,
+    #[serde(default)]
+    pub default_sort: Option<TableDefaultSortYaml>,
+    #[serde(default)]
+    pub selection: Option<TableSelectionConfigYaml>,
+    #[serde(default)]
+    pub export: Option<TableExportConfigYaml>,
+    #[serde(default)]
+    pub expandable: Option<TableExpandConfigYaml>,
+    #[serde(default)]
+    pub col_spans: Vec<TableColSpanYaml>,
+    #[serde(default)]
+    pub server_pagination: Option<ServerSidePaginationYaml>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -333,11 +352,187 @@ pub struct TableColumnYaml {
     pub width: Option<i32>,
     #[serde(default)]
     pub align: Option<String>,
+    #[serde(default)]
+    pub sortable: bool,
+    #[serde(default)]
+    pub filterable: bool,
+    #[serde(default)]
+    pub filter: Option<TableFilterConfigYaml>,
+    #[serde(default)]
+    pub hidden: bool,
+    #[serde(default)]
+    pub order: i32,
+    #[serde(default)]
+    pub renderer: Option<TableCellRendererYaml>,
+    #[serde(default)]
+    pub action: Option<TableActionYaml>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum TableCellRendererYaml {
+    Text {
+        text: TableCellRendererTextYaml,
+    },
+    Icon {
+        icon: TableCellRendererIconYaml,
+    },
+    Bar {
+        bar: TableCellRendererBarYaml,
+    },
+    Link {
+        link: TableCellRendererLinkYaml,
+    },
+    Progress {
+        progress: TableCellRendererProgressYaml,
+    },
+}
+
+#[derive(Debug, Deserialize, Default)]
+pub struct TableCellRendererTextYaml {}
+
+#[derive(Debug, Deserialize)]
+pub struct TableCellRendererIconYaml {
+    #[serde(default)]
+    pub value_to_icon: std::collections::HashMap<String, String>,
+    #[serde(default)]
+    pub fallback_icon: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TableCellRendererBarYaml {
+    #[serde(default)]
+    pub value_field: Option<String>,
+    #[serde(default)]
+    pub max_value: Option<f64>,
+    #[serde(default)]
+    pub show_label: Option<bool>,
+    #[serde(default)]
+    pub color: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TableCellRendererLinkYaml {
+    pub url_template: String,
+    #[serde(default)]
+    pub new_tab: Option<bool>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TableCellRendererProgressYaml {
+    #[serde(default)]
+    pub value_field: Option<String>,
+    #[serde(default)]
+    pub total_field: Option<String>,
+    #[serde(default)]
+    pub max_value: Option<f64>,
+    #[serde(default)]
+    pub show_label: Option<bool>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TableViewConfigYaml {
+    #[serde(default)]
+    pub enable_search: bool,
+    #[serde(default)]
+    pub search_placeholder: Option<String>,
+    #[serde(default)]
+    pub case_sensitive: bool,
+    #[serde(default)]
+    pub search_fields: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TableFilterConfigYaml {
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub filter_values: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct TablePaginationYaml {
     pub page_size: i32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ServerSidePaginationYaml {
+    #[serde(default)]
+    pub page_size: Option<i32>,
+    #[serde(default)]
+    pub show_total_count: bool,
+    #[serde(default)]
+    pub show_page_size_selector: bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TableDefaultSortYaml {
+    pub field: String,
+    #[serde(default)]
+    pub direction: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TableSelectionConfigYaml {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
+    pub single: bool,
+    #[serde(default)]
+    pub persistent: bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TableExportConfigYaml {
+    #[serde(default)]
+    pub enable_csv: bool,
+    #[serde(default)]
+    pub enable_excel: bool,
+    #[serde(default)]
+    pub filename_template: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TableExpandConfigYaml {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
+    pub row_id_field: Option<String>,
+    #[serde(default)]
+    pub hierarchy_fields: Vec<String>,
+    #[serde(default)]
+    pub default_expanded: bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TableColSpanYaml {
+    pub field: String,
+    #[serde(default)]
+    pub condition: Option<String>,
+    pub col_span: i32,
+}
+
+// --- Table Action ---
+
+#[derive(Debug, Deserialize)]
+pub struct TableActionYaml {
+    pub id: String,
+    pub label: String,
+    #[serde(default)]
+    pub icon: Option<String>,
+    #[serde(default)]
+    pub style: Option<String>,
+    #[serde(default)]
+    pub confirm_message: Option<String>,
+    pub grpc_call: ActionGrpcCallYaml,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ActionGrpcCallYaml {
+    pub method: String,
+    pub request_template: String,
+    #[serde(default)]
+    pub result_handling: Option<String>,
 }
 
 // --- Gauge ---
@@ -436,6 +631,8 @@ pub struct TableInteractionYaml {
     pub enable_multi_selection: bool,
     #[serde(default)]
     pub enable_range_selection: bool,
+    #[serde(default)]
+    pub enable_column_drag: bool,
 }
 
 // --- Word Cloud ---
@@ -457,6 +654,91 @@ pub struct TextSpecYaml {
     pub content: String,
     #[serde(default)]
     pub format: Option<String>,
+}
+
+// --- Graph ---
+
+#[derive(Debug, Deserialize)]
+pub struct GraphSpecYaml {
+    pub data_mapping: GraphDataMappingYaml,
+    #[serde(default)]
+    pub layout: Option<GraphLayoutYaml>,
+    #[serde(default)]
+    pub node_style: Option<GraphNodeStyleYaml>,
+    #[serde(default)]
+    pub edge_style: Option<GraphEdgeStyleYaml>,
+    #[serde(default)]
+    pub interaction: Option<GraphInteractionYaml>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GraphDataMappingYaml {
+    pub source_field: String,
+    pub target_field: String,
+    #[serde(default)]
+    pub value_field: Option<String>,
+    #[serde(default)]
+    pub label_field: Option<String>,
+    #[serde(default)]
+    pub group_field: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GraphLayoutYaml {
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub iterations: Option<i32>,
+    #[serde(default)]
+    pub direction: Option<String>,
+    #[serde(default)]
+    pub node_spacing: Option<i32>,
+    #[serde(default)]
+    pub rank_spacing: Option<i32>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GraphNodeStyleYaml {
+    #[serde(default)]
+    pub size: Option<f64>,
+    #[serde(default)]
+    pub color: Option<String>,
+    #[serde(default)]
+    pub show_label: Option<bool>,
+    #[serde(default)]
+    pub label_font_size: Option<i32>,
+    #[serde(default)]
+    pub border_color: Option<String>,
+    #[serde(default)]
+    pub border_width: Option<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GraphEdgeStyleYaml {
+    #[serde(default)]
+    pub color: Option<String>,
+    #[serde(default)]
+    pub width: Option<f64>,
+    #[serde(default)]
+    pub style: Option<String>,
+    #[serde(default)]
+    pub show_arrow: Option<bool>,
+    #[serde(default)]
+    pub arrow_size: Option<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GraphInteractionYaml {
+    #[serde(default)]
+    pub enable_drag: Option<bool>,
+    #[serde(default)]
+    pub enable_zoom: Option<bool>,
+    #[serde(default)]
+    pub enable_click_select: Option<bool>,
+    #[serde(default)]
+    pub enable_tooltip: Option<bool>,
+    #[serde(default)]
+    pub enable_edge_click: Option<bool>,
 }
 
 // =============================================================================
@@ -583,6 +865,8 @@ pub struct DataSourceFile {
     #[serde(default)]
     pub description: String,
     pub config: DataSourceConfigYaml,
+    #[serde(default)]
+    pub grpc_proxy: Option<GrpcProxyConfigYaml>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -618,6 +902,33 @@ pub struct StaticColumnYaml {
     pub arrow_type: String,
     #[serde(default)]
     pub values: Vec<serde_yaml::Value>,
+}
+
+// =============================================================================
+// GrpcProxy Config (YAML)
+// =============================================================================
+
+#[derive(Debug, Deserialize)]
+pub struct GrpcProxyConfigYaml {
+    pub service: String,
+    pub method: String,
+    #[serde(default)]
+    pub request_template: std::collections::HashMap<String, String>,
+    #[serde(default)]
+    pub response_schema: Option<ResponseSchemaYaml>,
+    #[serde(default)]
+    pub endpoint: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ResponseSchemaYaml {
+    pub columns: Vec<ColumnSchemaYaml>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ColumnSchemaYaml {
+    pub field: String,
+    pub r#type: String,
 }
 
 // =============================================================================

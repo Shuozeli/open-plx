@@ -1,12 +1,14 @@
-import { Card, Spin } from "antd";
+import { Card, Spin, message } from "antd";
 import { useEffect, useRef, useState } from "react";
+import { create } from "@bufbuild/protobuf";
 import type { WidgetProps } from "./WidgetRegistry.js";
 import { tableProtoToS2, tableProtoToTestState } from "../../services/mappers/tableMapper.js";
-import { S2Table } from "./S2Table.js";
+import { S2Table, type ActionInvokeResult } from "./S2Table.js";
 import { registerWidget } from "../../services/testRegistry.js";
-import { WidgetType } from "../../gen/open_plx/v1/dashboard_pb.js";
+import { WidgetType, ParamValueSchema } from "../../gen/open_plx/v1/dashboard_pb.js";
+import { widgetActionClient } from "../../services/grpc/client.js";
 
-export function TableWidget({ config, data, loading, error, onClickInteraction }: WidgetProps) {
+export function TableWidget({ dashboardName, config, data, loading, error, onClickInteraction, onVariableChange }: WidgetProps) {
   const spec = config.spec?.spec.case === "table" ? config.spec.spec.value : null;
   const bodyRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ w: 800, h: 300 });
@@ -49,7 +51,44 @@ export function TableWidget({ config, data, loading, error, onClickInteraction }
     return <Card title={config.title} style={{ height: "100%" }}><Spin /></Card>;
   }
 
-  const { dataCfg, options } = tableProtoToS2(spec, data, dims.w, dims.h);
+  const { dataCfg, options, linkColumn, colSpans, actionColumns } = tableProtoToS2(spec, data, dims.w, dims.h);
+
+  const handleActionInvoke = async (actionId: string, requestBody: string): Promise<ActionInvokeResult> => {
+    if (!dashboardName) {
+      return { success: false, message: "Dashboard name not available" };
+    }
+    try {
+      const response = await widgetActionClient.invokeAction({
+        dashboardName,
+        widgetId: config.id,
+        actionId,
+        requestBody,
+      });
+
+      if (response.success) {
+        // Handle SET_VARIABLE result handling
+        if (response.variableName && response.variableValue && onVariableChange) {
+          const paramValue = create(ParamValueSchema, {
+            value: { case: "stringValue", value: response.variableValue },
+          });
+          onVariableChange(response.variableName, paramValue);
+        }
+        message.success(response.message || "Action completed");
+      } else {
+        message.error(response.message || "Action failed");
+      }
+      return {
+        success: response.success,
+        message: response.message || "Action completed",
+        variableName: response.variableName,
+        variableValue: response.variableValue,
+      };
+    } catch (err) {
+      console.error("Action invocation failed:", err);
+      message.error("Action invocation failed");
+      return { success: false, message: "Action invocation failed" };
+    }
+  };
 
   return (
     <Card
@@ -59,7 +98,17 @@ export function TableWidget({ config, data, loading, error, onClickInteraction }
     >
       <div ref={bodyRef} style={{ width: "100%", height: "100%" }}>
         {dims.w > 0 && dims.h > 0 && (
-          <S2Table dataCfg={dataCfg} options={options} onRowClick={onClickInteraction} />
+          <S2Table
+            dataCfg={dataCfg}
+            options={options}
+            onRowClick={onClickInteraction}
+            linkColumnField={linkColumn?.field}
+            linkTemplate={linkColumn?.urlTemplate}
+            linkNewTab={linkColumn?.newTab}
+            colSpans={colSpans}
+            actionColumns={actionColumns}
+            onActionInvoke={handleActionInvoke}
+          />
         )}
       </div>
     </Card>

@@ -1,0 +1,74 @@
+syntax = "proto3";
+package open_plx.v1;
+
+// Service for invoking widget actions (e.g., row action buttons in tables).
+service WidgetActionService {
+  // Invoke an action on a widget (e.g., "Restart" button on a table row).
+  rpc InvokeAction(InvokeActionRequest) returns (InvokeActionResponse);
+}
+
+message InvokeActionRequest {
+  // The dashboard containing the widget.
+  string dashboard_name = 1;
+  // The widget receiving the action.
+  string widget_id = 2;
+  // The action id (from TableAction.id).
+  string action_id = 3;
+  // Serialized JSON matching the request template.
+  string request_body = 4;
+}
+
+message InvokeActionResponse {
+  // Whether the action succeeded.
+  bool success = 1;
+  // Human-readable message (for display in toast).
+  string message = 2;
+  // For SET_VARIABLE result handling: the variable name to set.
+  string variable_name = 3;
+  // For SET_VARIABLE result handling: the value to set.
+  string variable_value = 4;
+}
+
+// Action definition for a table column.
+message TableAction {
+  // Unique identifier for this action within the widget.
+  string id = 1;
+  // Button label text.
+  string label = 2;
+  // AntD icon name (e.g., "ReloadOutlined").
+  string icon = 3;
+  // Visual style.
+  ActionStyle style = 4;
+  // Confirmation dialog message. If empty, no confirmation is shown.
+  string confirm_message = 5;
+  // The gRPC call to make when the action is invoked.
+  ActionGrpcCall grpc_call = 6;
+}
+
+enum ActionStyle {
+  ACTION_STYLE_UNSPECIFIED = 0;
+  ACTION_STYLE_PRIMARY = 1;
+  ACTION_STYLE_SECONDARY = 2;
+  ACTION_STYLE_DANGER = 3;
+  ACTION_STYLE_LINK = 4;
+}
+
+message ActionGrpcCall {
+  // The fully-qualified gRPC method: "package.ServiceName/MethodName"
+  string method = 1;
+  // JSON template for the request body.
+  // Supports {row.fieldName} interpolation.
+  string request_template = 2;
+  // What to do after the action completes.
+  ActionResultHandling result_handling = 3;
+}
+
+enum ActionResultHandling {
+  ACTION_RESULT_HANDLING_UNSPECIFIED = 0;
+  // Set a dashboard variable with the response value.
+  ACTION_RESULT_HANDLING_SET_VARIABLE = 1;
+  // Refresh the widget that owns this action.
+  ACTION_RESULT_HANDLING_REFRESH = 2;
+  // Show a toast notification.
+  ACTION_RESULT_HANDLING_TOAST = 3;
+}

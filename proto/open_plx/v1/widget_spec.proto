@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package open_plx.v1;
 
+import "open_plx/v1/action.proto";
+
 // -----------------------------------------------------------------------------
 // Widget Spec Definitions
 //
@@ -40,6 +42,7 @@ message WidgetSpec {
     TreemapSpec treemap = 8;
     SankeySpec sankey = 9;
     WordCloudSpec word_cloud = 10;
+    GraphSpec graph = 11;
   }
 }
 
@@ -528,6 +531,32 @@ message TableSpec {
 
   repeated ConditionalFormat conditions = 5;
   TableInteraction interaction = 6;
+
+  TableViewConfig view = 7;
+
+  // Columns frozen to the left side (by field name).
+  repeated string frozen_cols_left = 8;
+
+  // Columns frozen to the right side (by field name).
+  repeated string frozen_cols_right = 9;
+
+  // Default sort: field + direction (applied on initial load).
+  TableDefaultSort default_sort = 10;
+
+  // Row selection config.
+  TableSelectionConfig selection = 11;
+
+  // Data export config.
+  TableExportConfig export = 12;
+
+  // Row expansion / tree table config.
+  TableExpandConfig expandable = 13;
+
+  // Cell spanning config.
+  repeated TableColSpan col_spans = 14;
+
+  // Server-side pagination. When set, frontend requests one page at a time.
+  ServerSidePagination server_pagination = 15;
 }
 
 message TableColumn {
@@ -539,6 +568,74 @@ message TableColumn {
 
   // Alignment override.
   TableColumnAlign align = 3;
+
+  bool sortable = 5;
+  bool filterable = 6;
+  TableFilterConfig filter = 7;
+
+  // Hide this column from display.
+  bool hidden = 8;
+
+  // Explicit display order (lower = earlier). 0 = no explicit order.
+  int32 order = 9;
+
+  // Cell renderer for this column.
+  TableCellRenderer renderer = 10;
+
+  // Row action button for this column.
+  TableAction action = 11;
+}
+
+// Cell renderer: one of icon, bar, link, progress.
+message TableCellRenderer {
+  oneof renderer {
+    TableCellRendererText text = 1;
+    TableCellRendererIcon icon = 2;
+    TableCellRendererBar bar = 3;
+    TableCellRendererLink link = 4;
+    TableCellRendererProgress progress = 5;
+  }
+}
+
+message TableCellRendererText {
+  // Alias for the default (plain text). No extra config.
+}
+
+message TableCellRendererIcon {
+  // Map cell value -> AntD icon name.
+  // Example: { "active": "CheckCircleOutlined", "inactive": "MinusCircleOutlined" }
+  map<string, string> value_to_icon = 1;
+  // Fallback icon when value doesn't match any key.
+  string fallback_icon = 2;
+}
+
+message TableCellRendererBar {
+  // Numeric field for bar width. If not set, uses the cell value itself.
+  string value_field = 1;
+  // Maximum value for the bar (for normalization). If not set, uses column max.
+  double max_value = 2;
+  // Show numeric label next to the bar.
+  bool show_label = 3;
+  // Bar color (hex color).
+  string color = 4;
+}
+
+message TableCellRendererLink {
+  // URL template. Supports field interpolation: "https://example.com/{id}"
+  string url_template = 1;
+  // Whether to open in new tab.
+  bool new_tab = 2;
+}
+
+message TableCellRendererProgress {
+  // Field containing the "current" / filled value.
+  string value_field = 1;
+  // Field containing the "total" value. If not set, max_value is used.
+  string total_field = 2;
+  // Fixed max if total_field is not set.
+  double max_value = 3;
+  // Show "current / total" label.
+  bool show_label = 4;
 }
 
 enum TableColumnAlign {
@@ -550,6 +647,91 @@ enum TableColumnAlign {
 
 message TablePagination {
   int32 page_size = 1;
+}
+
+// Server-side pagination for flat table.
+// When set, the frontend requests one page at a time and the backend
+// returns only the current page rows plus the total row count.
+message ServerSidePagination {
+  // Default page size. Frontend sends page number (1-based) in
+  // WidgetDataRequest.params.
+  int32 page_size = 1;
+  // Whether to show total row count in the UI.
+  bool show_total_count = 2;
+  // Whether to show page size selector (10, 25, 50, 100).
+  bool show_page_size_selector = 3;
+}
+
+message TableViewConfig {
+  bool enable_search = 1;
+  string search_placeholder = 2;
+  bool case_sensitive = 3;
+  repeated string search_fields = 4;
+}
+
+// Default sort applied on initial table load.
+message TableDefaultSort {
+  string field = 1;
+  SortDirection direction = 2;
+}
+
+message TableFilterConfig {
+  TableFilterType type = 1;
+  repeated string filter_values = 2;
+}
+
+enum TableFilterType {
+  TABLE_FILTER_TYPE_UNSPECIFIED = 0;
+  TABLE_FILTER_TYPE_LIST = 1;
+  TABLE_FILTER_TYPE_TEXT = 2;
+  TABLE_FILTER_TYPE_RANGE = 3;
+}
+
+// Row selection config for flat table.
+message TableSelectionConfig {
+  // Enable row selection (checkbox column).
+  bool enabled = 1;
+
+  // Only one row selectable at a time.
+  bool single = 2;
+
+  // Whether selection persists when user navigates to another page.
+  bool persistent = 3;
+}
+
+// Data export config for flat table.
+message TableExportConfig {
+  // Enable CSV export via S2's built-in export.
+  bool enable_csv = 1;
+
+  // Enable Excel export via S2's built-in export.
+  bool enable_excel = 2;
+
+  // Custom filename template (without extension).
+  string filename_template = 3;
+}
+
+// Row expansion / tree table config.
+message TableExpandConfig {
+  // Enable expandable/collapsible rows.
+  bool enabled = 1;
+  // The field that uniquely identifies a row (for expansion state).
+  string row_id_field = 2;
+  // Fields that act as hierarchy levels (for tree table layout).
+  repeated string hierarchy_fields = 3;
+  // Whether to expand all rows by default.
+  bool default_expanded = 4;
+}
+
+// Cell spanning config.
+message TableColSpan {
+  // Field (column) to apply spanning to.
+  string field = 1;
+  // Condition: a CEL expression evaluated per row.
+  // If true, the cell spans `col_span` columns.
+  string condition = 2;
+  // How many columns to span.
+  int32 col_span = 3;
 }
 
 // =============================================================================
@@ -679,4 +861,103 @@ message TableInteraction {
   bool enable_resize = 3;
   bool enable_multi_selection = 4;
   bool enable_range_selection = 5;
+  bool enable_column_drag = 6;
+}
+
+// =============================================================================
+// GRAPH SPEC
+//
+// Graph / network widget using AntV G6. Data has source, target, value columns.
+// =============================================================================
+
+message GraphSpec {
+  // Data source mapping: which columns map to source/target/value.
+  GraphDataMapping data_mapping = 1;
+
+  // Visual layout.
+  GraphLayout layout = 2;
+
+  // Node appearance.
+  GraphNodeStyle node_style = 3;
+
+  // Edge appearance.
+  GraphEdgeStyle edge_style = 4;
+
+  // Interaction config.
+  GraphInteraction interaction = 5;
+}
+
+message GraphDataMapping {
+  // Field containing source node id.
+  string source_field = 1;
+  // Field containing target node id.
+  string target_field = 2;
+  // Field containing edge weight/value (optional).
+  string value_field = 3;
+  // Field containing node label (optional, falls back to source/target id).
+  string label_field = 4;
+  // Field containing node group/category (for color encoding).
+  string group_field = 5;
+}
+
+message GraphLayout {
+  GraphLayoutType type = 1;
+  // For force-directed: number of iterations.
+  int32 iterations = 2;
+  // For dagre: direction (TB, LR, RL, BT).
+  string direction = 3;
+  // Node separation in pixels.
+  int32 node_spacing = 4;
+  // Rank separation in pixels.
+  int32 rank_spacing = 5;
+}
+
+enum GraphLayoutType {
+  GRAPH_LAYOUT_TYPE_UNSPECIFIED = 0;
+  GRAPH_LAYOUT_TYPE_FORCE = 1;       // Force-directed (d3-force)
+  GRAPH_LAYOUT_TYPE_DAGRE = 2;       // Directed acyclic graph
+  GRAPH_LAYOUT_TYPE_CIRCULAR = 3;     // Circular layout
+  GRAPH_LAYOUT_TYPE_GRID = 4;        // Grid layout
+  GRAPH_LAYOUT_TYPE_CONCENTRIC = 5;  // Concentric circles by centrality
+}
+
+message GraphNodeStyle {
+  // Fixed node size in pixels (default 20).
+  double size = 1;
+  // Default node color.
+  string color = 2;
+  // Show node labels.
+  bool show_label = 3;
+  // Label font size in pixels.
+  int32 label_font_size = 4;
+  // Node border color.
+  string border_color = 5;
+  // Node border width.
+  double border_width = 6;
+}
+
+message GraphEdgeStyle {
+  // Edge color.
+  string color = 1;
+  // Fixed edge width in pixels.
+  double width = 2;
+  // Edge style (solid/dashed/dotted).
+  string style = 3;
+  // Show arrow heads for directed edges.
+  bool show_arrow = 4;
+  // Arrow size.
+  double arrow_size = 5;
+}
+
+message GraphInteraction {
+  // Enable drag nodes.
+  bool enable_drag = 1;
+  // Enable zoom and pan.
+  bool enable_zoom = 2;
+  // Enable node click to trigger cross-widget interaction.
+  bool enable_click_select = 3;
+  // Enable hover tooltip.
+  bool enable_tooltip = 4;
+  // Enable edge click.
+  bool enable_edge_click = 5;
 }

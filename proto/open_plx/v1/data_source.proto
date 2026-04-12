@@ -4,6 +4,7 @@ package open_plx.v1;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/field_mask.proto";
+import "open_plx/v1/dashboard.proto";
 
 // -----------------------------------------------------------------------------
 // DataSource Service
@@ -52,11 +53,12 @@ message DataSource {
   oneof config {
     FlightSqlConfig flight_sql = 4;
     StaticConfig static_data = 5;
+    GrpcProxyConfig grpc_proxy = 6;
   }
 
   // Read-only.
-  google.protobuf.Timestamp create_time = 6;
-  google.protobuf.Timestamp update_time = 7;
+  google.protobuf.Timestamp create_time = 7;
+  google.protobuf.Timestamp update_time = 8;
 }
 
 // =============================================================================
@@ -224,6 +226,50 @@ enum ArrowType {
   ARROW_TYPE_BOOLEAN = 4;
   ARROW_TYPE_DATE32 = 5;
   ARROW_TYPE_TIMESTAMP_MICROS = 6;
+}
+
+// =============================================================================
+// GrpcProxyConfig
+//
+// Query any existing gRPC service as a widget data source.
+// The backend calls the upstream gRPC service and converts the proto response
+// to Arrow RecordBatch using a shared columnar conversion helper.
+//
+// This enables widgets to fetch data from plain gRPC services (not just Flight SQL).
+// =============================================================================
+
+message GrpcProxyConfig {
+  // The fully-qualified gRPC service name (e.g., "signal_engine.NetworkService").
+  string service = 1;
+  // The RPC method name (e.g., "GetGraph").
+  string method = 2;
+  // Request template: map of field name to ParamValue.
+  // Supports variable_ref interpolation (e.g., "${graph_id}" -> resolved value).
+  map<string, ParamValue> request_template = 3;
+  // Optional explicit response schema. If absent, infer from first response.
+  ResponseSchema response_schema = 4;
+  // gRPC endpoint address override (e.g., "http://10.0.0.1:8080").
+  // If not set, uses the service name to look up the endpoint.
+  string endpoint = 5;
+}
+
+message ResponseSchema {
+  repeated ColumnSchema columns = 1;
+}
+
+message ColumnSchema {
+  string field = 1;
+  DataType type = 2;
+}
+
+// Data types for gRPC proxy response schemas.
+enum DataType {
+  DATA_TYPE_UNSPECIFIED = 0;
+  DATA_TYPE_STRING = 1;
+  DATA_TYPE_INT64 = 2;
+  DATA_TYPE_DOUBLE = 3;
+  DATA_TYPE_BOOL = 4;
+  DATA_TYPE_TIMESTAMP = 5;
 }
 
 // --- List ---

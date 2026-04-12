@@ -21,13 +21,8 @@ pub fn export(
     } else {
         for name in dashboard_names {
             if !loader.dashboards.contains_key(name) {
-                let available: Vec<&str> =
-                    loader.dashboards.keys().map(|s| s.as_str()).collect();
-                bail!(
-                    "dashboard '{}' not found. Available: {:?}",
-                    name,
-                    available
-                );
+                let available: Vec<&str> = loader.dashboards.keys().map(|s| s.as_str()).collect();
+                bail!("dashboard '{}' not found. Available: {:?}", name, available);
             }
         }
         dashboard_names.iter().map(|s| s.as_str()).collect()
@@ -59,7 +54,10 @@ pub fn export(
     for name in &names {
         let file = find_yaml_by_name(src_dash_dir, name)
             .with_context(|| format!("could not find YAML file for dashboard '{}'", name))?;
-        let dest = dash_dir.join(file.file_name().ok_or_else(|| anyhow::anyhow!("path has no file name: {}", file.display()))?);
+        let dest = dash_dir.join(
+            file.file_name()
+                .ok_or_else(|| anyhow::anyhow!("path has no file name: {}", file.display()))?,
+        );
         std::fs::copy(&file, &dest)
             .with_context(|| format!("failed to copy {} -> {}", file.display(), dest.display()))?;
         eprintln!("  exported dashboard: {}", name);
@@ -71,7 +69,10 @@ pub fn export(
     for ds_name in &ds_names {
         match find_yaml_by_name(src_ds_dir, ds_name) {
             Ok(file) => {
-                let dest = ds_dir.join(file.file_name().ok_or_else(|| anyhow::anyhow!("path has no file name: {}", file.display()))?);
+                let dest =
+                    ds_dir.join(file.file_name().ok_or_else(|| {
+                        anyhow::anyhow!("path has no file name: {}", file.display())
+                    })?);
                 std::fs::copy(&file, &dest).with_context(|| {
                     format!("failed to copy {} -> {}", file.display(), dest.display())
                 })?;
@@ -79,7 +80,10 @@ pub fn export(
                 eprintln!("  exported data source: {}", ds_name);
             }
             Err(e) => {
-                eprintln!("  warning: data source '{}' referenced but not found: {}", ds_name, e);
+                eprintln!(
+                    "  warning: data source '{}' referenced but not found: {}",
+                    ds_name, e
+                );
             }
         }
     }
@@ -113,7 +117,10 @@ fn find_yaml_by_name(dir: &Path, name: &str) -> Result<std::path::PathBuf> {
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
         let path = entry.path();
-        if path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
+        if path
+            .extension()
+            .is_some_and(|ext| ext == "yaml" || ext == "yml")
+        {
             let content = std::fs::read_to_string(&path)?;
             if content.contains(&format!("name: {}", name))
                 || content.contains(&format!("name: \"{}\"", name))
@@ -122,5 +129,9 @@ fn find_yaml_by_name(dir: &Path, name: &str) -> Result<std::path::PathBuf> {
             }
         }
     }
-    bail!("no YAML file with name '{}' found in {}", name, dir.display())
+    bail!(
+        "no YAML file with name '{}' found in {}",
+        name,
+        dir.display()
+    )
 }

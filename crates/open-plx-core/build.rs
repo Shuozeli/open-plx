@@ -6,6 +6,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &format!("{proto_root}/open_plx/v1/dashboard.proto"),
         &format!("{proto_root}/open_plx/v1/data_source.proto"),
         &format!("{proto_root}/open_plx/v1/data.proto"),
+        &format!("{proto_root}/open_plx/v1/action.proto"),
     ];
 
     let descriptor_path =

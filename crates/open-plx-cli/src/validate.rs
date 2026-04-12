@@ -33,7 +33,10 @@ pub fn validate(bundle_dir: &Path) -> Result<ValidateOutput> {
         for entry in std::fs::read_dir(&dash_dir)? {
             let entry = entry?;
             let path = entry.path();
-            if path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
+            if path
+                .extension()
+                .is_some_and(|ext| ext == "yaml" || ext == "yml")
+            {
                 match parse_yaml::<DashboardFile>(&path) {
                     Ok(d) => {
                         dashboards.insert(d.name.clone(), d);
@@ -51,7 +54,10 @@ pub fn validate(bundle_dir: &Path) -> Result<ValidateOutput> {
         for entry in std::fs::read_dir(&ds_dir)? {
             let entry = entry?;
             let path = entry.path();
-            if path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
+            if path
+                .extension()
+                .is_some_and(|ext| ext == "yaml" || ext == "yml")
+            {
                 match parse_yaml::<DataSourceFile>(&path) {
                     Ok(ds) => {
                         data_sources.insert(ds.name.clone(), ds);
@@ -77,7 +83,11 @@ pub fn validate(bundle_dir: &Path) -> Result<ValidateOutput> {
     // Check all data source references resolve.
     let ds_names: HashSet<&str> = data_sources.keys().map(|s| s.as_str()).collect();
     for (dash_name, dashboard) in &dashboards {
-        let var_names: HashSet<&str> = dashboard.variables.iter().map(|v| v.name.as_str()).collect();
+        let var_names: HashSet<&str> = dashboard
+            .variables
+            .iter()
+            .map(|v| v.name.as_str())
+            .collect();
 
         for widget in &dashboard.widgets {
             let ref_name = &widget.data_source.data_source;
@@ -134,6 +144,5 @@ pub fn validate(bundle_dir: &Path) -> Result<ValidateOutput> {
 fn parse_yaml<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T> {
     let content = std::fs::read_to_string(path)
         .with_context(|| format!("failed to read {}", path.display()))?;
-    serde_yaml::from_str(&content)
-        .with_context(|| format!("failed to parse {}", path.display()))
+    serde_yaml::from_str(&content).with_context(|| format!("failed to parse {}", path.display()))
 }

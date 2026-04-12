@@ -158,7 +158,59 @@ impl WidgetDataService for WidgetDataServiceImpl {
         }
 
         let start = std::time::Instant::now();
-        let batch = self.state.execute_data_source(&ds_name).await?;
+
+        // Check for server-side pagination
+        let pagination_config = self.state.get_widget_server_pagination(&req)?;
+
+        let (batch, total_rows) = if let Some((default_page_size, _, _)) = pagination_config {
+            // Extract page_number and page_size from request params
+            // ParamValue has a oneof 'value' field with IntValue variant
+            let page_number = req
+                .params
+                .get("page_number")
+                .and_then(|p| p.value.as_ref())
+                .and_then(|v| {
+                    if let open_plx_core::pb::param_value::Value::IntValue(i) = v {
+                        Some(*i)
+                    } else {
+                        None
+                    }
+                })
+                .unwrap_or(1);
+            let page_size = req
+                .params
+                .get("page_size")
+                .and_then(|p| p.value.as_ref())
+                .and_then(|v| {
+                    if let open_plx_core::pb::param_value::Value::IntValue(i) = v {
+                        Some(*i)
+                    } else {
+                        None
+                    }
+                })
+                .unwrap_or(default_page_size as i64);
+            let offset = (page_number - 1) * page_size;
+
+            tracing::debug!(
+                "server-side pagination: page={}, size={}, offset={}",
+                page_number,
+                page_size,
+                offset
+            );
+
+            // Execute paginated query
+            let result = self
+                .state
+                .execute_data_source_paginated(&ds_name, page_size, offset)
+                .await?;
+            (result.batch, result.total_rows)
+        } else {
+            // No pagination - execute regular query
+            let batch = self.state.execute_data_source(&ds_name).await?;
+            let total_rows = batch.num_rows() as i64;
+            (batch, total_rows)
+        };
+
         let duration_ms = start.elapsed().as_millis();
 
         tracing::info!(
@@ -168,9 +220,10 @@ impl WidgetDataService for WidgetDataServiceImpl {
             widget = %req.widget_id,
             data_source = %ds_name,
             rows = batch.num_rows(),
+            total_rows = total_rows,
             duration_ms = duration_ms,
         );
-        let total_rows = batch.num_rows() as i64;
+
         let columns = record_batch_to_columns(&batch)?;
 
         Ok(Response::new(WidgetDataResponse {
